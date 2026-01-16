@@ -66,6 +66,9 @@ export default function Home() {
           <Link className="rounded-md border px-3 py-2" href="/schools">
             Schools (coming next)
           </Link>
+          <Link className="rounded-md border px-3 py-2" href="/settings">
+            Settings
+          </Link>
           <button className="rounded-md border px-3 py-2" onClick={signOut}>
             Sign out
           </button>
