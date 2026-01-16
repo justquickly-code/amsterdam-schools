@@ -21,3 +21,5 @@ dist
 
 # TypeScript
 *.tsbuildinfo
+
+supabase/snippets/
