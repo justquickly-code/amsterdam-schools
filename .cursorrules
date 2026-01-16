@@ -1,0 +1,32 @@
+You are working in the "amsterdam-schools" repo.
+
+SOURCE OF TRUTH
+- Always follow docs/PRD.md and docs/ACCEPTANCE_CRITERIA.md.
+- If you change behavior or scope, update the relevant docs in the same PR.
+
+CHANGE SIZE / SAFETY
+- Make small, reviewable changes. Avoid big refactors unless explicitly requested.
+- Prefer adding new code over rewriting working code.
+- Do not remove features or files unless asked.
+
+QUALITY BAR
+- Every new feature must include:
+  - validation (client and/or server as appropriate)
+  - loading/empty/error UI states
+  - basic tests OR a minimal test plan in the PR description
+
+DATA HONESTY
+- Open days are non-authoritative.
+- Any UI showing open days must display:
+  - "Open day times can change — confirm on the school’s own website."
+  - a "Last synced" timestamp if available.
+
+DOMAIN CONSTRAINTS
+- Rating is a single 1–5 stars value.
+- Shortlist is strictly capped at 12 and must prevent adding a 13th.
+- Advies filtering supports combined advice with a toggle: either vs both.
+- Home location input is NL postcode + house number.
+
+STYLE
+- Use TypeScript.
+- Keep code simple and readable.
