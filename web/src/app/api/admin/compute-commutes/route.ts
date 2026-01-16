@@ -88,7 +88,7 @@ export async function POST(req: Request) {
   }
 
   // Limit per run to avoid rate limits. You can re-run to fill the rest.
-  const { limit = 50 } = (await req.json().catch(() => ({}))) as { limit?: number };
+  const { limit = 200 } = (await req.json().catch(() => ({}))) as { limit?: number };
   const batch = schoolRows.slice(0, Math.max(1, Math.min(200, limit)));
 
   let computed = 0;
