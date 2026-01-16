@@ -41,6 +41,8 @@ export default function SchoolsPage() {
     const [schools, setSchools] = useState<School[]>([]);
     const [query, setQuery] = useState("");
     const [error, setError] = useState("");
+    const [shortlistMsg, setShortlistMsg] = useState<string>("");
+    const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
 
     useEffect(() => {
         let mounted = true;
@@ -130,6 +132,90 @@ export default function SchoolsPage() {
             .filter((s) => matchesAdvies(s.supported_levels ?? [], adviesLevels, matchMode));
     }, [schools, query, ws]);
 
+    async function addSchoolToShortlist(schoolId: string) {
+        if (!ws) return;
+
+        setError("");
+        setShortlistMsg("");
+        setShortlistBusyId(schoolId);
+
+        // Ensure shortlist exists
+        const { data: existing, error: sErr } = await supabase
+            .from("shortlists")
+            .select("id")
+            .eq("workspace_id", ws.id)
+            .maybeSingle();
+
+        if (sErr && sErr.code !== "PGRST116") {
+            setError(sErr.message);
+            setShortlistBusyId("");
+            return;
+        }
+
+        let shortlistId = (existing as any)?.id as string | undefined;
+
+        if (!shortlistId) {
+            const { data: created, error: cErr } = await supabase
+                .from("shortlists")
+                .insert({ workspace_id: ws.id })
+                .select("id")
+                .maybeSingle();
+
+            if (cErr || !created) {
+                setError(cErr?.message ?? "Could not create shortlist.");
+                setShortlistBusyId("");
+                return;
+            }
+            shortlistId = (created as any).id;
+        }
+
+        // Load existing items to find an empty rank
+        const { data: items, error: iErr } = await supabase
+            .from("shortlist_items")
+            .select("rank,school_id")
+            .eq("shortlist_id", shortlistId);
+
+        if (iErr) {
+            setError(iErr.message);
+            setShortlistBusyId("");
+            return;
+        }
+
+        const list = (items as any) ?? [];
+        const already = list.some((x: any) => x.school_id === schoolId);
+        if (already) {
+            setShortlistMsg("Already in shortlist.");
+            setShortlistBusyId("");
+            return;
+        }
+
+        const taken = new Set<number>(list.map((x: any) => x.rank));
+        let rank: number | null = null;
+        for (let r = 1; r <= 12; r++) {
+            if (!taken.has(r)) {
+                rank = r;
+                break;
+            }
+        }
+
+        if (!rank) {
+            setError("Shortlist is full (max 12). Remove something first.");
+            setShortlistBusyId("");
+            return;
+        }
+
+        const { error: insErr } = await supabase.from("shortlist_items").insert({
+            shortlist_id: shortlistId,
+            school_id: schoolId,
+            rank,
+        });
+
+        if (insErr) setError(insErr.message);
+        else setShortlistMsg(`Added to shortlist at #${rank}.`);
+
+        setShortlistBusyId("");
+    }
+
     return (
         <main className="min-h-screen p-6 flex items-start justify-center">
             <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
@@ -168,15 +254,29 @@ export default function SchoolsPage() {
                             onChange={(e) => setQuery(e.target.value)}
                         />
 
+                        {shortlistMsg && (
+                            <p className="text-sm text-green-700">{shortlistMsg}</p>
+                        )}
+
                         {filtered.length === 0 ? (
                             <p className="text-sm">No schools match your filters yet.</p>
                         ) : (
                             <ul className="divide-y">
                                 {filtered.map((s) => (
                                     <li key={s.id} className="py-3">
-                                        <Link className="font-medium underline" href={`/schools/${s.id}`}>
-                                            {s.name}
-                                        </Link>
+                                        <div className="flex items-start justify-between gap-3">
+                                            <Link className="font-medium underline" href={`/schools/${s.id}`}>
+                                                {s.name}
+                                            </Link>
+
+                                            <button
+                                                className="rounded-md border px-2 py-1 text-xs"
+                                                onClick={() => addSchoolToShortlist(s.id)}
+                                                disabled={shortlistBusyId === s.id}
+                                            >
+                                                {shortlistBusyId === s.id ? "Adding..." : "Add"}
+                                            </button>
+                                        </div>
                                         <div className="text-sm text-muted-foreground">
                                             {(s.supported_levels ?? []).join(", ") || "levels: —"}
                                         </div>
