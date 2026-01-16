@@ -174,11 +174,13 @@ export default function SchoolsPage() {
                             <ul className="divide-y">
                                 {filtered.map((s) => (
                                     <li key={s.id} className="py-3">
-                                        <div className="font-medium">{s.name}</div>
+                                        <Link className="font-medium underline" href={`/schools/${s.id}`}>
+                                            {s.name}
+                                        </Link>
                                         <div className="text-sm text-muted-foreground">
                                             {(s.supported_levels ?? []).join(", ") || "levels: —"}
                                         </div>
-                                        
+
                                         {s.commute && (
                                             <div className="text-sm text-muted-foreground">
                                                 🚲 {s.commute.duration_minutes} min • {s.commute.distance_km} km
