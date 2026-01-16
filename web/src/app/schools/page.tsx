@@ -20,6 +20,10 @@ type School = {
         duration_minutes: number;
         distance_km: number;
     } | null;
+    visits?: Array<{
+        attended: boolean;
+        rating_stars: number | null;
+    }> | null;
 };
 
 function matchesAdvies(
@@ -76,7 +80,7 @@ export default function SchoolsPage() {
 
             const { data: schoolsData, error: sErr } = await supabase
                 .from("schools")
-                .select("id,name,supported_levels,address,website_url")
+                .select("id,name,supported_levels,address,website_url,visits(id,workspace_id,attended,rating_stars)")
                 .order("name", { ascending: true });
 
             if (!mounted) return;
@@ -110,6 +114,7 @@ export default function SchoolsPage() {
             const merged = schoolList.map((s) => ({
                 ...s,
                 commute: commuteMap.get(s.id) ?? null,
+                visits: (s as any).visits?.filter((v: any) => v.workspace_id === (workspace as any).id) ?? (s as any).visits ?? null,
             }));
 
             setSchools(merged);
@@ -277,6 +282,18 @@ export default function SchoolsPage() {
                                                 {shortlistBusyId === s.id ? "Adding..." : "Add"}
                                             </button>
                                         </div>
+
+                                        {(s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended) && (
+                                            <div className="text-sm text-muted-foreground">
+                                                {s.visits?.[0]?.rating_stars ? `★ ${s.visits?.[0]?.rating_stars}/5` : ""}
+                                                {s.visits?.[0]?.attended ? (
+                                                    <span className="ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
+                                                        attended
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        )}
+
                                         <div className="text-sm text-muted-foreground">
                                             {(s.supported_levels ?? []).join(", ") || "levels: —"}
                                         </div>
