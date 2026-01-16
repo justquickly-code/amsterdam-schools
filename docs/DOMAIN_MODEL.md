@@ -5,6 +5,11 @@
 - Workspace
 - WorkspaceMember (role: owner/editor/viewer)
 
+## Auth model (MVP)
+- Parent email login (Supabase). One family account used across devices.
+- No child accounts in MVP.
+- (Optional later) Visits/notes may include a simple author label: Kid | Parent.
+
 - School
   - name
   - address

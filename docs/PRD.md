@@ -11,6 +11,7 @@ Help a family plan Amsterdam secondary school open days, capture notes + a 1–5
 - Open days are “best effort”: show last synced + warn users to verify on school websites
 - Shortlist is strictly capped at 12 (ranked order)
 - One rating only (1–5 stars)
+- Auth: Parent email login (Supabase). One family account used across devices. Sessions should stay logged in by default.
 
 ## Data sources (high level)
 - Schools: Schoolwijzer Amsterdam (prefer API/structured source)
