@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Node / logs
+node_modules
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env files (never commit secrets)
+.env
+.env.* 
+!.env.example
+
+# Next.js
+.next
+out
+dist
+.vercel
+
+# TypeScript
+*.tsbuildinfo
