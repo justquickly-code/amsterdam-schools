@@ -83,25 +83,26 @@ function fmtTime(iso: string) {
   return d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
 }
 
-function eventTypeLabel(t: string | null) {
-  switch (t) {
-    case "open_dag":
-      return "Open dag";
-    case "open_avond":
-      return "Open avond";
-    case "informatieavond":
-      return "Info";
-    case "proefles":
-      return "Proefles";
-    case "other":
-      return "Other";
-    default:
-      return null;
-  }
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  open_dag: "Open dag",
+  open_avond: "Open avond",
+  informatieavond: "Info-avond",
+  proefles: "Proefles",
+  other: "Other",
+};
+
+function normalizeEventType(t: string | null) {
+  const raw = (t ?? "").toLowerCase().trim();
+  if (!raw) return "other";
+  if (raw.includes("open_dag") || raw.includes("open dag")) return "open_dag";
+  if (raw.includes("open_avond") || raw.includes("open avond")) return "open_avond";
+  if (raw.includes("informatieavond") || raw.includes("infoavond") || raw.includes("info-avond")) return "informatieavond";
+  if (raw.includes("proefles") || raw.includes("meeloop") || raw.includes("lesjes")) return "proefles";
+  return "other";
 }
 
-function normalizeType(t: string | null) {
-  return (t ?? "other").toLowerCase();
+function eventTypeLabel(t: string | null) {
+  return EVENT_TYPE_LABELS[normalizeEventType(t)] ?? null;
 }
 
 type DateRangeFilter = "all" | "7" | "14";
@@ -246,7 +247,6 @@ export default function OpenDaysPage() {
         } as OpenDay;
       });
       setRows(list);
-      if (list.length) setYear(list[0].school_year_label);
 
       // Commute cache (bike)
       if (workspaceRow?.id) {
@@ -322,13 +322,49 @@ export default function OpenDaysPage() {
     }
   }
 
-  const syncedAt = useMemo(() => {
-    if (!rows.length) return null;
-    return rows[0].last_synced_at;
+  const yearOptions = useMemo(() => {
+    const set = new Set(rows.map((r) => r.school_year_label).filter(Boolean));
+    const list = Array.from(set);
+    list.sort((a, b) => {
+      const aYear = Number.parseInt(a.split("/")[0] ?? "0", 10);
+      const bYear = Number.parseInt(b.split("/")[0] ?? "0", 10);
+      return bYear - aYear;
+    });
+    return list;
   }, [rows]);
 
+  useEffect(() => {
+    if (yearOptions.length === 0) {
+      if (year !== "") setYear("");
+      return;
+    }
+    if (!year || !yearOptions.includes(year)) {
+      setYear(yearOptions[0]);
+    }
+  }, [yearOptions, year]);
+
+  const rowsForYear = useMemo(() => {
+    if (!year) return rows;
+    return rows.filter((r) => r.school_year_label === year);
+  }, [rows, year]);
+
+  const syncedAt = useMemo(() => {
+    let latest: string | null = null;
+    for (const r of rowsForYear) {
+      if (!r.last_synced_at) continue;
+      if (!latest) {
+        latest = r.last_synced_at;
+        continue;
+      }
+      if (new Date(r.last_synced_at).getTime() > new Date(latest).getTime()) {
+        latest = r.last_synced_at;
+      }
+    }
+    return latest;
+  }, [rowsForYear]);
+
   const visibleRows = useMemo(() => {
-    let list = rows;
+    let list = rowsForYear;
 
     if (shortlistOnly) {
       const set = new Set(shortlistSchoolIds);
@@ -339,7 +375,7 @@ export default function OpenDaysPage() {
     }
 
     if (eventTypeFilter !== "all") {
-      list = list.filter((r) => normalizeType(r.event_type) === eventTypeFilter);
+      list = list.filter((r) => normalizeEventType(r.event_type) === eventTypeFilter);
     }
 
     if (dateRange !== "all") {
@@ -354,7 +390,7 @@ export default function OpenDaysPage() {
     }
 
     return list;
-  }, [rows, shortlistOnly, shortlistSchoolIds, eventTypeFilter, dateRange]);
+  }, [rowsForYear, shortlistOnly, shortlistSchoolIds, eventTypeFilter, dateRange]);
 
   const grouped = useMemo(() => {
     const g = new Map<string, OpenDay[]>();
@@ -401,6 +437,22 @@ export default function OpenDaysPage() {
             </div>
 
             <div className="flex items-center gap-4">
+              {yearOptions.length > 1 && (
+                <label className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Year</span>
+                  <select
+                    className="rounded-md border px-2 py-1 text-sm"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                  >
+                    {yearOptions.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <label className="flex items-center gap-2 select-none">
                 <input
                   type="checkbox"
@@ -431,7 +483,7 @@ export default function OpenDaysPage() {
                 <option value="all">All</option>
                 <option value="open_dag">Open dag</option>
                 <option value="open_avond">Open avond</option>
-                <option value="informatieavond">Info</option>
+                <option value="informatieavond">Info-avond</option>
                 <option value="proefles">Proefles</option>
                 <option value="other">Other</option>
               </select>

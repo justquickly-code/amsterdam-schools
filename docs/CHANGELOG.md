@@ -15,3 +15,4 @@
 - Routes: /planner is canonical; /open-days now redirects to /planner.
 - Shortlist: added /shortlist/print export view with print button.
 - Schools: added sort toggle for Name/Bike time with unknown commutes last.
+- Open Days: syncedAt uses latest row, year defaults to latest with selector, and event types normalized.

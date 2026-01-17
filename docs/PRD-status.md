@@ -17,7 +17,7 @@ Source of truth:
 | Home address (postcode + house number) | ✅ | Settings exists; used for commute compute. |
 | Cycling time + distance (bike) | 🟡 | Cached compute exists; user-safe on-demand compute still needed (CL-034). |
 | Advies filtering + Either/Both toggle | ✅ | Implemented per acceptance criteria. |
-| Open days best-effort with “verify” + last synced | ✅ | Implemented warning + ICS; year/event_type handling still needed (CL-055/056). User-facing wording should say “Open Days”. |
+| Open days best-effort with “verify” + last synced | ✅ | Implemented warning + ICS; year/event_type handling completed. User-facing wording should say “Open Days”. |
 | Save visit notes + 1–5 rating | ✅ | Visits + rating implemented. |
 | Top 12 subset view + ranked order | ✅ | Ranking implemented. |
 | Planned open days | 🟡 | Open days page exists; “planned” status still to implement (CL-065). |
