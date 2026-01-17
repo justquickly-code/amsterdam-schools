@@ -13,3 +13,4 @@
 - Open Days: calendar download now uses authenticated fetch to support RLS.
 - Admin: sync-open-days now requires ADMIN_SYNC_TOKEN in production (fail-closed).
 - Routes: /planner is canonical; /open-days now redirects to /planner.
+- Shortlist: added /shortlist/print export view with print button.

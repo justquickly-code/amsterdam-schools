@@ -237,6 +237,9 @@ export default function ShortlistPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Top 12 Shortlist</h1>
           <div className="flex gap-3">
+            <Link className="text-sm underline" href="/shortlist/print" target="_blank">
+              Print / Export
+            </Link>
             <Link className="text-sm underline" href="/schools">
               Schools
             </Link>
