@@ -1,19 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Json = Record<string, unknown> | unknown[] | null;
 
 export default function AdminComputeCommutesPage() {
-  const [token, setToken] = useState(() =>
-    typeof window !== "undefined" ? window.localStorage.getItem("admin_sync_token") ?? "" : ""
-  );
+  const [token, setToken] = useState<string>("");
   const [limit, setLimit] = useState(200);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Json>(null);
   const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("admin_sync_token");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToken(saved ?? "");
+  }, []);
 
   async function runCompute() {
     setRunning(true);
@@ -21,8 +25,9 @@ export default function AdminComputeCommutesPage() {
     setResult(null);
 
     const { data: sess } = await supabase.auth.getSession();
-    if (!sess.session) {
-      setError("Not signed in.");
+    const accessToken = sess.session?.access_token ?? "";
+    if (!accessToken) {
+      setError("You must be logged in");
       setRunning(false);
       return;
     }
@@ -34,6 +39,7 @@ export default function AdminComputeCommutesPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
           "x-admin-token": token,
         },
         body: JSON.stringify({ limit }),

@@ -1,19 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Json = Record<string, unknown> | unknown[] | null;
 
 export default function AdminSyncSchoolsPage() {
-  const [token, setToken] = useState(() =>
-    typeof window !== "undefined" ? window.localStorage.getItem("admin_sync_token") ?? "" : ""
-  );
+  const [token, setToken] = useState<string>("");
   const [schoolYearLabel, setSchoolYearLabel] = useState("2025/26");
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Json>(null);
   const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("admin_sync_token");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToken(saved ?? "");
+  }, []);
 
   async function runSync() {
     setRunning(true);

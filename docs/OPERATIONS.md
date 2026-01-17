@@ -18,6 +18,8 @@ These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 - Events not seen in a run are set is_active=false and missing_since is set the first time they go missing.
 - If an event reappears later, it becomes active again and missing_since is cleared.
 - source_id is stable and ignores location formatting changes (prevents “new event” duplicates).
+- Public /open-days shows active open days only (inactive not user-facing).
+- Admin tooling retains the ability to view inactive open days for ops/debug purposes.
 
 ### Compute Commutes (bike)
 - Endpoint: POST /api/admin/compute-commutes
