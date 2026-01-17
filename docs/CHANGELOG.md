@@ -27,3 +27,4 @@
 - Commutes: Settings now computes all school commutes in batches; Schools page avoids background refresh.
 - Admin: admin token stored in sessionStorage only; admin APIs require allowlisted email.
 - Admin: admin pages now gate access for non-allowlisted users.
+- UI: removed oai_citation artifact from admin sync copy.

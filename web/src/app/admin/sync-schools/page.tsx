@@ -102,7 +102,7 @@ export default function AdminSyncSchoolsPage() {
 
         <p className="text-sm text-muted-foreground">
           This fetches Amsterdam secondary school locations from Schoolwijzer (OpenData API) and upserts into
-          our <code>schools</code> table.  [oai_citation:1‡Schoolwijzer Amsterdam](https://schoolwijzer.amsterdam.nl/en/api-documentation/)
+          our <code>schools</code> table.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
