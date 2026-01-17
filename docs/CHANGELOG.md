@@ -29,3 +29,4 @@
 - Admin: admin pages now gate access for non-allowlisted users.
 - UI: removed oai_citation artifact from admin sync copy.
 - Commutes: Settings computes only missing commutes when address unchanged.
+- Shortlist: retry once on rank conflict before failing.

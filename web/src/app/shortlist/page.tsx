@@ -212,7 +212,40 @@ export default function ShortlistPage() {
       .eq("shortlist_id", shortlistId)
       .eq("school_id", a.school_id);
 
-    if (error) setError(error.message);
+    if (error) {
+      const code = (error as { code?: string } | null)?.code;
+      if (code === "23505") {
+        // Retry once: refresh list and attempt update again.
+        const { data: rows } = await supabase
+          .from("shortlist_items")
+          .select("school_id,rank,school:schools(id,name)")
+          .eq("shortlist_id", shortlistId)
+          .order("rank", { ascending: true });
+
+        const normalized = (rows ?? []).map((row) => {
+          const r = row as ShortlistItemRowRaw;
+          const school = Array.isArray(r.school) ? r.school[0] ?? null : r.school ?? null;
+          return { school_id: r.school_id, rank: r.rank, school } as ShortlistItemRow;
+        });
+        setItems(normalized);
+
+        const { error: retryErr } = await supabase
+          .from("shortlist_items")
+          .update({ rank: toRank })
+          .eq("shortlist_id", shortlistId)
+          .eq("school_id", a.school_id);
+
+        if (retryErr) setError(retryErr.message);
+        else {
+          setItems((prev) =>
+            prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)).sort((x, y) => x.rank - y.rank)
+          );
+          setSavedMsg("Saved.");
+        }
+      } else {
+        setError(error.message);
+      }
+    }
     else {
       setItems((prev) =>
         prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)).sort((x, y) => x.rank - y.rank)
