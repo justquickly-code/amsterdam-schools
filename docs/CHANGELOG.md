@@ -33,3 +33,5 @@
 - UI: friendly labels for supported levels (e.g., VMBO variants).
 - Docs: marked completed CL items as DONE in CHANGELOG_AUDIT.
 - Docs: added Phase 4 to RELEASE_PLAN for remaining MVP commitments.
+- UI: added bottom nav and dashboard content; dashboard is default landing after login.
+- Dashboard: upcoming open days are filtered to shortlist when available.
