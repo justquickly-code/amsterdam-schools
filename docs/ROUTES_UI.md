@@ -17,7 +17,7 @@
   - visit notes + 1–5 star rating
   - add/remove from Top 12
 
-- /open-days (Open Days)
+- /planner (Open Days)
   - chronological list
   - filters: event type, date range, shortlist-only
   - (next) planned status + “export planned as ICS”
@@ -40,6 +40,6 @@
 - Error state (what happened + retry)
 
 ## Routing note
-- /open-days is canonical until Phase 1.1 is complete.
-- /planner is planned for Phase 1.1; once live, /open-days should redirect to /planner.
+- /planner is the canonical route.
+- /open-days should redirect to /planner to preserve old links.
 - User-facing wording should say “Open Days” (avoid “planner”).

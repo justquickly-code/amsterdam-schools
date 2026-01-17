@@ -79,7 +79,7 @@ Cursor must treat these files as authoritative:
 - This is central to the value proposition.
 
 ### 3.4 Open day “inactive” behavior (agreed)
-- Public `/open-days` (or future `/planner`) should **not** surface “inactive”.
+- Public `/planner` (with `/open-days` redirect) should **not** surface “inactive”.
 - Keep the capability for ops/debug **in admin tooling** only.
 
 ### 3.5 Shortlist model (agreed direction)

@@ -62,8 +62,8 @@ export default function AdminSyncOpenDaysPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Admin: Sync open days</h1>
           <div className="flex gap-3">
-            <Link className="text-sm underline" href="/open-days">
-              Open days
+            <Link className="text-sm underline" href="/planner">
+              Open Days
             </Link>
             <Link className="text-sm underline" href="/">
               Home

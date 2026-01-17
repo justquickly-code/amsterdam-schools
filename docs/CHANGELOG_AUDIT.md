@@ -28,7 +28,7 @@ None.
 None.
 
 Top 5 risks if we proceed without fixes
-1) Canonical route ambiguity (/open-days vs /planner) will cause duplicate work and broken navigation.
+1) Admin allowlist/is_admin check is still pending, leaving admin endpoints less protected than intended.
 2) Shortlist vs saved‑list ambiguity could force data model changes mid‑build.
 3) Missing/legacy CL IDs undermine planning and progress tracking.
 4) Planned‑status modeling uncertainty risks late schema changes and rework.
@@ -40,7 +40,7 @@ Top 5 risks if we proceed without fixes
 |---:|:--:|:--|:--|:--|:--|
 | CL-011 | P1 | UX | OPEN | Shortlist print/export view | Needs /shortlist/print (or export) per Acceptance. |
 | CL-014 | P1 | UX | OPEN | Schools list sort by bike time | Toggle Name/Bike time; unknown at bottom. |
-| CL-018 | P1 | UX | OPEN | Canonical “Planner” route | Decide /planner as canonical; redirect /open-days. |
+| CL-018 | P1 | UX | DONE | Canonical “Planner” route | /planner canonical; /open-days redirects. |
 | CL-031 | P2 | Security | OPEN | Stop storing admin token long-term | Prefer sessionStorage; optional server allowlist gate. |
 | CL-034 | P1 | UX/Ops | OPEN | Make commute computation user-safe | On-demand compute for missing; admin batch remains fallback. |
 | CL-038 | P3 | Ops | OPEN | Compute only missing commutes | Reduce batch and/or pagination cursor. |
@@ -79,7 +79,7 @@ Top 5 risks if we proceed without fixes
 
 ## Decisions log
 
-- Public /open-days: do not show “inactive” (ops/debug belongs in admin tooling).
+- Public /planner: do not show “inactive” (ops/debug belongs in admin tooling).
 - Shortlist: one list + Top 12 subset view (Option A).
 - Planned visits: single status “Planned” for now (no separate Booked).
 - Bilingual support required; default Dutch; language setting required.

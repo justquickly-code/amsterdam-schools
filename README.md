@@ -41,4 +41,4 @@ Server-only (do not expose):
 ## Notes
 - Open days are best-effort. The UI must always show “verify” messaging and freshness.
 - Commute computation uses Mapbox and is cached per (workspace, school).
-- Route note: /open-days is canonical until Phase 1.1; /planner is planned and should redirect after Phase 1.1.
+- Route note: /planner is canonical; /open-days redirects to /planner.

@@ -75,7 +75,7 @@ export default function Home() {
             Schools
           </Link>
 
-          <Link className="rounded-md border px-3 py-2" href="/open-days">
+          <Link className="rounded-md border px-3 py-2" href="/planner">
             Open days
           </Link>
 
