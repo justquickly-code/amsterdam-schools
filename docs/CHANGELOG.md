@@ -18,3 +18,9 @@
 - Open Days: syncedAt uses latest row, year defaults to latest with selector, and event types normalized.
 - Commutes: added user-safe on-demand compute for missing commutes.
 - Settings: saving home address triggers background commute compute.
+- Settings: normalize postcode to 1234AB and enforce postcode+house pairing.
+- Commutes: changing home address clears cached commutes and forces re-geocode.
+- Open Days: removed commute times from the planner list (reduces visual noise).
+- Commutes: address changes can force recompute even if cache clear is blocked.
+- Commutes: compute endpoint now reports route/upsert failures for debugging.
+- RLS: allow workspace members to read/write commute_cache (owner can delete).

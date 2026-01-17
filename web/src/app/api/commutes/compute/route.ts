@@ -20,6 +20,7 @@ type ComputeBody = {
   workspace_id?: string;
   school_ids?: string[];
   limit?: number;
+  force?: boolean;
 };
 
 export async function POST(req: Request) {
@@ -133,9 +134,12 @@ export async function POST(req: Request) {
   const missing = schoolRows.filter((s) => !existingSet.has(s.id));
 
   const max = Math.max(1, Math.min(20, Number(body.limit ?? 10)));
-  const batch = missing.slice(0, max);
+  const batch = (body.force ? schoolRows : missing).slice(0, max);
 
   let computed = 0;
+  let routeFailed = 0;
+  let upsertFailed = 0;
+  const sampleErrors: Array<{ school_id: string; error: string }> = [];
 
   for (const s of batch) {
     const directionsUrl =
@@ -144,11 +148,17 @@ export async function POST(req: Request) {
       `?access_token=${mapboxToken}&geometries=geojson&overview=false`;
 
     const dRes = await fetch(directionsUrl);
-    if (!dRes.ok) continue;
+    if (!dRes.ok) {
+      routeFailed += 1;
+      continue;
+    }
 
     const dJson = (await dRes.json()) as DirectionsResponse;
     const route = dJson.routes?.[0];
-    if (!route) continue;
+    if (!route) {
+      routeFailed += 1;
+      continue;
+    }
 
     const durationMinutes = Math.round(route.duration / 60);
     const distanceKm = Math.round((route.distance / 1000) * 100) / 100;
@@ -167,6 +177,12 @@ export async function POST(req: Request) {
     );
 
     if (!upErr) computed += 1;
+    else {
+      upsertFailed += 1;
+      if (sampleErrors.length < 5) {
+        sampleErrors.push({ school_id: s.id, error: upErr.message });
+      }
+    }
   }
 
   return NextResponse.json({
@@ -174,5 +190,8 @@ export async function POST(req: Request) {
     workspace_id: workspace.id,
     attempted: batch.length,
     computed,
+    route_failed: routeFailed,
+    upsert_failed: upsertFailed,
+    sample_errors: sampleErrors,
   });
 }

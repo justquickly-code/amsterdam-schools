@@ -36,11 +36,6 @@ type OpenDayRow = {
   school?: Array<{ id: string; name: string } | null> | null;
 };
 
-type Commute = {
-  duration_minutes: number;
-  distance_km: number;
-};
-
 type WorkspaceRow = {
   id: string;
   home_postcode?: string | null;
@@ -53,12 +48,6 @@ type ShortlistRow = {
 
 type ShortlistItemRow = {
   school_id: string;
-};
-
-type CommuteCacheRow = {
-  school_id: string;
-  duration_minutes: number | null;
-  distance_km: number | null;
 };
 
 function stripTrailingUrlLabel(s: string) {
@@ -133,7 +122,6 @@ export default function OpenDaysPage() {
   const [dateRange, setDateRange] = useState<DateRangeFilter>("all");
   const [showInactive, setShowInactive] = useState(false);
 
-  const [commuteMap, setCommuteMap] = useState<Map<string, Commute>>(new Map());
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const autoComputeDone = useRef(false);
 
@@ -254,31 +242,6 @@ export default function OpenDaysPage() {
       });
       setRows(list);
 
-      // Commute cache (bike)
-      if (workspaceRow?.id) {
-        const { data: commutes, error: cErr } = await supabase
-          .from("commute_cache")
-          .select("school_id,duration_minutes,distance_km")
-          .eq("workspace_id", workspaceRow.id)
-          .eq("mode", "bike");
-
-        if (!mounted) return;
-
-        if (cErr) {
-          console.warn("commute_cache load failed", cErr.message);
-        } else {
-          const m = new Map<string, Commute>();
-          for (const c of (commutes ?? []) as CommuteCacheRow[]) {
-            if (!c?.school_id) continue;
-            m.set(c.school_id, {
-              duration_minutes: Number(c.duration_minutes),
-              distance_km: Number(c.distance_km),
-            });
-          }
-          setCommuteMap(m);
-        }
-      }
-
       setLoading(false);
     }
 
@@ -331,52 +294,8 @@ export default function OpenDaysPage() {
   useEffect(() => {
     if (loading || autoComputeDone.current) return;
     if (!workspace?.id) return;
-    if (!workspace.home_postcode || !workspace.home_house_number) return;
-
-    const missingSchoolIds = rows
-      .map((r) => r.school_id)
-      .filter((id): id is string => Boolean(id))
-      .filter((id) => !commuteMap.has(id));
-
-    if (missingSchoolIds.length === 0) return;
-
     autoComputeDone.current = true;
-
-    (async () => {
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token ?? "";
-      if (!token) return;
-
-      await fetch("/api/commutes/compute", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          workspace_id: workspace.id,
-          school_ids: missingSchoolIds.slice(0, 20),
-          limit: 10,
-        }),
-      });
-
-      const { data: commutes } = await supabase
-        .from("commute_cache")
-        .select("school_id,duration_minutes,distance_km")
-        .eq("workspace_id", workspace.id)
-        .eq("mode", "bike");
-
-      const m = new Map<string, Commute>();
-      for (const c of (commutes ?? []) as CommuteCacheRow[]) {
-        if (!c?.school_id) continue;
-        m.set(c.school_id, {
-          duration_minutes: Number(c.duration_minutes),
-          distance_km: Number(c.distance_km),
-        });
-      }
-      setCommuteMap(m);
-    })().catch(() => null);
-  }, [commuteMap, loading, rows, workspace]);
+  }, [loading, workspace]);
 
   const yearOptions = useMemo(() => {
     const set = new Set(rows.map((r) => r.school_year_label).filter(Boolean));
@@ -591,9 +510,6 @@ export default function OpenDaysPage() {
                     const label = eventTypeLabel(r.event_type);
                     const displayName = r.school?.name ?? stripTrailingUrlLabel(r.school_name);
                     const location = stripAnyUrlLabel(r.location_text);
-                    const sid = r.school?.id ?? r.school_id ?? null;
-                    const commute = sid ? commuteMap.get(sid) ?? null : null;
-
                     return (
                       <li key={r.id} className="p-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -605,11 +521,6 @@ export default function OpenDaysPage() {
 
                               {r.is_active === false && <span className={pillClass()}>Verify</span>}
 
-                              {commute && (
-                                <span className={pillClass()}>
-                                  🚲 {commute.duration_minutes} min • {commute.distance_km} km
-                                </span>
-                              )}
                             </div>
 
                             <div className="text-sm text-muted-foreground">

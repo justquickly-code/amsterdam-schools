@@ -35,6 +35,10 @@ export default function SettingsPage() {
     const [savedMsg, setSavedMsg] = useState("");
     const [commuteMsg, setCommuteMsg] = useState("");
 
+    function normalizePostcode(input: string) {
+        return input.toUpperCase().replace(/\s+/g, "").replace(/[^0-9A-Z]/g, "");
+    }
+
     useEffect(() => {
         let mounted = true;
 
@@ -49,7 +53,7 @@ export default function SettingsPage() {
                 return;
             }
 
-            // Default workspace: the one where the user is a member with role owner/editor/viewer.
+            // Default workspace: first workspace (MVP assumes one per user).
             const { data, error } = await supabase
                 .from("workspaces")
                 .select("id,name,home_postcode,home_house_number,advies_levels,advies_match_mode")
@@ -91,17 +95,20 @@ export default function SettingsPage() {
         setSavedMsg("");
         setError("");
 
-        const postcode = homePostcode.trim().toUpperCase();
+        const postcode = normalizePostcode(homePostcode.trim());
         const house = homeHouseNumber.trim();
+        const prevPostcode = normalizePostcode((workspace.home_postcode ?? "").trim());
+        const prevHouse = (workspace.home_house_number ?? "").trim();
+        const addressChanged = postcode !== prevPostcode || house !== prevHouse;
 
-        // very light validation (MVP)
-        if (postcode && postcode.length < 6) {
-            setError("Postcode looks too short.");
+        // basic validation (MVP)
+        if (postcode && !/^\d{4}[A-Z]{2}$/.test(postcode)) {
+            setError("Postcode must look like 1234AB.");
             setSaving(false);
             return;
         }
-        if (house && house.length < 1) {
-            setError("House number is required if postcode is set.");
+        if ((postcode && !house) || (!postcode && house)) {
+            setError("Postcode and house number must be provided together.");
             setSaving(false);
             return;
         }
@@ -111,11 +118,14 @@ export default function SettingsPage() {
         // If only one advies level, force match_mode to either.
         const mode: "either" | "both" = levels.length === 2 ? matchMode : "either";
 
+        setHomePostcode(postcode);
+
         const { error } = await supabase
             .from("workspaces")
             .update({
                 home_postcode: postcode || null,
                 home_house_number: house || null,
+                ...(addressChanged ? { home_lat: null, home_lng: null } : {}),
                 advies_levels: levels,
                 advies_match_mode: mode,
             })
@@ -133,6 +143,16 @@ export default function SettingsPage() {
                 .eq("id", workspace.id)
                 .maybeSingle();
             setWorkspace((data ?? null) as WorkspaceRow | null);
+
+            if (addressChanged) {
+                const { error: delErr } = await supabase
+                    .from("commute_cache")
+                    .delete()
+                    .eq("workspace_id", workspace.id);
+                if (delErr) {
+                    setCommuteMsg("Could not clear old commutes. Recomputing...");
+                }
+            }
 
             if (postcode && house) {
                 setCommuteMsg("Updating commute times in the background...");
@@ -154,7 +174,7 @@ export default function SettingsPage() {
 
                     if (schoolIds.length === 0) return;
 
-                    await fetch("/api/commutes/compute", {
+                    const res = await fetch("/api/commutes/compute", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -164,8 +184,17 @@ export default function SettingsPage() {
                             workspace_id: workspace.id,
                             school_ids: schoolIds,
                             limit: 10,
+                            force: addressChanged,
                         }),
                     });
+                    const json = await res.json().catch(() => null);
+                    if (!res.ok || json?.computed === 0) {
+                        setCommuteMsg(
+                            json?.sample_errors?.[0]?.error
+                                ? `Commute update issue: ${json.sample_errors[0].error}`
+                                : "Commute update issue: no routes computed."
+                        );
+                    }
                 })().catch(() => null);
             }
         }

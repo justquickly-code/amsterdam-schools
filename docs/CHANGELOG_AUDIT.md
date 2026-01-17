@@ -45,9 +45,9 @@ Top 5 risks if we proceed without fixes
 | CL-034 | P1 | UX/Ops | DONE | Make commute computation user-safe | On-demand compute for missing; admin batch remains fallback. |
 | CL-038 | P3 | Ops | OPEN | Compute only missing commutes | Reduce batch and/or pagination cursor. |
 | CL-040 | P2 | UX | OPEN | Remove oai_citation artifacts | Clean UI copy. |
-| CL-052 | P2 | UX/Data | OPEN | Postcode + house number validation | Enforce pairing. |
-| CL-053 | P2 | Data | OPEN | Postcode normalization | Store as 1234AB. |
-| CL-054 | P2 | Docs | OPEN | Remove stale “membership” comment | Update settings docs + code comment. |
+| CL-052 | P2 | UX/Data | DONE | Postcode + house number validation | Enforce pairing. |
+| CL-053 | P2 | Data | DONE | Postcode normalization | Store as 1234AB. |
+| CL-054 | P2 | Docs | DONE | Remove stale “membership” comment | Update settings docs + code comment. |
 | CL-055 | P1 | Data/UX | DONE | Open days year filtering correctness | Default to latest year; allow selection. |
 | CL-056 | P1 | Data/UX | DONE | Normalize event_type | Align DB/scraper/UI/ICS; map consistently. |
 | CL-060 | P3 | UX | OPEN | Retry once on shortlist rank conflicts | Handle unique constraint fail with refresh + retry. |
