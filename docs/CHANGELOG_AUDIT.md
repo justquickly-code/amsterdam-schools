@@ -10,6 +10,30 @@ Legend:
 
 ---
 
+## Doc Audit Report — 2026-01-17 (Updated)
+
+✅ Ready
+- docs/00_PROJECT_BRIEF.md: scope + ground rules are clear and consistent.
+- docs/ACCEPTANCE_CRITERIA.md: aligns with PRD core requirements.
+- docs/DOMAIN_MODEL.md: core entities and non‑negotiables align with PRD/brief.
+- docs/DESIGN.md: consistent with MVP UI constraints.
+- docs/SECURITY.md + docs/OPERATIONS.md: consistent on admin token + service role usage.
+- docs/DEPLOYMENT.md + docs/DATA_SOURCES.md: consistent with PRD + tech decisions.
+- docs/02_Tech_Stack_Decisions.md: consistent with repo structure and PRD.
+
+⚠️ Needs clarification (questions)
+None.
+
+❌ Needs changes (exact file + section + proposed text)
+None.
+
+Top 5 risks if we proceed without fixes
+1) Canonical route ambiguity (/open-days vs /planner) will cause duplicate work and broken navigation.
+2) Shortlist vs saved‑list ambiguity could force data model changes mid‑build.
+3) Missing/legacy CL IDs undermine planning and progress tracking.
+4) Planned‑status modeling uncertainty risks late schema changes and rework.
+5) Admin auth expectations mismatch increases security risk and inconsistent implementation.
+
 ## Open items
 
 | ID | Priority | Area | Status | Summary | Notes / Decision |
@@ -28,6 +52,11 @@ Legend:
 | CL-056 | P1 | Data/UX | OPEN | Normalize event_type | Align DB/scraper/UI/ICS; map consistently. |
 | CL-060 | P3 | UX | OPEN | Retry once on shortlist rank conflicts | Handle unique constraint fail with refresh + retry. |
 | CL-061 | P3 | UX | OPEN | Friendly supported level labels | Map tokens to human text. |
+| CL-062 | P1 | UX | OPEN | Workspace member sharing | Invite/add members to share a workspace. |
+| CL-063 | P1 | UX | OPEN | Dashboard content + setup nudges | Dashboard needs real content and setup prompts. |
+| CL-064 | P1 | UX | OPEN | First-run setup gating | Require home + advies setup early in flow. |
+| CL-065 | P1 | UX/Data | OPEN | Planned open days (workspace-specific) | Store planned/attended per workspace via join table. |
+| CL-032 | P2 | Security | OPEN | Admin allowlist/is_admin check | Require admin session + allowlist in admin routes. |
 
 ---
 
@@ -42,6 +71,9 @@ Legend:
 | CL-036 | P0 | Security/Ops | DONE | Commute compute workspace scoping | User-scoped workspace lookup before service role writes. |
 | CL-037 | P0 | Security/Ops | DONE | Remove “first workspace” selection risk | No limit(1) w/ service role for workspace selection. |
 | CL-050 | P1 | UX/Data | DONE | Open days show active by default | Public page shows active; inactive retained for ops/debug. |
+| CL-101 | P1 | UX | DONE | Mobile bottom nav | Navigation decision locked. |
+| CL-104 | P1 | UX | DONE | Language setting NL default + EN optional | Decision locked. |
+| CL-107 | P1 | UX | DONE | One list + Top 12 subset view | Decision locked. |
 
 ---
 
@@ -52,3 +84,4 @@ Legend:
 - Planned visits: single status “Planned” for now (no separate Booked).
 - Bilingual support required; default Dutch; language setting required.
 - Bottom nav on mobile; dashboard landing after login.
+- Admin routes require x-admin-token plus a valid admin session (allowlist/is_admin).

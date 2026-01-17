@@ -11,7 +11,7 @@ Read the project brief:
 - Set home address (NL postcode + house number) and show bike commute time/distance (when computed)
 - Set advies levels (single or combined) + match mode (Either/Both)
 - Save visit notes per school (notes + pros/cons + attended + 1–5 stars)
-- Open days (best-effort from Schoolkeuze020):
+- Open Days (best-effort from Schoolkeuze020):
   - warning to verify on school website
   - export single event to calendar (.ics)
 - Lists:
@@ -41,3 +41,4 @@ Server-only (do not expose):
 ## Notes
 - Open days are best-effort. The UI must always show “verify” messaging and freshness.
 - Commute computation uses Mapbox and is cached per (workspace, school).
+- Route note: /open-days is canonical until Phase 1.1; /planner is planned and should redirect after Phase 1.1.

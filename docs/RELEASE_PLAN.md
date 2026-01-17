@@ -64,9 +64,10 @@ Legend:
 **Work**
 - Create `/planner` (or rename `/open-days` → `/planner`).
 - Add redirect so old links still work.
+- User-facing wording should remain “Open Days” (avoid “planner” in UI copy).
 
 **Done when**
-- `/planner` is the canonical planner experience.
+- `/planner` is the canonical route after Phase 1.1.
 - Existing links don’t break.
 
 ---

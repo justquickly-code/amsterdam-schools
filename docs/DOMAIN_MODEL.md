@@ -32,13 +32,18 @@
   - pros / cons
   - rating_stars: 1–5
 
-- Shortlist (workspace-specific)
-  - max_items = 12
-
-- ShortlistItem
-  - shortlist_id
+- SavedSchool (workspace-specific)
   - school_id
-  - rank: 1–12
+  - saved_at
+
+- Top12Item (workspace-specific ranked subset)
+  - school_id
+  - rank: 1–12 (max 12)
+
+- PlannedOpenDay (workspace-specific join)
+  - open_day_id
+  - planned_at
+  - attended_at (optional)
 
 - CommuteCache
   - workspace_id + school_id
@@ -53,7 +58,7 @@
   - match_mode: either | both
 
 ## Non-negotiables
-- Shortlist hard cap: 12
+- Top 12 hard cap: 12 (subset of saved schools)
 - One rating per school (1–5 stars)
 - Advies can be combined (two levels)
 - Open days must show “verify on school website” + “last synced”

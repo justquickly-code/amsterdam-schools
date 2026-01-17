@@ -67,7 +67,7 @@ Cursor must treat these files as authoritative:
 ### 3.1 Navigation
 - Mobile should have a **bottom nav** (always visible).
 - Default landing after login: **Dashboard** (lightweight, high value).
-- Core screens remain simple: Schools, Open days/Planner, Shortlist, Settings.
+- Core screens remain simple: Schools, Open days, Shortlist, Settings.
 
 ### 3.2 Language
 - App supports **Dutch + English**.

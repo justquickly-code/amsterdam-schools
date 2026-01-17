@@ -27,7 +27,8 @@
 - If open days data is old (policy later): show “may be outdated” label
 
 ## Shortlist (Top 12)
-- User can add schools to shortlist until it reaches 12
-- App prevents adding a 13th
+- User can save schools to one list
+- Top 12 is a ranked subset view capped at 12
+- App prevents adding a 13th to the Top 12
 - User can rank 1–12 (drag/drop or up/down)
 - Export/print view shows ranked list with ratings and key notes

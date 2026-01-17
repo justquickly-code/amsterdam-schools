@@ -127,7 +127,7 @@ F2 — Open days UI requirements (non-negotiable)
 
 Prompt
 
-Wherever open days are shown (school detail, planner), always display:
+Wherever open days are shown (school detail, Open Days page), always display:
 	•	Warning text: “Open day times can change — confirm on the school’s own website.”
 	•	“Last synced” timestamp (if available)
 Add a “Refresh” action (server-triggered re-sync) if feasible.
