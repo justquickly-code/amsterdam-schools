@@ -25,3 +25,4 @@
 - Commutes: compute endpoint now reports route/upsert failures for debugging.
 - RLS: allow workspace members to read/write commute_cache (owner can delete).
 - Commutes: Settings now computes all school commutes in batches; Schools page avoids background refresh.
+- Admin: admin token stored in sessionStorage only; admin APIs require allowlisted email.

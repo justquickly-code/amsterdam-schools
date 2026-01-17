@@ -2,7 +2,7 @@
 
 ## Admin endpoints (token gated)
 All admin routes require `ADMIN_SYNC_TOKEN` via header `x-admin-token` and a valid user session.
-Server must also check the session user against an admin allowlist/is_admin flag.
+Server must also check the session user against an admin allowlist via `ADMIN_ALLOWLIST_EMAILS`.
 These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 
 ### Sync Schools

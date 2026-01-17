@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 type JsonApiResponse = {
   data: Array<{
@@ -189,9 +190,9 @@ function extractAddress(attrs: Record<string, unknown>): string | null {
 }
 
 export async function POST(req: Request) {
-  const adminToken = req.headers.get("x-admin-token") ?? "";
-  if (!process.env.ADMIN_SYNC_TOKEN || adminToken !== process.env.ADMIN_SYNC_TOKEN) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdminSession(req, { requireTokenInDev: true });
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   }
 
   const { schoolYearLabel } = (await req.json().catch(() => ({}))) as {

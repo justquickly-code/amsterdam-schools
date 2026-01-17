@@ -13,6 +13,7 @@ Server-only:
 - SUPABASE_SERVICE_ROLE_KEY
 - ADMIN_SYNC_TOKEN
 - MAPBOX_ACCESS_TOKEN
+- ADMIN_ALLOWLIST_EMAILS
 
 ## Supabase migrations
 - Apply SQL migrations from supabase/migrations in order.

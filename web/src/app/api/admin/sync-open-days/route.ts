@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 const OPEN_DAYS_URL = "https://schoolkeuze020.nl/open-dagen/";
 
@@ -237,15 +238,9 @@ type SchoolRow = {
 
 export async function POST(req: Request) {
   try {
-    // Admin token gate: required in production (fail-closed), optional in dev.
-    const token = process.env.ADMIN_SYNC_TOKEN ?? "";
-    const got = req.headers.get("x-admin-token") ?? "";
-    if (process.env.NODE_ENV === "production") {
-      if (!token || got !== token) {
-        return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-      }
-    } else if (token && got !== token) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    const auth = await requireAdminSession(req);
+    if (!auth.ok) {
+      return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
     }
 
     const body = (await req.json().catch(() => ({}))) as { school_year_label?: string };

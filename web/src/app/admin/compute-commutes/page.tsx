@@ -15,7 +15,7 @@ export default function AdminComputeCommutesPage() {
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("admin_sync_token");
+    const saved = window.sessionStorage.getItem("admin_sync_token");
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setToken(saved ?? "");
 
@@ -51,7 +51,7 @@ export default function AdminComputeCommutesPage() {
       return;
     }
 
-    window.localStorage.setItem("admin_sync_token", token);
+    window.sessionStorage.setItem("admin_sync_token", token);
 
     try {
       const res = await fetch("/api/admin/compute-commutes", {

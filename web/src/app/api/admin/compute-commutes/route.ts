@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 type GeocodeFeature = {
   center: [number, number]; // [lng, lat]
@@ -15,19 +16,13 @@ type DirectionsResponse = {
 };
 
 export async function POST(req: Request) {
-  const adminToken = req.headers.get("x-admin-token") ?? "";
-  if (!process.env.ADMIN_SYNC_TOKEN || adminToken !== process.env.ADMIN_SYNC_TOKEN) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdminSession(req, { requireTokenInDev: true });
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   }
 
   const authHeader = req.headers.get("authorization") ?? "";
-  if (!authHeader.startsWith("Bearer ")) {
-    return NextResponse.json({ ok: false, error: "Missing Authorization" }, { status: 401 });
-  }
   const jwt = authHeader.slice("Bearer ".length).trim();
-  if (!jwt) {
-    return NextResponse.json({ ok: false, error: "Missing Authorization" }, { status: 401 });
-  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;

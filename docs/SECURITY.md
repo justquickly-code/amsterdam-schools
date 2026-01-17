@@ -10,7 +10,7 @@ Never expose these to the browser:
 Routes under /api/admin/*:
 - must require x-admin-token = ADMIN_SYNC_TOKEN
 - must also require a valid user session
-- must verify the user is an admin via allowlist/is_admin check
+- must verify the user is an admin via allowlist/is_admin check (ADMIN_ALLOWLIST_EMAILS)
 - must run server-side only
 - must not be callable from an unauthenticated context
 
