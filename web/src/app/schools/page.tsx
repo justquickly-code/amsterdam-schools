@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { friendlyLevel } from "@/lib/levels";
 
 type Workspace = {
     id: string;
@@ -381,7 +382,8 @@ export default function SchoolsPage() {
                                         )}
 
                                         <div className="text-sm text-muted-foreground">
-                                            {(s.supported_levels ?? []).join(", ") || "levels: —"}
+                                            {(s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
+                                                "levels: —"}
                                         </div>
 
                                         {s.commute && (
