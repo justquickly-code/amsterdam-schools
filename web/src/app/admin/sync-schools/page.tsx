@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
+type Json = Record<string, unknown> | unknown[] | null;
+
 export default function AdminSyncSchoolsPage() {
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() =>
+    typeof window !== "undefined" ? window.localStorage.getItem("admin_sync_token") ?? "" : ""
+  );
   const [schoolYearLabel, setSchoolYearLabel] = useState("2025/26");
   const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<Json>(null);
   const [error, setError] = useState<string>("");
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("admin_sync_token");
-    if (saved) setToken(saved);
-  }, []);
 
   async function runSync() {
     setRunning(true);
@@ -42,8 +41,9 @@ export default function AdminSyncSchoolsPage() {
       const json = await res.json();
       setResult(json);
       if (!res.ok) setError(json?.error ?? "Sync failed");
-    } catch (e: any) {
-      setError(e?.message ?? "Sync failed");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Sync failed";
+      setError(msg);
     }
 
     setRunning(false);

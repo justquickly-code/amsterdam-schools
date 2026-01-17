@@ -7,7 +7,17 @@ import { supabase } from "@/lib/supabaseClient";
 
 type Workspace = { id: string };
 
+type WorkspaceRow = { id: string };
+
 type School = {
+    id: string;
+    name: string;
+    supported_levels: string[];
+    address: string | null;
+    website_url: string | null;
+};
+
+type SchoolRow = {
     id: string;
     name: string;
     supported_levels: string[];
@@ -25,6 +35,21 @@ type Visit = {
     cons: string | null;
     rating_stars: number | null;
 };
+
+type VisitRow = {
+    id: string;
+    workspace_id: string;
+    school_id: string;
+    attended: boolean;
+    notes: string | null;
+    pros: string | null;
+    cons: string | null;
+    rating_stars: number | null;
+};
+
+type ShortlistRow = { id: string };
+
+type ShortlistItemRow = { rank: number; school_id: string };
 
 function StarRating({
     value,
@@ -104,12 +129,13 @@ export default function SchoolDetailPage() {
                 .maybeSingle();
 
             if (!mounted) return;
-            if (wErr || !ws) {
+            const workspaceRow = (ws ?? null) as WorkspaceRow | null;
+            if (wErr || !workspaceRow) {
                 setError(wErr?.message ?? "No workspace found.");
                 setLoading(false);
                 return;
             }
-            setWorkspace(ws as any);
+            setWorkspace(workspaceRow);
 
             const { data: sch, error: sErr } = await supabase
                 .from("schools")
@@ -118,17 +144,18 @@ export default function SchoolDetailPage() {
                 .maybeSingle();
 
             if (!mounted) return;
-            if (sErr || !sch) {
+            const schoolRow = (sch ?? null) as SchoolRow | null;
+            if (sErr || !schoolRow) {
                 setError(sErr?.message ?? "School not found.");
                 setLoading(false);
                 return;
             }
-            setSchool(sch as any);
+            setSchool(schoolRow);
 
             const { data: v, error: vErr } = await supabase
                 .from("visits")
                 .select("id,workspace_id,school_id,attended,notes,pros,cons,rating_stars")
-                .eq("workspace_id", (ws as any).id)
+                .eq("workspace_id", workspaceRow.id)
                 .eq("school_id", schoolId)
                 .maybeSingle();
 
@@ -139,9 +166,10 @@ export default function SchoolDetailPage() {
                 return;
             }
 
-            setVisit((v as any) ?? null);
+            const visitRow = (v ?? null) as VisitRow | null;
+            setVisit(visitRow);
 
-            const existing = (v as any) as Visit | null;
+            const existing = visitRow;
             setAttended(existing?.attended ?? false);
             setRating(existing?.rating_stars ?? null);
             setNotes(existing?.notes ?? "");
@@ -186,7 +214,7 @@ export default function SchoolDetailPage() {
         if (error) {
             setError(error.message);
         } else {
-            setVisit(data as any);
+            setVisit((data ?? null) as VisitRow | null);
             setSavedMsg("Saved.");
         }
 
@@ -211,7 +239,8 @@ export default function SchoolDetailPage() {
             return;
         }
 
-        let shortlistId = (existing as any)?.id as string | undefined;
+        const existingRow = (existing ?? null) as ShortlistRow | null;
+        let shortlistId = existingRow?.id as string | undefined;
 
         if (!shortlistId) {
             const { data: created, error: cErr } = await supabase
@@ -224,7 +253,7 @@ export default function SchoolDetailPage() {
                 setError(cErr?.message ?? "Could not create shortlist.");
                 return;
             }
-            shortlistId = (created as any).id;
+            shortlistId = (created as ShortlistRow).id;
         }
 
         // Find first empty rank 1..12
@@ -238,8 +267,9 @@ export default function SchoolDetailPage() {
             return;
         }
 
-        const taken = new Set<number>(((items as any) ?? []).map((x: any) => x.rank));
-        const already = ((items as any) ?? []).some((x: any) => x.school_id === school.id);
+        const itemRows = (items ?? []) as ShortlistItemRow[];
+        const taken = new Set<number>(itemRows.map((x) => x.rank));
+        const already = itemRows.some((x) => x.school_id === school.id);
         if (already) {
             setShortlistMsg("Already in shortlist.");
             return;

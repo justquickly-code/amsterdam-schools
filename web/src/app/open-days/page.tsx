@@ -15,12 +15,48 @@ type OpenDay = {
   school_year_label: string;
   last_synced_at: string;
   event_type: string | null;
+  is_active?: boolean;
+  missing_since?: string | null;
   school?: { id: string; name: string } | null;
+};
+
+type OpenDayRow = {
+  id: string;
+  school_id: string | null;
+  school_name: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  location_text: string | null;
+  info_url: string | null;
+  school_year_label: string;
+  last_synced_at: string;
+  event_type: string | null;
+  is_active?: boolean;
+  missing_since?: string | null;
+  school?: Array<{ id: string; name: string } | null> | null;
 };
 
 type Commute = {
   duration_minutes: number;
   distance_km: number;
+};
+
+type WorkspaceRow = {
+  id: string;
+};
+
+type ShortlistRow = {
+  id: string;
+};
+
+type ShortlistItemRow = {
+  school_id: string;
+};
+
+type CommuteCacheRow = {
+  school_id: string;
+  duration_minutes: number | null;
+  distance_km: number | null;
 };
 
 function stripTrailingUrlLabel(s: string) {
@@ -91,6 +127,7 @@ export default function OpenDaysPage() {
 
   const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRangeFilter>("all");
+  const [showInactive, setShowInactive] = useState(false);
 
   const [commuteMap, setCommuteMap] = useState<Map<string, Commute>>(new Map());
 
@@ -126,26 +163,29 @@ export default function OpenDaysPage() {
       setWorkspaceId(ws?.id ?? null);
 
       // Shortlist ids
-      if (ws?.id) {
+      const workspaceRow = (ws ?? null) as WorkspaceRow | null;
+      if (workspaceRow?.id) {
         const { data: shortlist, error: sErr } = await supabase
           .from("shortlists")
           .select("id")
-          .eq("workspace_id", ws.id)
+          .eq("workspace_id", workspaceRow.id)
           .maybeSingle();
 
         if (!mounted) return;
 
-        if (sErr && (sErr as any).code !== "PGRST116") {
+        const sErrCode = (sErr as { code?: string } | null)?.code;
+        if (sErr && sErrCode !== "PGRST116") {
           setError(sErr.message);
           setLoading(false);
           return;
         }
 
-        if (shortlist?.id) {
+        const shortlistRow = (shortlist ?? null) as ShortlistRow | null;
+        if (shortlistRow?.id) {
           const { data: items, error: iErr } = await supabase
             .from("shortlist_items")
             .select("school_id")
-            .eq("shortlist_id", shortlist.id);
+            .eq("shortlist_id", shortlistRow.id);
 
           if (!mounted) return;
 
@@ -155,8 +195,8 @@ export default function OpenDaysPage() {
             return;
           }
 
-          const ids = ((items as any) ?? [])
-            .map((x: any) => x.school_id as string)
+          const ids = ((items ?? []) as ShortlistItemRow[])
+            .map((x) => x.school_id)
             .filter(Boolean);
 
           setShortlistSchoolIds(ids);
@@ -166,12 +206,17 @@ export default function OpenDaysPage() {
       }
 
       // Open days
-      const { data, error: qErr } = await supabase
+      let query = supabase
         .from("open_days")
         .select(
-          "id,school_id,school_name,starts_at,ends_at,location_text,info_url,school_year_label,last_synced_at,event_type,school:schools(id,name)"
-        )
-        .order("starts_at", { ascending: true });
+          "id,school_id,school_name,starts_at,ends_at,location_text,info_url,school_year_label,last_synced_at,event_type,is_active,missing_since,school:schools(id,name)"
+        );
+
+      if (!showInactive) {
+        query = query.eq("is_active", true);
+      }
+
+      const { data, error: qErr } = await query.order("starts_at", { ascending: true });
 
       if (!mounted) return;
 
@@ -181,16 +226,33 @@ export default function OpenDaysPage() {
         return;
       }
 
-      const list = ((data as any) ?? []) as OpenDay[];
+      const list = (data ?? []).map((row) => {
+        const r = row as OpenDayRow;
+        return {
+          id: r.id,
+          school_id: r.school_id ?? null,
+          school_name: r.school_name ?? "",
+          starts_at: r.starts_at ?? null,
+          ends_at: r.ends_at ?? null,
+          location_text: r.location_text ?? null,
+          info_url: r.info_url ?? null,
+          school_year_label: r.school_year_label ?? "",
+          last_synced_at: r.last_synced_at ?? "",
+          event_type: r.event_type ?? null,
+          is_active: r.is_active,
+          missing_since: r.missing_since ?? null,
+          school: r.school?.[0] ?? null,
+        } as OpenDay;
+      });
       setRows(list);
       if (list.length) setYear(list[0].school_year_label);
 
       // Commute cache (bike)
-      if (ws?.id) {
+      if (workspaceRow?.id) {
         const { data: commutes, error: cErr } = await supabase
           .from("commute_cache")
           .select("school_id,duration_minutes,distance_km")
-          .eq("workspace_id", ws.id)
+          .eq("workspace_id", workspaceRow.id)
           .eq("mode", "bike");
 
         if (!mounted) return;
@@ -199,7 +261,7 @@ export default function OpenDaysPage() {
           console.warn("commute_cache load failed", cErr.message);
         } else {
           const m = new Map<string, Commute>();
-          for (const c of (commutes as any) ?? []) {
+          for (const c of (commutes ?? []) as CommuteCacheRow[]) {
             if (!c?.school_id) continue;
             m.set(c.school_id, {
               duration_minutes: Number(c.duration_minutes),
@@ -217,7 +279,7 @@ export default function OpenDaysPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [showInactive]);
 
   const syncedAt = useMemo(() => {
     if (!rows.length) return null;
@@ -297,14 +359,24 @@ export default function OpenDaysPage() {
               {workspaceId ? null : null}
             </div>
 
-            <label className="flex items-center gap-2 select-none">
-              <input
-                type="checkbox"
-                checked={shortlistOnly}
-                onChange={(e) => setShortlistOnly(e.target.checked)}
-              />
-              <span className="text-sm">Shortlist only</span>
-            </label>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 select-none">
+                <input
+                  type="checkbox"
+                  checked={shortlistOnly}
+                  onChange={(e) => setShortlistOnly(e.target.checked)}
+                />
+                <span className="text-sm">Shortlist only</span>
+              </label>
+              <label className="flex items-center gap-2 select-none">
+                <input
+                  type="checkbox"
+                  checked={showInactive}
+                  onChange={(e) => setShowInactive(e.target.checked)}
+                />
+                <span className="text-sm">Show inactive</span>
+              </label>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -382,6 +454,8 @@ export default function OpenDaysPage() {
 
                               {label && <span className={pillClass()}>{label}</span>}
 
+                              {r.is_active === false && <span className={pillClass()}>Verify</span>}
+
                               {commute && (
                                 <span className={pillClass()}>
                                   🚲 {commute.duration_minutes} min • {commute.distance_km} km
@@ -394,6 +468,12 @@ export default function OpenDaysPage() {
                               {r.ends_at ? `–${fmtTime(r.ends_at)}` : ""}
                               {location ? ` • ${location}` : ""}
                             </div>
+
+                            {r.missing_since ? (
+                              <div className="text-xs text-muted-foreground">
+                                Missing since: {r.missing_since}
+                              </div>
+                            ) : null}
                           </div>
 
                           <div className="flex gap-2 sm:shrink-0 sm:justify-end">

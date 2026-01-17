@@ -17,8 +17,10 @@
   - visit notes + 1–5 star rating
   - add/remove from Top 12
 
-- /planner (Planned open days)
-  - chronological list of open days user marked planned
+- /open-days (Open days planner)
+  - chronological list
+  - filters: event type, date range, shortlist-only
+  - (next) planned status + “export planned as ICS”
 
 - /shortlist (Top 12)
   - add/remove
@@ -36,3 +38,6 @@
 - Loading
 - Empty state (what to do next)
 - Error state (what happened + retry)
+
+## Routing note
+- /planner is removed (or should redirect to /open-days).

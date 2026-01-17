@@ -5,13 +5,32 @@ type GeocodeFeature = {
   center: [number, number]; // [lng, lat]
 };
 
+type DirectionsRoute = {
+  duration: number;
+  distance: number;
+};
+
+type DirectionsResponse = {
+  routes?: DirectionsRoute[];
+};
+
 export async function POST(req: Request) {
   const adminToken = req.headers.get("x-admin-token") ?? "";
   if (!process.env.ADMIN_SYNC_TOKEN || adminToken !== process.env.ADMIN_SYNC_TOKEN) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
+  const authHeader = req.headers.get("authorization") ?? "";
+  if (!authHeader.startsWith("Bearer ")) {
+    return NextResponse.json({ ok: false, error: "Missing Authorization" }, { status: 401 });
+  }
+  const jwt = authHeader.slice("Bearer ".length).trim();
+  if (!jwt) {
+    return NextResponse.json({ ok: false, error: "Missing Authorization" }, { status: 401 });
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const mapboxToken = process.env.MAPBOX_ACCESS_TOKEN!;
 
@@ -22,11 +41,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Missing MAPBOX_ACCESS_TOKEN" }, { status: 500 });
   }
 
-  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+  const userClient = createClient(url, anon, {
+    global: { headers: { Authorization: `Bearer ${jwt}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
-  // Get the caller's workspace (MVP: first workspace for the signed-in user)
-  // In MVP policies, workspaces are owned by created_by, but service role bypasses RLS.
-  const { data: workspace, error: wErr } = await admin
+  // Service role bypasses RLS so we must never pick a workspace via limit(1).
+  const { data: workspace, error: wErr } = await userClient
     .from("workspaces")
     .select("id,home_postcode,home_house_number,home_lat,home_lng")
     .limit(1)
@@ -34,6 +55,8 @@ export async function POST(req: Request) {
 
   if (wErr) return NextResponse.json({ ok: false, error: wErr.message }, { status: 500 });
   if (!workspace) return NextResponse.json({ ok: false, error: "No workspace found" }, { status: 400 });
+
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 
   const postcode = (workspace.home_postcode ?? "").trim();
   const houseNumber = (workspace.home_house_number ?? "").trim();
@@ -103,8 +126,8 @@ export async function POST(req: Request) {
     const dRes = await fetch(directionsUrl);
     if (!dRes.ok) continue;
 
-    const dJson = (await dRes.json()) as any;
-    const route = dJson?.routes?.[0];
+    const dJson = (await dRes.json()) as DirectionsResponse;
+    const route = dJson.routes?.[0];
     if (!route) continue;
 
     const durationMinutes = Math.round(route.duration / 60);

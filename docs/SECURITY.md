@@ -1,0 +1,26 @@
+# Security
+
+## Server-only secrets
+Never expose these to the browser:
+- SUPABASE_SERVICE_ROLE_KEY
+- ADMIN_SYNC_TOKEN
+- MAPBOX_ACCESS_TOKEN
+
+## Token-gated admin routes
+Routes under /api/admin/*:
+- must require x-admin-token = ADMIN_SYNC_TOKEN
+- must run server-side only
+- must not be callable from an unauthenticated context
+
+## RLS expectations
+- Workspace-scoped data must only be accessible to workspace members.
+- Shared reference data (schools, open_days) can be readable to all authenticated users.
+- Writes must be restricted to:
+  - workspace owners/members for workspace-owned tables
+  - service role only for ingestion tables if desired (schools/open_days)
+
+## High-risk areas to review before production
+- Any code path using SUPABASE_SERVICE_ROLE_KEY must be:
+  - server-only
+  - protected by token gate
+  - scoped to the correct workspace (avoid “first row wins” patterns)

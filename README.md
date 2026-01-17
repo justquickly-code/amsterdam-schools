@@ -1,41 +1,40 @@
 # amsterdam-schools
-App for selecting secondary schools in amsterdam (for parents and kids)
 
-v1 MVP
+A mobile-first web app to help a family plan Amsterdam secondary-school open days, capture notes + a 1–5 star rating, and produce a ranked Top 12 shortlist.
 
-README — “What this app does”
-	•	Sign in with a parent email
-	•	Browse Amsterdam secondary schools
-	•	Set your child’s “advies” and filter schools accordingly
-	•	Save visit notes per school
-	•	Build a ranked Top 12 shortlist
-	•	See open days (from Schoolkeuze020) with event type tags
-	•	Export open days to calendar (.ics)
-	•	(Optional) show bike commute time/distance when computed
+## What it does
+- Sign in (Supabase Auth)
+- Browse Amsterdam secondary schools (Schoolwijzer data)
+- Set home address (NL postcode + house number) and show bike commute time/distance (when computed)
+- Set advies levels (single or combined) + match mode (Either/Both)
+- Save visit notes per school (notes + pros/cons + attended + 1–5 stars)
+- Open days (best-effort from Schoolkeuze020):
+  - warning to verify on school website
+  - export single event to calendar (.ics)
+- Lists:
+  - save many schools
+  - Top 12 is a strict cap and ranked
 
-README — “Data sources & trust”
-	•	Schools list: [your seeded/imported dataset]
-	•	Open days: Schoolkeuze020 “Open dagen” page (parsed snapshot)
-	•	Warning: open day details can change; verify on the school website
+## Data sources & trust
+- Schools: Schoolwijzer Amsterdam (structured API)
+- Open days: Schoolkeuze020 open days list (non-authoritative)
+- Always verify open day details on the school website (times can change).
 
-README — “Admin tasks”
-	•	Sync schools dataset
-	•	Compute commute cache (bike mode) for all schools
-	•	Sync open days (per school year label, e.g. 2025/26)
-	•	Run once per year (Jan/Feb season) unless data changes
+## Environment variables
+Required:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-README — “Environment variables”
-	•	NEXT_PUBLIC_SUPABASE_URL
-	•	NEXT_PUBLIC_SUPABASE_ANON_KEY
-	•	SUPABASE_SERVICE_ROLE_KEY (admin-only server routes)
-	•	ADMIN_SYNC_TOKEN (protect admin sync endpoints)
-	•	NEXT_PUBLIC_MAPBOX_TOKEN (commute computation)
+Server-only (do not expose):
+- SUPABASE_SERVICE_ROLE_KEY
+- ADMIN_SYNC_TOKEN
+- MAPBOX_ACCESS_TOKEN
 
-Docs — “Schema overview” (short)
-	•	workspaces (home coords + advies settings)
-	•	schools
-	•	commute_cache
-	•	visits
-	•	shortlists + shortlist_items (rank 1–12)
-	•	open_days (source snapshot + event_type + links)
-	•	data_sync_runs
+## Admin tasks (token gated)
+- Sync schools: /admin/sync-schools
+- Sync open days: /admin/sync-open-days
+- Compute commutes: /admin/compute-commutes
+
+## Notes
+- Open days are best-effort. The UI must always show “verify” messaging and freshness.
+- Commute computation uses Mapbox and is cached per (workspace, school).

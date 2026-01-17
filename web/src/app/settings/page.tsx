@@ -13,6 +13,15 @@ type Workspace = {
     advies_match_mode: "either" | "both";
 };
 
+type WorkspaceRow = {
+    id: string;
+    name: string;
+    home_postcode: string | null;
+    home_house_number: string | null;
+    advies_levels: string[];
+    advies_match_mode: "either" | "both";
+};
+
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -52,9 +61,8 @@ export default function SettingsPage() {
                 setError(error.message);
                 setWorkspace(null);
             } else {
-                setWorkspace(data as any);
-
-                const ws = data as any as Workspace;
+                const ws = (data ?? null) as WorkspaceRow | null;
+                setWorkspace(ws);
 
                 setHomePostcode(ws?.home_postcode ?? "");
                 setHomeHouseNumber(ws?.home_house_number ?? "");
@@ -122,7 +130,7 @@ export default function SettingsPage() {
                 .select("id,name,home_postcode,home_house_number,advies_levels,advies_match_mode")
                 .eq("id", workspace.id)
                 .maybeSingle();
-            setWorkspace(data as any);
+            setWorkspace((data ?? null) as WorkspaceRow | null);
         }
 
         setSaving(false);

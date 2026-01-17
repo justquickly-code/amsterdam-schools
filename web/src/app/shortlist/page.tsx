@@ -6,16 +6,28 @@ import { supabase } from "@/lib/supabaseClient";
 
 type Workspace = { id: string };
 
+type WorkspaceRow = { id: string };
+
+type ShortlistRow = { id: string; workspace_id: string };
+
+type ShortlistItemRow = { school_id: string; rank: number; school?: { id: string; name: string } | null };
+
+type ShortlistItemRowRaw = {
+  school_id: string;
+  rank: number;
+  school?: { id: string; name: string } | Array<{ id: string; name: string }> | null;
+};
+
 type ShortlistItem = {
   school_id: string;
   rank: number;
-  school?: { id: string; name: string };
+  school?: { id: string; name: string } | null;
 };
 
 export default function ShortlistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [, setWorkspace] = useState<Workspace | null>(null);
   const [shortlistId, setShortlistId] = useState<string | null>(null);
   const [items, setItems] = useState<ShortlistItem[]>([]);
   const [saving, setSaving] = useState(false);
@@ -44,18 +56,19 @@ export default function ShortlistPage() {
 
       if (!mounted) return;
 
-      if (wErr || !ws) {
+      const workspaceRow = (ws ?? null) as WorkspaceRow | null;
+      if (wErr || !workspaceRow) {
         setError(wErr?.message ?? "No workspace found.");
         setLoading(false);
         return;
       }
-      setWorkspace(ws as any);
+      setWorkspace(workspaceRow);
 
       // Ensure shortlist exists for workspace
       const { data: existing, error: sErr } = await supabase
         .from("shortlists")
         .select("id,workspace_id")
-        .eq("workspace_id", (ws as any).id)
+        .eq("workspace_id", workspaceRow.id)
         .maybeSingle();
 
       if (!mounted) return;
@@ -66,12 +79,13 @@ export default function ShortlistPage() {
         return;
       }
 
-      let sid = (existing as any)?.id as string | undefined;
+      const existingRow = (existing ?? null) as ShortlistRow | null;
+      let sid = existingRow?.id as string | undefined;
 
       if (!sid) {
         const { data: created, error: cErr } = await supabase
           .from("shortlists")
-          .insert({ workspace_id: (ws as any).id })
+          .insert({ workspace_id: workspaceRow.id })
           .select("id")
           .maybeSingle();
 
@@ -80,7 +94,7 @@ export default function ShortlistPage() {
           setLoading(false);
           return;
         }
-        sid = (created as any).id;
+        sid = (created as ShortlistRow).id;
       }
 
       setShortlistId(sid);
@@ -100,7 +114,12 @@ export default function ShortlistPage() {
         return;
       }
 
-      setItems(((rows as any) ?? []) as ShortlistItem[]);
+      const normalized = (rows ?? []).map((row) => {
+        const r = row as ShortlistItemRowRaw;
+        const school = Array.isArray(r.school) ? r.school[0] ?? null : r.school ?? null;
+        return { school_id: r.school_id, rank: r.rank, school } as ShortlistItemRow;
+      });
+      setItems(normalized);
       setLoading(false);
     }
 

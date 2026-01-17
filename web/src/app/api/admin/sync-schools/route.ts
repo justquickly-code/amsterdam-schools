@@ -5,10 +5,10 @@ type JsonApiResponse = {
   data: Array<{
     id: string;
     type: string;
-    attributes: Record<string, any>;
+    attributes: Record<string, unknown>;
   }>;
-  links?: Record<string, any>;
-  meta?: Record<string, any>;
+  links?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
 };
 
 function normalizeLevelToken(raw: string): string | null {
@@ -43,9 +43,9 @@ function normalizeLevelToken(raw: string): string | null {
   return null;
 }
 
-function extractSupportedLevels(attrs: Record<string, any>): string[] {
+function extractSupportedLevels(attrs: Record<string, unknown>): string[] {
   // We don't know the exact attribute name in advance, so we scan common-looking fields.
-  const candidates: any[] = [];
+  const candidates: unknown[] = [];
 
   const keysToTry = [
     "schooltypen",
@@ -63,7 +63,7 @@ function extractSupportedLevels(attrs: Record<string, any>): string[] {
   }
 
   // Also scan for any array fields containing relevant strings
-  for (const [k, v] of Object.entries(attrs)) {
+  for (const v of Object.values(attrs)) {
     if (Array.isArray(v)) candidates.push(v);
     if (typeof v === "string" && /vwo|havo|vmbo|mavo|gymnasium|praktijk/i.test(v)) {
       candidates.push([v]);
@@ -76,22 +76,26 @@ function extractSupportedLevels(attrs: Record<string, any>): string[] {
     if (!c) continue;
 
     if (Array.isArray(c)) {
-      for (const item of c) {
+      const list = c as unknown[];
+      for (const item of list) {
         if (typeof item === "string") tokens.push(item);
         else if (item && typeof item === "object") {
           // JSON:API attribute arrays sometimes contain objects
-          for (const val of Object.values(item)) {
+          const itemObj = item as Record<string, unknown>;
+          for (const val of Object.values(itemObj)) {
             if (typeof val === "string") tokens.push(val);
           }
         }
       }
     } else if (typeof c === "string") {
       tokens.push(c);
-    } else if (typeof c === "object") {
-      for (const val of Object.values(c)) {
+    } else if (c && typeof c === "object") {
+      const obj = c as Record<string, unknown>;
+      for (const val of Object.values(obj)) {
         if (typeof val === "string") tokens.push(val);
         if (Array.isArray(val)) {
-          for (const item of val) if (typeof item === "string") tokens.push(item);
+          const items = val as unknown[];
+          for (const item of items) if (typeof item === "string") tokens.push(item);
         }
       }
     }
@@ -106,68 +110,70 @@ function extractSupportedLevels(attrs: Record<string, any>): string[] {
   return Array.from(normalized).sort();
 }
 
-function extractName(attrs: Record<string, any>): string {
-  return (
-    attrs.naam ??
-    attrs.name ??
-    attrs.titel ??
-    attrs.officiele_naam ??
-    attrs.officiële_naam ??
-    "Unknown school"
-  );
+function extractName(attrs: Record<string, unknown>): string {
+  const asString = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const candidates = [attrs["naam"], attrs["name"], attrs["titel"], attrs["title"]];
+  for (const v of candidates) {
+    const s = asString(v);
+    if (s) return s;
+  }
+  return "";
 }
 
-function extractWebsite(attrs: Record<string, any>): string | null {
+function extractWebsite(attrs: Record<string, unknown>): string | null {
   const v =
-    attrs.website_url ??
-    attrs.website ??
-    attrs.url ??
-    attrs.schoolwebsite ??
-    attrs.websiteadres ??
+    attrs["website_url"] ??
+    attrs["website"] ??
+    attrs["url"] ??
+    attrs["schoolwebsite"] ??
+    attrs["websiteadres"] ??
     null;
   return typeof v === "string" && v.trim() ? v.trim() : null;
 }
 
-function extractLatLng(attrs: Record<string, any>): { lat: number | null; lng: number | null } {
+function extractLatLng(attrs: Record<string, unknown>): { lat: number | null; lng: number | null } {
+  const locatie = attrs["locatie"];
+  const locatieObj = locatie && typeof locatie === "object" ? (locatie as Record<string, unknown>) : null;
+
   const lat =
-    attrs.lat ??
-    attrs.latitude ??
-    attrs.geo_lat ??
-    attrs.coord_lat ??
-    attrs.y ??
-    (attrs.locatie?.lat ?? null);
+    attrs["lat"] ??
+    attrs["latitude"] ??
+    attrs["geo_lat"] ??
+    attrs["coord_lat"] ??
+    attrs["y"] ??
+    (locatieObj?.["lat"] ?? null);
 
   const lng =
-    attrs.lng ??
-    attrs.lon ??
-    attrs.longitude ??
-    attrs.geo_lng ??
-    attrs.coord_lng ??
-    attrs.x ??
-    (attrs.locatie?.lng ?? attrs.locatie?.lon ?? null);
+    attrs["lng"] ??
+    attrs["lon"] ??
+    attrs["longitude"] ??
+    attrs["geo_lng"] ??
+    attrs["coord_lng"] ??
+    attrs["x"] ??
+    (locatieObj?.["lng"] ?? locatieObj?.["lon"] ?? null);
 
   const latNum = typeof lat === "number" ? lat : lat != null ? Number(lat) : null;
   const lngNum = typeof lng === "number" ? lng : lng != null ? Number(lng) : null;
 
   return {
-    lat: Number.isFinite(latNum as any) ? (latNum as number) : null,
-    lng: Number.isFinite(lngNum as any) ? (lngNum as number) : null,
+    lat: latNum != null && Number.isFinite(latNum) ? latNum : null,
+    lng: lngNum != null && Number.isFinite(lngNum) ? lngNum : null,
   };
 }
 
-function extractAddress(attrs: Record<string, any>): string | null {
+function extractAddress(attrs: Record<string, unknown>): string | null {
   // Try a few common patterns
-  const straat = attrs.straat ?? attrs.straatnaam ?? attrs.street ?? attrs.adres_straat ?? null;
-  const huisnr = attrs.huisnummer ?? attrs.house_number ?? attrs.adres_huisnummer ?? null;
-  const postcode = attrs.postcode ?? attrs.zip ?? attrs.adres_postcode ?? null;
-  const plaats = attrs.plaats ?? attrs.woonplaats ?? attrs.city ?? "Amsterdam";
+  const straat = attrs["straat"] ?? attrs["straatnaam"] ?? attrs["street"] ?? attrs["adres_straat"] ?? null;
+  const huisnr = attrs["huisnummer"] ?? attrs["house_number"] ?? attrs["adres_huisnummer"] ?? null;
+  const postcode = attrs["postcode"] ?? attrs["zip"] ?? attrs["adres_postcode"] ?? null;
+  const plaats = attrs["plaats"] ?? attrs["woonplaats"] ?? attrs["city"] ?? "Amsterdam";
 
   // Sometimes there's a single address field
   const single =
-    attrs.adres ??
-    attrs.address ??
-    attrs.volledig_adres ??
-    attrs.volledigadres ??
+    attrs["adres"] ??
+    attrs["address"] ??
+    attrs["volledig_adres"] ??
+    attrs["volledigadres"] ??
     null;
 
   if (typeof single === "string" && single.trim()) return single.trim();

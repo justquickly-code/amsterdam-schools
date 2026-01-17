@@ -38,6 +38,17 @@ function eventTypeLabel(t: string | null) {
   }
 }
 
+type OpenDayRow = {
+  id: string;
+  school_name: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  location_text: string | null;
+  info_url: string | null;
+  event_type: string | null;
+  school?: { name: string | null } | null;
+};
+
 export async function GET(
   _req: Request,
   ctx: { params: Promise<{ id: string }> }
@@ -64,7 +75,7 @@ export async function GET(
       "id,school_name,starts_at,ends_at,location_text,info_url,event_type,school:schools(name)"
     )
     .eq("id", id)
-    .maybeSingle();
+    .maybeSingle<OpenDayRow>();
 
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
@@ -80,7 +91,7 @@ export async function GET(
     );
   }
 
-  const titleSchool = (data.school as any)?.name ?? data.school_name ?? "School";
+  const titleSchool = data.school?.name ?? data.school_name ?? "School";
   const type = eventTypeLabel(data.event_type ?? null);
   const summary = `${type} — ${titleSchool}`;
 

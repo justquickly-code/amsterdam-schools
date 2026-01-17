@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [lastEmail, setLastEmail] = useState<string | null>(null);
@@ -41,9 +43,9 @@ export default function LoginPage() {
 
       setStatus("sent");
       setMessage("Check your email for the sign-in link.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err?.message ?? "Something went wrong. Please try again.");
+      setMessage(errMsg(err) ?? "Something went wrong. Please try again.");
     }
   }
 

@@ -224,6 +224,15 @@ type ParsedOpenDay = {
   school_year_label: string;
   last_synced_at: string;
   event_type: string;
+  last_seen_at: string;
+  is_active: boolean;
+  missing_since: string | null;
+};
+
+type SchoolRow = {
+  id: string;
+  name: string | null;
+  website_url: string | null;
 };
 
 export async function POST(req: Request) {
@@ -262,7 +271,7 @@ export async function POST(req: Request) {
     const allSchools: Array<{ id: string; name: string; key: string }> = [];
     const domainMap = new Map<string, string>(); // host -> id
 
-    for (const s of (schools as any) ?? []) {
+    for (const s of (schools ?? []) as SchoolRow[]) {
       const id = s.id as string;
       const name = String(s.name ?? "");
       const key = canonicalSchoolKey(name);
@@ -413,8 +422,7 @@ export async function POST(req: Request) {
         `${y}-${m}-${d}` +
         `|${key}` +
         `|${timeRange.start}-${timeRange.end}` +
-        `|${eventType}` +
-        `|${normalizeName(locationText ?? "")}`;
+        `|${eventType}`;
 
       parsed.push({
         source: "schoolkeuze020",
@@ -429,21 +437,100 @@ export async function POST(req: Request) {
         event_type: eventType,
         school_year_label: schoolYear,
         last_synced_at: nowIso,
+        last_seen_at: nowIso,
+        is_active: true,
+        missing_since: null,
       });
     }
 
-    // Replace snapshot for this school year
-    await admin.from("open_days").delete().eq("source", "schoolkeuze020").eq("school_year_label", schoolYear);
-
     // Deduplicate within this run
-    const unique = Array.from(new Map(parsed.map((p) => [`${p.source}|${p.source_id}`, p])).values());
+    const unique: ParsedOpenDay[] = Array.from(
+      new Map(parsed.map((p) => [`${p.source}|${p.source_id}`, p])).values()
+    );
 
-    const { error: upErr } = await admin.from("open_days").upsert(unique as any, {
+    const { error: upErr } = await admin.from("open_days").upsert(unique, {
       onConflict: "source,source_id",
     });
 
     if (upErr) {
       return NextResponse.json({ ok: false, error: upErr.message }, { status: 500 });
+    }
+
+    const seen = unique.map((u) => u.source_id);
+    const notInSeen =
+      seen.length > 0 ? `(${seen.map((id) => `'${id.replace(/'/g, "''")}'`).join(",")})` : null;
+
+    let deactivatedCount = 0;
+    let reactivatedCount = 0;
+
+    if (notInSeen) {
+      const { data: deactivated, error: deactErr } = await admin
+        .from("open_days")
+        .update({ is_active: false })
+        .eq("source", "schoolkeuze020")
+        .eq("school_year_label", schoolYear)
+        .not("source_id", "in", notInSeen)
+        .select("id");
+
+      if (deactErr) {
+        return NextResponse.json({ ok: false, error: deactErr.message }, { status: 500 });
+      }
+
+      deactivatedCount = deactivated?.length ?? 0;
+
+      const { error: missErr } = await admin
+        .from("open_days")
+        .update({ missing_since: new Date().toISOString() })
+        .eq("source", "schoolkeuze020")
+        .eq("school_year_label", schoolYear)
+        .not("source_id", "in", notInSeen)
+        .is("missing_since", null);
+
+      if (missErr) {
+        return NextResponse.json({ ok: false, error: missErr.message }, { status: 500 });
+      }
+    } else {
+      const { data: deactivated, error: deactErr } = await admin
+        .from("open_days")
+        .update({ is_active: false })
+        .eq("source", "schoolkeuze020")
+        .eq("school_year_label", schoolYear)
+        .select("id");
+
+      if (deactErr) {
+        return NextResponse.json({ ok: false, error: deactErr.message }, { status: 500 });
+      }
+
+      deactivatedCount = deactivated?.length ?? 0;
+
+      const { error: missErr } = await admin
+        .from("open_days")
+        .update({ missing_since: new Date().toISOString() })
+        .eq("source", "schoolkeuze020")
+        .eq("school_year_label", schoolYear)
+        .is("missing_since", null);
+
+      if (missErr) {
+        return NextResponse.json({ ok: false, error: missErr.message }, { status: 500 });
+      }
+    }
+
+    if (seen.length > 0) {
+      const { data: reactivated, error: reactErr } = await admin
+        .from("open_days")
+        .update({ missing_since: null })
+        .eq("source", "schoolkeuze020")
+        .eq("school_year_label", schoolYear)
+        .eq("is_active", true)
+        .not("missing_since", "is", null)
+        .in("source_id", seen)
+        .select("id");
+
+      if (reactErr) {
+        return NextResponse.json({ ok: false, error: reactErr.message }, { status: 500 });
+      }
+
+      reactivatedCount = reactivated?.length ?? 0;
     }
 
     const sampleMatched = unique.filter((p) => p.school_id).slice(0, 10).map((p) => p.school_name);
@@ -455,11 +542,14 @@ export async function POST(req: Request) {
       school_year_label: schoolYear,
       parsed: unique.length,
       matched_school_ids: unique.filter((p) => p.school_id).length,
+      deactivated_count: deactivatedCount,
+      reactivated_count: reactivatedCount,
       sample_matched: sampleMatched,
       sample_unmatched: sampleUnmatched,
       note: "Always verify on the school website (source can change).",
     });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message ?? String(e) }, { status: 500 });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

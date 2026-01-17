@@ -10,6 +10,42 @@ type Workspace = {
     advies_match_mode: "either" | "both";
 };
 
+type WorkspaceRow = {
+    id: string;
+    advies_levels: string[];
+    advies_match_mode: "either" | "both";
+};
+
+type VisitRow = {
+    workspace_id: string;
+    attended: boolean;
+    rating_stars: number | null;
+};
+
+type SchoolRow = {
+    id: string;
+    name: string;
+    supported_levels: string[];
+    address: string | null;
+    website_url: string | null;
+    visits?: VisitRow[] | null;
+};
+
+type CommuteCacheRow = {
+    school_id: string;
+    duration_minutes: number | null;
+    distance_km: number | null;
+};
+
+type ShortlistRow = {
+    id: string;
+};
+
+type ShortlistItemRow = {
+    rank: number;
+    school_id: string;
+};
+
 type School = {
     id: string;
     name: string;
@@ -17,7 +53,7 @@ type School = {
     address: string | null;
     website_url: string | null;
     commute?: {
-        duration_minutes: number;
+        duration_minutes: number | null;
         distance_km: number;
     } | null;
     visits?: Array<{
@@ -76,7 +112,8 @@ export default function SchoolsPage() {
                 return;
             }
 
-            setWs(workspace as any);
+            const workspaceRow = (workspace ?? null) as WorkspaceRow | null;
+            setWs(workspaceRow);
 
             const { data: schoolsData, error: sErr } = await supabase
                 .from("schools")
@@ -91,19 +128,20 @@ export default function SchoolsPage() {
                 return;
             }
 
-            const schoolList = ((schoolsData as any) ?? []) as School[];
+            const schoolList = (schoolsData ?? []) as SchoolRow[];
 
             // Fetch commute cache for this workspace (if available)
-            let commuteMap = new Map<string, { duration_minutes: number; distance_km: number }>();
+            const commuteMap = new Map<string, { duration_minutes: number | null; distance_km: number }>();
 
-            if (workspace?.id) {
+            if (workspaceRow?.id) {
                 const { data: commutes } = await supabase
                     .from("commute_cache")
                     .select("school_id,duration_minutes,distance_km")
-                    .eq("workspace_id", (workspace as any).id)
+                    .eq("workspace_id", workspaceRow.id)
                     .eq("mode", "bike");
 
-                for (const c of (commutes as any) ?? []) {
+                const commuteRows = (commutes ?? []) as CommuteCacheRow[];
+                for (const c of commuteRows) {
                     commuteMap.set(c.school_id, {
                         duration_minutes: c.duration_minutes,
                         distance_km: Number(c.distance_km),
@@ -111,10 +149,11 @@ export default function SchoolsPage() {
                 }
             }
 
+            const workspaceId = (workspaceRow as WorkspaceRow).id;
             const merged = schoolList.map((s) => ({
                 ...s,
                 commute: commuteMap.get(s.id) ?? null,
-                visits: (s as any).visits?.filter((v: any) => v.workspace_id === (workspace as any).id) ?? (s as any).visits ?? null,
+                visits: s.visits?.filter((v) => v.workspace_id === workspaceId) ?? s.visits ?? null,
             }));
 
             setSchools(merged);
@@ -157,7 +196,8 @@ export default function SchoolsPage() {
             return;
         }
 
-        let shortlistId = (existing as any)?.id as string | undefined;
+        const existingRow = (existing ?? null) as ShortlistRow | null;
+        let shortlistId = existingRow?.id as string | undefined;
 
         if (!shortlistId) {
             const { data: created, error: cErr } = await supabase
@@ -171,7 +211,7 @@ export default function SchoolsPage() {
                 setShortlistBusyId("");
                 return;
             }
-            shortlistId = (created as any).id;
+            shortlistId = (created as ShortlistRow).id;
         }
 
         // Load existing items to find an empty rank
@@ -186,15 +226,15 @@ export default function SchoolsPage() {
             return;
         }
 
-        const list = (items as any) ?? [];
-        const already = list.some((x: any) => x.school_id === schoolId);
+        const list = (items ?? []) as ShortlistItemRow[];
+        const already = list.some((x) => x.school_id === schoolId);
         if (already) {
             setShortlistMsg("Already in shortlist.");
             setShortlistBusyId("");
             return;
         }
 
-        const taken = new Set<number>(list.map((x: any) => x.rank));
+        const taken = new Set<number>(list.map((x) => x.rank));
         let rank: number | null = null;
         for (let r = 1; r <= 12; r++) {
             if (!taken.has(r)) {
