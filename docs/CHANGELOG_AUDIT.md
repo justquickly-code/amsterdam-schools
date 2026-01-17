@@ -38,25 +38,25 @@ Top 5 risks if we proceed without fixes
 
 | ID | Priority | Area | Status | Summary | Notes / Decision |
 |---:|:--:|:--|:--|:--|:--|
-| CL-011 | P1 | UX | OPEN | Shortlist print/export view | Needs /shortlist/print (or export) per Acceptance. |
-| CL-014 | P1 | UX | OPEN | Schools list sort by bike time | Toggle Name/Bike time; unknown at bottom. |
+| CL-011 | P1 | UX | DONE | Shortlist print/export view | Needs /shortlist/print (or export) per Acceptance. |
+| CL-014 | P1 | UX | DONE | Schools list sort by bike time | Toggle Name/Bike time; unknown at bottom. |
 | CL-018 | P1 | UX | DONE | Canonical “Planner” route | /planner canonical; /open-days redirects. |
-| CL-031 | P2 | Security | OPEN | Stop storing admin token long-term | Prefer sessionStorage; optional server allowlist gate. |
+| CL-031 | P2 | Security | DONE | Stop storing admin token long-term | Prefer sessionStorage; optional server allowlist gate. |
 | CL-034 | P1 | UX/Ops | DONE | Make commute computation user-safe | On-demand compute for missing; admin batch remains fallback. |
-| CL-038 | P3 | Ops | OPEN | Compute only missing commutes | Reduce batch and/or pagination cursor. |
-| CL-040 | P2 | UX | OPEN | Remove oai_citation artifacts | Clean UI copy. |
+| CL-038 | P3 | Ops | DONE | Compute only missing commutes | Reduce batch and/or pagination cursor. |
+| CL-040 | P2 | UX | DONE | Remove oai_citation artifacts | Clean UI copy. |
 | CL-052 | P2 | UX/Data | DONE | Postcode + house number validation | Enforce pairing. |
 | CL-053 | P2 | Data | DONE | Postcode normalization | Store as 1234AB. |
 | CL-054 | P2 | Docs | DONE | Remove stale “membership” comment | Update settings docs + code comment. |
 | CL-055 | P1 | Data/UX | DONE | Open days year filtering correctness | Default to latest year; allow selection. |
 | CL-056 | P1 | Data/UX | DONE | Normalize event_type | Align DB/scraper/UI/ICS; map consistently. |
-| CL-060 | P3 | UX | OPEN | Retry once on shortlist rank conflicts | Handle unique constraint fail with refresh + retry. |
-| CL-061 | P3 | UX | OPEN | Friendly supported level labels | Map tokens to human text. |
+| CL-060 | P3 | UX | DONE | Retry once on shortlist rank conflicts | Handle unique constraint fail with refresh + retry. |
+| CL-061 | P3 | UX | DONE | Friendly supported level labels | Map tokens to human text. |
 | CL-062 | P1 | UX | OPEN | Workspace member sharing | Invite/add members to share a workspace. |
 | CL-063 | P1 | UX | OPEN | Dashboard content + setup nudges | Dashboard needs real content and setup prompts. |
 | CL-064 | P1 | UX | OPEN | First-run setup gating | Require home + advies setup early in flow. |
 | CL-065 | P1 | UX/Data | OPEN | Planned open days (workspace-specific) | Store planned/attended per workspace via join table. |
-| CL-032 | P2 | Security | OPEN | Admin allowlist/is_admin check | Require admin session + allowlist in admin routes. |
+| CL-032 | P2 | Security | DONE | Admin allowlist/is_admin check | Require admin session + allowlist in admin routes. |
 
 ---
 

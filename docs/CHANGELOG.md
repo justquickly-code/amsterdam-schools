@@ -31,3 +31,4 @@
 - Commutes: Settings computes only missing commutes when address unchanged.
 - Shortlist: retry once on rank conflict before failing.
 - UI: friendly labels for supported levels (e.g., VMBO variants).
+- Docs: marked completed CL items as DONE in CHANGELOG_AUDIT.
