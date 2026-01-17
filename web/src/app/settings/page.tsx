@@ -167,11 +167,25 @@ export default function SettingsPage() {
                         .not("lat", "is", null)
                         .not("lng", "is", null);
 
+                    const { data: existingCommutes } = await supabase
+                        .from("commute_cache")
+                        .select("school_id")
+                        .eq("workspace_id", workspace.id)
+                        .eq("mode", "bike");
+
+                    const existingSet = new Set(
+                        (existingCommutes ?? []).map((c) => (c as { school_id: string }).school_id)
+                    );
+
                     const schoolIds = (schools ?? [])
                         .map((s) => (s as { id: string }).id)
-                        .filter(Boolean);
+                        .filter(Boolean)
+                        .filter((id) => !existingSet.has(id));
 
-                    if (schoolIds.length === 0) return;
+                    if (schoolIds.length === 0) {
+                        setCommuteMsg("Commute times are already up to date.");
+                        return;
+                    }
 
                     const chunkSize = 20;
                     for (let i = 0; i < schoolIds.length; i += chunkSize) {

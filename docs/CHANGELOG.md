@@ -28,3 +28,4 @@
 - Admin: admin token stored in sessionStorage only; admin APIs require allowlisted email.
 - Admin: admin pages now gate access for non-allowlisted users.
 - UI: removed oai_citation artifact from admin sync copy.
+- Commutes: Settings computes only missing commutes when address unchanged.
