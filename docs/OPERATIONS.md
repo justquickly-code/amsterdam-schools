@@ -33,3 +33,9 @@ These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 
 IMPORTANT:
 - Ensure the route computes commutes for the caller’s workspace (never “first workspace in DB”).
+
+### On-demand Commute Compute (user-safe)
+- Endpoint: POST /api/commutes/compute
+- Purpose: compute a limited batch of missing commutes for the signed-in user.
+- Requires Authorization header (session JWT) and `workspace_id` + `school_ids`.
+- Uses RLS-safe writes to `commute_cache` and Mapbox server token.

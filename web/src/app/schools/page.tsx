@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -90,6 +90,7 @@ export default function SchoolsPage() {
     const [error, setError] = useState("");
     const [shortlistMsg, setShortlistMsg] = useState<string>("");
     const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
+    const autoComputeDone = useRef(false);
 
     useEffect(() => {
         let mounted = true;
@@ -172,6 +173,61 @@ export default function SchoolsPage() {
             mounted = false;
         };
     }, []);
+
+    useEffect(() => {
+        if (loading || autoComputeDone.current) return;
+        if (!ws?.id) return;
+        if (!ws.home_postcode || !ws.home_house_number) return;
+
+        const missingIds = schools
+            .filter((s) => s.commute?.duration_minutes == null)
+            .map((s) => s.id);
+
+        if (missingIds.length === 0) return;
+
+        autoComputeDone.current = true;
+
+        (async () => {
+            const { data: session } = await supabase.auth.getSession();
+            const token = session.session?.access_token ?? "";
+            if (!token) return;
+
+            await fetch("/api/commutes/compute", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    workspace_id: ws.id,
+                    school_ids: missingIds.slice(0, 20),
+                    limit: 10,
+                }),
+            });
+
+            const { data: commutes } = await supabase
+                .from("commute_cache")
+                .select("school_id,duration_minutes,distance_km")
+                .eq("workspace_id", ws.id)
+                .eq("mode", "bike");
+
+            const commuteRows = (commutes ?? []) as CommuteCacheRow[];
+            const commuteMap = new Map<string, { duration_minutes: number | null; distance_km: number }>();
+            for (const c of commuteRows) {
+                commuteMap.set(c.school_id, {
+                    duration_minutes: c.duration_minutes,
+                    distance_km: Number(c.distance_km),
+                });
+            }
+
+            setSchools((prev) =>
+                prev.map((s) => ({
+                    ...s,
+                    commute: commuteMap.get(s.id) ?? null,
+                }))
+            );
+        })().catch(() => null);
+    }, [loading, schools, ws]);
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();

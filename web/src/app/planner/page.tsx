@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -43,6 +43,8 @@ type Commute = {
 
 type WorkspaceRow = {
   id: string;
+  home_postcode?: string | null;
+  home_house_number?: string | null;
 };
 
 type ShortlistRow = {
@@ -121,6 +123,7 @@ export default function OpenDaysPage() {
   const [rows, setRows] = useState<OpenDay[]>([]);
   const [year, setYear] = useState<string>("");
 
+  const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const [shortlistOnly, setShortlistOnly] = useState(false);
@@ -132,6 +135,7 @@ export default function OpenDaysPage() {
 
   const [commuteMap, setCommuteMap] = useState<Map<string, Commute>>(new Map());
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const autoComputeDone = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -150,7 +154,7 @@ export default function OpenDaysPage() {
       // Workspace (MVP assumes 1 per user)
       const { data: ws, error: wErr } = await supabase
         .from("workspaces")
-        .select("id")
+        .select("id,home_postcode,home_house_number")
         .limit(1)
         .maybeSingle();
 
@@ -162,10 +166,12 @@ export default function OpenDaysPage() {
         return;
       }
 
-      setWorkspaceId(ws?.id ?? null);
+      const wsRow = (ws ?? null) as WorkspaceRow | null;
+      setWorkspace(wsRow);
+      setWorkspaceId(wsRow?.id ?? null);
 
       // Shortlist ids
-      const workspaceRow = (ws ?? null) as WorkspaceRow | null;
+      const workspaceRow = wsRow;
       if (workspaceRow?.id) {
         const { data: shortlist, error: sErr } = await supabase
           .from("shortlists")
@@ -321,6 +327,56 @@ export default function OpenDaysPage() {
       setDownloadingId(null);
     }
   }
+
+  useEffect(() => {
+    if (loading || autoComputeDone.current) return;
+    if (!workspace?.id) return;
+    if (!workspace.home_postcode || !workspace.home_house_number) return;
+
+    const missingSchoolIds = rows
+      .map((r) => r.school_id)
+      .filter((id): id is string => Boolean(id))
+      .filter((id) => !commuteMap.has(id));
+
+    if (missingSchoolIds.length === 0) return;
+
+    autoComputeDone.current = true;
+
+    (async () => {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token ?? "";
+      if (!token) return;
+
+      await fetch("/api/commutes/compute", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          workspace_id: workspace.id,
+          school_ids: missingSchoolIds.slice(0, 20),
+          limit: 10,
+        }),
+      });
+
+      const { data: commutes } = await supabase
+        .from("commute_cache")
+        .select("school_id,duration_minutes,distance_km")
+        .eq("workspace_id", workspace.id)
+        .eq("mode", "bike");
+
+      const m = new Map<string, Commute>();
+      for (const c of (commutes ?? []) as CommuteCacheRow[]) {
+        if (!c?.school_id) continue;
+        m.set(c.school_id, {
+          duration_minutes: Number(c.duration_minutes),
+          distance_km: Number(c.distance_km),
+        });
+      }
+      setCommuteMap(m);
+    })().catch(() => null);
+  }, [commuteMap, loading, rows, workspace]);
 
   const yearOptions = useMemo(() => {
     const set = new Set(rows.map((r) => r.school_year_label).filter(Boolean));

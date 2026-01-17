@@ -42,7 +42,7 @@ Top 5 risks if we proceed without fixes
 | CL-014 | P1 | UX | OPEN | Schools list sort by bike time | Toggle Name/Bike time; unknown at bottom. |
 | CL-018 | P1 | UX | DONE | Canonical “Planner” route | /planner canonical; /open-days redirects. |
 | CL-031 | P2 | Security | OPEN | Stop storing admin token long-term | Prefer sessionStorage; optional server allowlist gate. |
-| CL-034 | P1 | UX/Ops | OPEN | Make commute computation user-safe | On-demand compute for missing; admin batch remains fallback. |
+| CL-034 | P1 | UX/Ops | DONE | Make commute computation user-safe | On-demand compute for missing; admin batch remains fallback. |
 | CL-038 | P3 | Ops | OPEN | Compute only missing commutes | Reduce batch and/or pagination cursor. |
 | CL-040 | P2 | UX | OPEN | Remove oai_citation artifacts | Clean UI copy. |
 | CL-052 | P2 | UX/Data | OPEN | Postcode + house number validation | Enforce pairing. |
