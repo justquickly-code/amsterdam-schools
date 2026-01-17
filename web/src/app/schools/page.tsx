@@ -8,12 +8,16 @@ type Workspace = {
     id: string;
     advies_levels: string[];
     advies_match_mode: "either" | "both";
+    home_postcode?: string | null;
+    home_house_number?: string | null;
 };
 
 type WorkspaceRow = {
     id: string;
     advies_levels: string[];
     advies_match_mode: "either" | "both";
+    home_postcode?: string | null;
+    home_house_number?: string | null;
 };
 
 type VisitRow = {
@@ -62,6 +66,8 @@ type School = {
     }> | null;
 };
 
+type SortMode = "name" | "bike";
+
 function matchesAdvies(
     schoolLevels: string[],
     adviesLevels: string[],
@@ -80,6 +86,7 @@ export default function SchoolsPage() {
     const [ws, setWs] = useState<Workspace | null>(null);
     const [schools, setSchools] = useState<School[]>([]);
     const [query, setQuery] = useState("");
+    const [sortMode, setSortMode] = useState<SortMode>("name");
     const [error, setError] = useState("");
     const [shortlistMsg, setShortlistMsg] = useState<string>("");
     const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
@@ -100,7 +107,7 @@ export default function SchoolsPage() {
 
             const { data: workspace, error: wErr } = await supabase
                 .from("workspaces")
-                .select("id,advies_levels,advies_match_mode")
+                .select("id,advies_levels,advies_match_mode,home_postcode,home_house_number")
                 .limit(1)
                 .maybeSingle();
 
@@ -175,6 +182,23 @@ export default function SchoolsPage() {
             .filter((s) => (q ? s.name.toLowerCase().includes(q) : true))
             .filter((s) => matchesAdvies(s.supported_levels ?? [], adviesLevels, matchMode));
     }, [schools, query, ws]);
+
+    const sorted = useMemo(() => {
+        if (sortMode === "name") {
+            return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        const withCommute = [...filtered].filter((s) => s.commute?.duration_minutes != null);
+        const withoutCommute = [...filtered].filter((s) => s.commute?.duration_minutes == null);
+
+        withCommute.sort(
+            (a, b) =>
+                (a.commute?.duration_minutes ?? Number.POSITIVE_INFINITY) -
+                (b.commute?.duration_minutes ?? Number.POSITIVE_INFINITY)
+        );
+
+        return withCommute.concat(withoutCommute);
+    }, [filtered, sortMode]);
 
     async function addSchoolToShortlist(schoolId: string) {
         if (!ws) return;
@@ -292,6 +316,26 @@ export default function SchoolsPage() {
                             )}
                         </div>
 
+                        <div className="flex items-center gap-3">
+                            <label className="text-sm text-muted-foreground">Sort</label>
+                            <select
+                                className="rounded-md border px-2 py-1 text-sm"
+                                value={sortMode}
+                                onChange={(e) => setSortMode(e.target.value as SortMode)}
+                            >
+                                <option value="name">Name</option>
+                                <option value="bike">Bike time</option>
+                            </select>
+                        {sortMode === "bike" && (
+                            <span className="text-xs text-muted-foreground">
+                                Commute times appear first; unknowns are at the bottom.
+                                {!ws?.home_postcode || !ws?.home_house_number
+                                    ? " Set home address in Settings to compute bike times."
+                                    : null}
+                            </span>
+                        )}
+                        </div>
+
                         <input
                             className="w-full rounded-md border px-3 py-2"
                             placeholder="Search schools…"
@@ -303,11 +347,11 @@ export default function SchoolsPage() {
                             <p className="text-sm text-green-700">{shortlistMsg}</p>
                         )}
 
-                        {filtered.length === 0 ? (
+                        {sorted.length === 0 ? (
                             <p className="text-sm">No schools match your filters yet.</p>
                         ) : (
                             <ul className="divide-y">
-                                {filtered.map((s) => (
+                                {sorted.map((s) => (
                                     <li key={s.id} className="py-3">
                                         <div className="flex items-start justify-between gap-3">
                                             <Link className="font-medium underline" href={`/schools/${s.id}`}>
