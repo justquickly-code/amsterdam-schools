@@ -1,6 +1,8 @@
 # amsterdam-schools
 App for selecting secondary schools in amsterdam (for parents and kids)
 
+v1 MVP
+
 README — “What this app does”
 	•	Sign in with a parent email
 	•	Browse Amsterdam secondary schools
