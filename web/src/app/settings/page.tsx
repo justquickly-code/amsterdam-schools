@@ -165,8 +165,7 @@ export default function SettingsPage() {
                         .from("schools")
                         .select("id,lat,lng")
                         .not("lat", "is", null)
-                        .not("lng", "is", null)
-                        .limit(20);
+                        .not("lng", "is", null);
 
                     const schoolIds = (schools ?? [])
                         .map((s) => (s as { id: string }).id)
@@ -174,27 +173,34 @@ export default function SettingsPage() {
 
                     if (schoolIds.length === 0) return;
 
-                    const res = await fetch("/api/commutes/compute", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                            workspace_id: workspace.id,
-                            school_ids: schoolIds,
-                            limit: 10,
-                            force: addressChanged,
-                        }),
-                    });
-                    const json = await res.json().catch(() => null);
-                    if (!res.ok || json?.computed === 0) {
-                        setCommuteMsg(
-                            json?.sample_errors?.[0]?.error
-                                ? `Commute update issue: ${json.sample_errors[0].error}`
-                                : "Commute update issue: no routes computed."
-                        );
+                    const chunkSize = 20;
+                    for (let i = 0; i < schoolIds.length; i += chunkSize) {
+                        const chunk = schoolIds.slice(i, i + chunkSize);
+                        const res = await fetch("/api/commutes/compute", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                                workspace_id: workspace.id,
+                                school_ids: chunk,
+                                limit: chunk.length,
+                                force: addressChanged,
+                            }),
+                        });
+                        const json = await res.json().catch(() => null);
+                        if (!res.ok || json?.upsert_failed > 0) {
+                            setCommuteMsg(
+                                json?.sample_errors?.[0]?.error
+                                    ? `Commute update issue: ${json.sample_errors[0].error}`
+                                    : "Commute update issue while updating."
+                            );
+                            return;
+                        }
                     }
+
+                    setCommuteMsg("Commute times updated.");
                 })().catch(() => null);
             }
         }

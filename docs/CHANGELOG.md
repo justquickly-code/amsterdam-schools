@@ -24,3 +24,4 @@
 - Commutes: address changes can force recompute even if cache clear is blocked.
 - Commutes: compute endpoint now reports route/upsert failures for debugging.
 - RLS: allow workspace members to read/write commute_cache (owner can delete).
+- Commutes: Settings now computes all school commutes in batches; Schools page avoids background refresh.
