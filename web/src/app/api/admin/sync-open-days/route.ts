@@ -237,13 +237,15 @@ type SchoolRow = {
 
 export async function POST(req: Request) {
   try {
-    // Optional admin token gate (recommended if you deploy this)
-    const token = process.env.ADMIN_SYNC_TOKEN;
-    if (token) {
-      const got = req.headers.get("x-admin-token");
-      if (got !== token) {
+    // Admin token gate: required in production (fail-closed), optional in dev.
+    const token = process.env.ADMIN_SYNC_TOKEN ?? "";
+    const got = req.headers.get("x-admin-token") ?? "";
+    if (process.env.NODE_ENV === "production") {
+      if (!token || got !== token) {
         return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
       }
+    } else if (token && got !== token) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = (await req.json().catch(() => ({}))) as { school_year_label?: string };

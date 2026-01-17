@@ -130,6 +130,7 @@ export default function OpenDaysPage() {
   const [showInactive, setShowInactive] = useState(false);
 
   const [commuteMap, setCommuteMap] = useState<Map<string, Commute>>(new Map());
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -280,6 +281,46 @@ export default function OpenDaysPage() {
       mounted = false;
     };
   }, [showInactive]);
+
+  async function downloadIcs(openDayId: string) {
+    setDownloadingId(openDayId);
+    setError("");
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token ?? "";
+      if (!token) {
+        setError("You must be logged in to download the calendar invite.");
+        return;
+      }
+
+      const res = await fetch(`/api/open-days/${openDayId}/ics`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.error ?? "Calendar download failed");
+      }
+
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get("content-disposition") ?? "";
+      const match = contentDisposition.match(/filename="([^"]+)"/i);
+      const filename = match?.[1] ?? "open-day.ics";
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Calendar download failed";
+      setError(msg);
+    } finally {
+      setDownloadingId(null);
+    }
+  }
 
   const syncedAt = useMemo(() => {
     if (!rows.length) return null;
@@ -483,15 +524,15 @@ export default function OpenDaysPage() {
                               </Link>
                             )}
 
-                            <a
+                            <button
                               className={actionClass()}
-                              href={`/api/open-days/${r.id}/ics`}
-                              target="_blank"
-                              rel="noreferrer"
+                              type="button"
+                              onClick={() => downloadIcs(r.id)}
+                              disabled={downloadingId === r.id}
                               title="Download calendar invite (.ics)"
                             >
-                              Calendar
-                            </a>
+                              {downloadingId === r.id ? "Downloading..." : "Calendar"}
+                            </button>
 
                             {r.info_url && (
                               <a

@@ -9,6 +9,7 @@ type Json = Record<string, unknown> | unknown[] | null;
 export default function AdminComputeCommutesPage() {
   const [token, setToken] = useState<string>("");
   const [limit, setLimit] = useState(200);
+  const [workspaceId, setWorkspaceId] = useState<string>("");
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Json>(null);
   const [error, setError] = useState<string>("");
@@ -17,6 +18,19 @@ export default function AdminComputeCommutesPage() {
     const saved = window.localStorage.getItem("admin_sync_token");
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setToken(saved ?? "");
+
+    (async () => {
+      const { data, error: wErr } = await supabase
+        .from("workspaces")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
+      if (wErr) {
+        setError(wErr.message);
+        return;
+      }
+      setWorkspaceId((data?.id ?? "") as string);
+    })();
   }, []);
 
   async function runCompute() {
@@ -31,6 +45,11 @@ export default function AdminComputeCommutesPage() {
       setRunning(false);
       return;
     }
+    if (!workspaceId.trim()) {
+      setError("No workspace found.");
+      setRunning(false);
+      return;
+    }
 
     window.localStorage.setItem("admin_sync_token", token);
 
@@ -42,7 +61,7 @@ export default function AdminComputeCommutesPage() {
           Authorization: `Bearer ${accessToken}`,
           "x-admin-token": token,
         },
-        body: JSON.stringify({ limit }),
+        body: JSON.stringify({ limit, workspace_id: workspaceId }),
       });
       const json = await res.json();
       setResult(json);
@@ -83,6 +102,16 @@ export default function AdminComputeCommutesPage() {
               value={token}
               onChange={(e) => setToken(e.target.value)}
               placeholder="(ADMIN_SYNC_TOKEN)"
+            />
+          </label>
+
+          <label className="space-y-1">
+            <div className="text-sm font-medium">Workspace ID</div>
+            <input
+              className="w-full rounded-md border px-3 py-2"
+              value={workspaceId}
+              onChange={(e) => setWorkspaceId(e.target.value)}
+              placeholder="(auto-filled from session)"
             />
           </label>
 

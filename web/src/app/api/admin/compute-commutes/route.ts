@@ -41,6 +41,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Missing MAPBOX_ACCESS_TOKEN" }, { status: 500 });
   }
 
+  const body = (await req.json().catch(() => ({}))) as { workspace_id?: string; limit?: number };
+  const workspaceId = (body.workspace_id ?? "").trim();
+  if (!workspaceId) {
+    return NextResponse.json({ ok: false, error: "Missing workspace_id" }, { status: 400 });
+  }
+
   const userClient = createClient(url, anon, {
     global: { headers: { Authorization: `Bearer ${jwt}` } },
     auth: { persistSession: false, autoRefreshToken: false },
@@ -50,7 +56,7 @@ export async function POST(req: Request) {
   const { data: workspace, error: wErr } = await userClient
     .from("workspaces")
     .select("id,home_postcode,home_house_number,home_lat,home_lng")
-    .limit(1)
+    .eq("id", workspaceId)
     .maybeSingle();
 
   if (wErr) return NextResponse.json({ ok: false, error: wErr.message }, { status: 500 });
@@ -111,7 +117,7 @@ export async function POST(req: Request) {
   }
 
   // Limit per run to avoid rate limits. You can re-run to fill the rest.
-  const { limit = 200 } = (await req.json().catch(() => ({}))) as { limit?: number };
+  const limit = typeof body.limit === "number" ? body.limit : 200;
   const batch = schoolRows.slice(0, Math.max(1, Math.min(200, limit)));
 
   let computed = 0;

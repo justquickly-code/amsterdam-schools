@@ -50,26 +50,36 @@ type OpenDayRow = {
 };
 
 export async function GET(
-  _req: Request,
+  req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
   const { id } = await ctx.params;
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const authHeader = req.headers.get("authorization") ?? "";
+  if (!authHeader.startsWith("Bearer ")) {
+    return NextResponse.json({ ok: false, error: "Missing Authorization" }, { status: 401 });
+  }
+  const jwt = authHeader.slice("Bearer ".length).trim();
+  if (!jwt) {
+    return NextResponse.json({ ok: false, error: "Missing Authorization" }, { status: 401 });
+  }
 
-  if (!supabaseUrl || !serviceRole) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !anonKey) {
     return NextResponse.json(
       { ok: false, error: "Missing env vars" },
       { status: 500 }
     );
   }
 
-  const admin = createClient(supabaseUrl, serviceRole, {
+  const supabase = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: `Bearer ${jwt}` } },
     auth: { persistSession: false },
   });
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("open_days")
     .select(
       "id,school_name,starts_at,ends_at,location_text,info_url,event_type,school:schools(name)"

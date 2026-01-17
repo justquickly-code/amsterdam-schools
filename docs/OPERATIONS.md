@@ -21,6 +21,7 @@ These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 - source_id is stable and ignores location formatting changes (prevents “new event” duplicates).
 - Public /open-days shows active open days only (inactive not user-facing).
 - Admin tooling retains the ability to view inactive open days for ops/debug purposes.
+- In production, `x-admin-token` is required (fail-closed if missing).
 
 ### Compute Commutes (bike)
 - Endpoint: POST /api/admin/compute-commutes
@@ -28,6 +29,7 @@ These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 - Writes:
   - workspaces.home_lat/home_lng (if missing)
   - commute_cache rows per (workspace, school, mode="bike")
+- Requires `workspace_id` in the request body (validated against the session).
 
-IMPORTANT (must fix):
-- Ensure the route computes commutes for the caller’s workspace (not “first workspace in DB”).
+IMPORTANT:
+- Ensure the route computes commutes for the caller’s workspace (never “first workspace in DB”).

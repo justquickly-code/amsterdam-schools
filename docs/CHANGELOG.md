@@ -8,3 +8,7 @@
 - Docs: aligned Open Days wording in README/PRD-status/Cursor prompt pack.
 - Docs: removed boilerplate web/README.md (use root README only).
 - Docs: added minimal web/README.md pointer to root README.
+- Admin: compute-commutes now requires explicit workspace_id and validates against session.
+- Security: open-days ICS endpoint no longer uses service role.
+- Open Days: calendar download now uses authenticated fetch to support RLS.
+- Admin: sync-open-days now requires ADMIN_SYNC_TOKEN in production (fail-closed).
