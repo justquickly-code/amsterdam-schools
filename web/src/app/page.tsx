@@ -51,6 +51,11 @@ export default function Home() {
           <Link className="inline-block rounded-md border px-3 py-2" href="/login">
             Go to sign in
           </Link>
+
+          <div className="pt-2 text-xs text-muted-foreground">
+            Tip: once signed in, you’ll be able to browse schools, save visit notes, build a ranked Top 12,
+            and see open days.
+          </div>
         </div>
       </main>
     );
@@ -58,20 +63,39 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
-        <h1 className="text-2xl font-semibold">You’re signed in</h1>
-        <p className="text-sm">Signed in as: {email}</p>
+      <div className="w-full max-w-md rounded-xl border p-6 space-y-5">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">Amsterdam Schools</h1>
+          <p className="text-sm text-muted-foreground">Signed in as: {email}</p>
+        </div>
 
-        <div className="flex gap-3">
+        {/* Primary actions */}
+        <div className="grid grid-cols-1 gap-3">
           <Link className="rounded-md border px-3 py-2" href="/schools">
-            Schools (coming next)
+            Schools
           </Link>
+
+          <Link className="rounded-md border px-3 py-2" href="/open-days">
+            Open days
+          </Link>
+
+          <Link className="rounded-md border px-3 py-2" href="/shortlist">
+            Top 12 shortlist
+          </Link>
+
           <Link className="rounded-md border px-3 py-2" href="/settings">
             Settings
           </Link>
-          <button className="rounded-md border px-3 py-2" onClick={signOut}>
+        </div>
+
+        {/* Secondary */}
+        <div className="flex items-center justify-between pt-2 border-t">
+          <button className="text-sm underline" onClick={signOut}>
             Sign out
           </button>
+          <div className="text-xs text-muted-foreground">
+            Tip: Open day details can change — always verify on the school website.
+          </div>
         </div>
       </div>
     </main>

@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function AdminComputeCommutesPage() {
+export default function AdminSyncOpenDaysPage() {
   const [token, setToken] = useState("");
-  const [limit, setLimit] = useState(200);
+  const [schoolYear, setSchoolYear] = useState("2025/26");
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string>("");
@@ -16,7 +16,7 @@ export default function AdminComputeCommutesPage() {
     if (saved) setToken(saved);
   }, []);
 
-  async function runCompute() {
+  async function runSync() {
     setRunning(true);
     setError("");
     setResult(null);
@@ -31,19 +31,20 @@ export default function AdminComputeCommutesPage() {
     window.localStorage.setItem("admin_sync_token", token);
 
     try {
-      const res = await fetch("/api/admin/compute-commutes", {
+      const res = await fetch("/api/admin/sync-open-days", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-admin-token": token,
         },
-        body: JSON.stringify({ limit }),
+        body: JSON.stringify({ school_year_label: schoolYear }),
       });
+
       const json = await res.json();
       setResult(json);
-      if (!res.ok) setError(json?.error ?? "Compute failed");
+      if (!res.ok) setError(json?.error ?? "Sync failed");
     } catch (e: any) {
-      setError(e?.message ?? "Compute failed");
+      setError(e?.message ?? "Sync failed");
     }
 
     setRunning(false);
@@ -53,10 +54,10 @@ export default function AdminComputeCommutesPage() {
     <main className="min-h-screen p-6 flex items-start justify-center">
       <div className="w-full max-w-2xl rounded-xl border p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Admin: Compute commutes</h1>
+          <h1 className="text-2xl font-semibold">Admin: Sync open days</h1>
           <div className="flex gap-3">
-            <Link className="text-sm underline" href="/schools">
-              Schools
+            <Link className="text-sm underline" href="/open-days">
+              Open days
             </Link>
             <Link className="text-sm underline" href="/">
               Home
@@ -65,8 +66,8 @@ export default function AdminComputeCommutesPage() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Computes bike time + distance from your workspace home address to a batch of schools and caches results.
-          Make sure Settings has postcode + house number set.
+          Imports open day listings and stores them as an annual snapshot.
+          Always verify details on the school website.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -81,24 +82,22 @@ export default function AdminComputeCommutesPage() {
           </label>
 
           <label className="space-y-1">
-            <div className="text-sm font-medium">Batch size</div>
+            <div className="text-sm font-medium">School year</div>
             <input
               className="w-full rounded-md border px-3 py-2"
-              type="number"
-              min={1}
-              max={200}
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+              value={schoolYear}
+              onChange={(e) => setSchoolYear(e.target.value)}
+              placeholder="2025/26"
             />
           </label>
         </div>
 
         <button
           className="rounded-md border px-3 py-2"
-          onClick={runCompute}
+          onClick={runSync}
           disabled={running || !token.trim()}
         >
-          {running ? "Computing..." : "Compute commutes now"}
+          {running ? "Syncing..." : "Sync open days now"}
         </button>
 
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
