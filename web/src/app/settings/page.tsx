@@ -33,6 +33,7 @@ export default function SettingsPage() {
     const [matchMode, setMatchMode] = useState<"either" | "both">("either");
     const [saving, setSaving] = useState(false);
     const [savedMsg, setSavedMsg] = useState("");
+    const [commuteMsg, setCommuteMsg] = useState("");
 
     useEffect(() => {
         let mounted = true;
@@ -124,6 +125,7 @@ export default function SettingsPage() {
             setError(error.message);
         } else {
             setSavedMsg("Saved.");
+            setCommuteMsg("");
             // Reload workspace to reflect saved values
             const { data } = await supabase
                 .from("workspaces")
@@ -131,6 +133,41 @@ export default function SettingsPage() {
                 .eq("id", workspace.id)
                 .maybeSingle();
             setWorkspace((data ?? null) as WorkspaceRow | null);
+
+            if (postcode && house) {
+                setCommuteMsg("Updating commute times in the background...");
+                (async () => {
+                    const { data: session } = await supabase.auth.getSession();
+                    const token = session.session?.access_token ?? "";
+                    if (!token) return;
+
+                    const { data: schools } = await supabase
+                        .from("schools")
+                        .select("id,lat,lng")
+                        .not("lat", "is", null)
+                        .not("lng", "is", null)
+                        .limit(20);
+
+                    const schoolIds = (schools ?? [])
+                        .map((s) => (s as { id: string }).id)
+                        .filter(Boolean);
+
+                    if (schoolIds.length === 0) return;
+
+                    await fetch("/api/commutes/compute", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            workspace_id: workspace.id,
+                            school_ids: schoolIds,
+                            limit: 10,
+                        }),
+                    });
+                })().catch(() => null);
+            }
         }
 
         setSaving(false);
@@ -253,6 +290,7 @@ export default function SettingsPage() {
                                     {saving ? "Saving..." : "Save"}
                                 </button>
                                 {savedMsg && <span className="text-green-700">{savedMsg}</span>}
+                                {commuteMsg && <span className="text-muted-foreground">{commuteMsg}</span>}
                             </div>
 
                             <p className="text-muted-foreground">

@@ -17,3 +17,4 @@
 - Schools: added sort toggle for Name/Bike time with unknown commutes last.
 - Open Days: syncedAt uses latest row, year defaults to latest with selector, and event types normalized.
 - Commutes: added user-safe on-demand compute for missing commutes.
+- Settings: saving home address triggers background commute compute.
