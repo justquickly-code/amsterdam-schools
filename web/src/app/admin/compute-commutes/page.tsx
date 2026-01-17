@@ -13,6 +13,7 @@ export default function AdminComputeCommutesPage() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Json>(null);
   const [error, setError] = useState<string>("");
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     const saved = window.sessionStorage.getItem("admin_sync_token");
@@ -32,6 +33,29 @@ export default function AdminComputeCommutesPage() {
       setWorkspaceId((data?.id ?? "") as string);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      const accessToken = sess.session?.access_token ?? "";
+      if (!accessToken) {
+        setForbidden(true);
+        return;
+      }
+
+      const res = await fetch("/api/admin/guard", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        if (res.status === 401 && json?.error?.includes("Unauthorized")) {
+          // Allow viewing page; token gate happens on action.
+          return;
+        }
+        setForbidden(true);
+      }
+    })().catch(() => null);
+  }, [token]);
 
   async function runCompute() {
     setRunning(true);
@@ -72,6 +96,14 @@ export default function AdminComputeCommutesPage() {
     }
 
     setRunning(false);
+  }
+
+  if (forbidden) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6">
+        <p className="text-sm text-red-600">Forbidden: admin access required.</p>
+      </main>
+    );
   }
 
   return (

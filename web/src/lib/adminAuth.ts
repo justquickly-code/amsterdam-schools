@@ -13,14 +13,6 @@ export async function requireAdminSession(
   const adminToken = req.headers.get("x-admin-token") ?? "";
   const expected = process.env.ADMIN_SYNC_TOKEN ?? "";
 
-  if (process.env.NODE_ENV === "production" || options.requireTokenInDev) {
-    if (!expected || adminToken !== expected) {
-      return { ok: false, error: "Unauthorized", status: 401 };
-    }
-  } else if (expected && adminToken !== expected) {
-    return { ok: false, error: "Unauthorized", status: 401 };
-  }
-
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
     return { ok: false, error: "Missing Authorization", status: 401 };
@@ -58,6 +50,14 @@ export async function requireAdminSession(
   const userEmail = (userData.user.email ?? "").toLowerCase();
   if (!userEmail || !adminList.includes(userEmail)) {
     return { ok: false, error: "Forbidden", status: 403 };
+  }
+
+  if (process.env.NODE_ENV === "production" || options.requireTokenInDev) {
+    if (!expected || adminToken !== expected) {
+      return { ok: false, error: "Unauthorized", status: 401 };
+    }
+  } else if (expected && adminToken !== expected) {
+    return { ok: false, error: "Unauthorized", status: 401 };
   }
 
   return { ok: true };
