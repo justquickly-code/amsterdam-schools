@@ -32,3 +32,4 @@
 - Shortlist: retry once on rank conflict before failing.
 - UI: friendly labels for supported levels (e.g., VMBO variants).
 - Docs: marked completed CL items as DONE in CHANGELOG_AUDIT.
+- Docs: added Phase 4 to RELEASE_PLAN for remaining MVP commitments.

@@ -179,6 +179,64 @@ Legend:
 
 ---
 
+## Phase 4 — Remaining MVP commitments (P1/P2)
+
+### 4.1 Dashboard + bottom nav (CL-063 / CL-101)
+**Work**
+- Implement mobile bottom nav (always visible).
+- Make Dashboard the default landing after login.
+- Add real Dashboard content (setup nudges + upcoming open days summary).
+
+**Done when**
+- Bottom nav appears on all core screens.
+- Login routes to Dashboard by default.
+- Dashboard shows at least one meaningful summary plus setup nudges.
+
+---
+
+### 4.2 First-run setup gating (CL-064)
+**Work**
+- Require postcode + house number + advies before accessing main content.
+- Provide a lightweight setup flow that users can complete once.
+
+**Done when**
+- Users without required settings are guided through setup.
+- Main screens are gated until setup is complete.
+
+---
+
+### 4.3 Planned open days (CL-065)
+**Work**
+- Add a workspace-specific join table for planned open days.
+- Add “Planned” toggle in Open Days and School detail.
+- Highlight schools with no planned open day.
+
+**Done when**
+- Planned status persists per workspace.
+- Planned items are visible in the Open Days UI.
+
+---
+
+### 4.4 Workspace member sharing (CL-062)
+**Work**
+- Add invite/add flow to share a workspace.
+- Enforce roles (owner/editor/viewer) in UI and RLS.
+
+**Done when**
+- Another user can join a workspace and see the same data.
+- Role enforcement works as expected.
+
+---
+
+### 4.5 Language setting (CL-104)
+**Work**
+- Add language setting with Dutch default and English option.
+- Use the setting in UI copy (at least for main navigation and core labels).
+
+**Done when**
+- Language can be switched and persists.
+- Dutch is the default for new users.
+
 ## Suggested execution order (fastest risk reduction)
 1) Phase 0.1 commute scoping
 2) Phase 0.2 ICS service-role removal
