@@ -2,6 +2,9 @@
 
 A mobile-first web app to help a family plan Amsterdam secondary-school open days, capture notes + a 1–5 star rating, and produce a ranked Top 12 shortlist.
 
+Read the project brief:
+/docs/00_PROJECT_BRIEF.md
+
 ## What it does
 - Sign in (Supabase Auth)
 - Browse Amsterdam secondary schools (Schoolwijzer data)
