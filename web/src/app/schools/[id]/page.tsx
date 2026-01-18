@@ -51,6 +51,81 @@ type ShortlistRow = { id: string };
 
 type ShortlistItemRow = { rank: number; school_id: string };
 
+type OpenDay = {
+    id: string;
+    starts_at: string | null;
+    ends_at: string | null;
+    location_text: string | null;
+    info_url: string | null;
+    event_type: string | null;
+    is_active?: boolean;
+};
+
+type OpenDayRow = {
+    id: string;
+    starts_at: string | null;
+    ends_at: string | null;
+    location_text: string | null;
+    info_url: string | null;
+    event_type: string | null;
+    is_active?: boolean;
+};
+
+type PlannedOpenDayRow = {
+    open_day_id: string;
+};
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+    open_dag: "Open dag",
+    open_avond: "Open avond",
+    informatieavond: "Info-avond",
+    proefles: "Proefles",
+    other: "Other",
+};
+
+function normalizeEventType(t: string | null) {
+    const raw = (t ?? "").toLowerCase().trim();
+    if (!raw) return "other";
+    if (raw.includes("open_dag") || raw.includes("open dag")) return "open_dag";
+    if (raw.includes("open_avond") || raw.includes("open avond")) return "open_avond";
+    if (raw.includes("informatieavond") || raw.includes("infoavond") || raw.includes("info-avond"))
+        return "informatieavond";
+    if (raw.includes("proefles") || raw.includes("meeloop") || raw.includes("lesjes")) return "proefles";
+    return "other";
+}
+
+function eventTypeLabel(t: string | null) {
+    return EVENT_TYPE_LABELS[normalizeEventType(t)] ?? null;
+}
+
+function fmtDate(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("nl-NL", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+}
+
+function fmtTime(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+}
+
+function stripAnyUrlLabel(s: string | null) {
+    if (!s) return null;
+    return s.replace(/\s*\(https?:\/\/[^)]+\)\s*/gi, " ").replace(/\s+/g, " ").trim();
+}
+
+function pillClass() {
+    return "text-xs rounded-full border px-2 py-0.5 text-muted-foreground";
+}
+
+function actionClass() {
+    return "text-xs rounded-md border px-2 py-1 hover:bg-muted/30";
+}
+
 function StarRating({
     value,
     onChange,
@@ -97,6 +172,9 @@ export default function SchoolDetailPage() {
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
     const [school, setSchool] = useState<School | null>(null);
     const [visit, setVisit] = useState<Visit | null>(null);
+    const [openDays, setOpenDays] = useState<OpenDay[]>([]);
+    const [plannedOpenDayIds, setPlannedOpenDayIds] = useState<Set<string>>(new Set());
+    const [planningId, setPlanningId] = useState<string | null>(null);
 
     const [attended, setAttended] = useState(false);
     const [rating, setRating] = useState<number | null>(null);
@@ -175,6 +253,55 @@ export default function SchoolDetailPage() {
             setNotes(existing?.notes ?? "");
             setPros(existing?.pros ?? "");
             setCons(existing?.cons ?? "");
+
+            const { data: openDaysRows, error: oErr } = await supabase
+                .from("open_days")
+                .select("id,starts_at,ends_at,location_text,info_url,event_type,is_active")
+                .eq("school_id", schoolId)
+                .eq("is_active", true)
+                .order("starts_at", { ascending: true });
+
+            if (!mounted) return;
+            if (oErr) {
+                setError(oErr.message);
+                setLoading(false);
+                return;
+            }
+
+            const odList = (openDaysRows ?? []) as OpenDayRow[];
+            const mapped = odList.map((row) => ({
+                id: row.id,
+                starts_at: row.starts_at ?? null,
+                ends_at: row.ends_at ?? null,
+                location_text: row.location_text ?? null,
+                info_url: row.info_url ?? null,
+                event_type: row.event_type ?? null,
+                is_active: row.is_active,
+            })) as OpenDay[];
+            setOpenDays(mapped);
+
+            if (workspaceRow.id && mapped.length > 0) {
+                const { data: plannedRows, error: pErr } = await supabase
+                    .from("planned_open_days")
+                    .select("open_day_id")
+                    .eq("workspace_id", workspaceRow.id)
+                    .in(
+                        "open_day_id",
+                        mapped.map((r) => r.id)
+                    );
+
+                if (!mounted) return;
+                if (pErr) {
+                    setError(pErr.message);
+                    setLoading(false);
+                    return;
+                }
+
+                const plannedList = (plannedRows ?? []) as PlannedOpenDayRow[];
+                setPlannedOpenDayIds(new Set(plannedList.map((p) => p.open_day_id)));
+            } else {
+                setPlannedOpenDayIds(new Set());
+            }
 
             setLoading(false);
         }
@@ -301,6 +428,48 @@ export default function SchoolDetailPage() {
         }
     }
 
+    async function togglePlanned(openDayId: string) {
+        if (!workspace) return;
+        setPlanningId(openDayId);
+        setError("");
+
+        const planned = plannedOpenDayIds.has(openDayId);
+        if (planned) {
+            const { error: delErr } = await supabase
+                .from("planned_open_days")
+                .delete()
+                .eq("workspace_id", workspace.id)
+                .eq("open_day_id", openDayId);
+
+            if (delErr) {
+                setError(delErr.message);
+                setPlanningId(null);
+                return;
+            }
+
+            setPlannedOpenDayIds((prev) => {
+                const next = new Set(prev);
+                next.delete(openDayId);
+                return next;
+            });
+            setPlanningId(null);
+            return;
+        }
+
+        const { error: insErr } = await supabase.from("planned_open_days").insert({
+            workspace_id: workspace.id,
+            open_day_id: openDayId,
+            planned_at: new Date().toISOString(),
+        });
+
+        if (insErr) {
+            setError(insErr.message);
+        } else {
+            setPlannedOpenDayIds((prev) => new Set(prev).add(openDayId));
+        }
+        setPlanningId(null);
+    }
+
     if (loading) {
         return (
             <main className="min-h-screen flex items-center justify-center p-6">
@@ -334,6 +503,71 @@ export default function SchoolDetailPage() {
                 )}
 
                 <hr />
+
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold">Open days</h2>
+                        <div className="text-xs text-muted-foreground">
+                            Verify details on the school website.
+                        </div>
+                    </div>
+
+                    {openDays.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">No open days available yet.</div>
+                    ) : (
+                        <ul className="divide-y rounded-lg border">
+                            {openDays.map((r) => {
+                                const label = eventTypeLabel(r.event_type);
+                                const location = stripAnyUrlLabel(r.location_text);
+                                const planned = plannedOpenDayIds.has(r.id);
+                                const dateLabel = r.starts_at ? fmtDate(r.starts_at) : "Unknown date";
+                                return (
+                                    <li key={r.id} className="p-3">
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                            <div className="min-w-0 space-y-1">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <div className="font-medium">{dateLabel}</div>
+                                                    {label && <span className={pillClass()}>{label}</span>}
+                                                    {planned && <span className={pillClass()}>Planned</span>}
+                                                </div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    {r.starts_at ? fmtTime(r.starts_at) : "—"}
+                                                    {r.ends_at ? `–${fmtTime(r.ends_at)}` : ""}
+                                                    {location ? ` • ${location}` : ""}
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 sm:shrink-0 sm:justify-end">
+                                                <button
+                                                    className={actionClass()}
+                                                    type="button"
+                                                    onClick={() => togglePlanned(r.id)}
+                                                    disabled={planningId === r.id}
+                                                    title="Mark as planned"
+                                                >
+                                                    {planningId === r.id
+                                                        ? "Saving..."
+                                                        : planned
+                                                        ? "Planned"
+                                                        : "Plan"}
+                                                </button>
+                                                {r.info_url && (
+                                                    <a
+                                                        className={actionClass()}
+                                                        href={r.info_url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                    >
+                                                        Source
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </div>
 
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">

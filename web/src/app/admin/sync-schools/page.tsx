@@ -49,7 +49,8 @@ export default function AdminSyncSchoolsPage() {
     setResult(null);
 
     const { data: sess } = await supabase.auth.getSession();
-    if (!sess.session) {
+    const accessToken = sess.session?.access_token ?? "";
+    if (!accessToken) {
       setError("Not signed in.");
       setRunning(false);
       return;
@@ -62,6 +63,7 @@ export default function AdminSyncSchoolsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
           "x-admin-token": token,
         },
         body: JSON.stringify({ schoolYearLabel }),

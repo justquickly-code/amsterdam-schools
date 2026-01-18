@@ -10,17 +10,19 @@
   - default filtered by advies
   - search + basic filters
   - shows bike time/distance when home location is set
+  - highlight schools missing a planned open day
 
 - /schools/[id] (School detail)
   - school info + website link
   - open days list (with warning + last synced)
+  - planned toggle per open day
   - visit notes + 1–5 star rating
   - add/remove from Top 12
 
 - /planner (Open Days)
   - chronological list
   - filters: event type, date range, shortlist-only
-  - (next) planned status + “export planned as ICS”
+  - planned status toggle
 
 - /shortlist (Top 12)
   - add/remove

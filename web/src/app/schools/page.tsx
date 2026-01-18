@@ -51,6 +51,16 @@ type ShortlistItemRow = {
     school_id: string;
 };
 
+type OpenDayRow = {
+    school_id: string | null;
+    school_year_label: string | null;
+    is_active?: boolean;
+};
+
+type PlannedOpenDayRow = {
+    open_day?: { school_id: string | null; school_year_label: string | null }[] | { school_id: string | null; school_year_label: string | null } | null;
+};
+
 type School = {
     id: string;
     name: string;
@@ -65,6 +75,8 @@ type School = {
         attended: boolean;
         rating_stars: number | null;
     }> | null;
+    has_open_day?: boolean;
+    has_planned_open_day?: boolean;
 };
 
 type SortMode = "name" | "bike";
@@ -140,6 +152,8 @@ export default function SchoolsPage() {
 
             // Fetch commute cache for this workspace (if available)
             const commuteMap = new Map<string, { duration_minutes: number | null; distance_km: number }>();
+            let openDaySchoolIds = new Set<string>();
+            let plannedSchoolIds = new Set<string>();
 
             if (workspaceRow?.id) {
                 const { data: commutes } = await supabase
@@ -155,6 +169,65 @@ export default function SchoolsPage() {
                         distance_km: Number(c.distance_km),
                     });
                 }
+
+                const { data: openDays, error: oErr } = await supabase
+                    .from("open_days")
+                    .select("school_id,school_year_label,is_active");
+
+                if (!mounted) return;
+                if (oErr) {
+                    setError(oErr.message);
+                    setLoading(false);
+                    return;
+                }
+
+                const openDayRows = (openDays ?? []) as OpenDayRow[];
+                let latestYearLabel: string | null = null;
+                let latestYear = 0;
+                for (const row of openDayRows) {
+                    const label = row.school_year_label ?? "";
+                    const year = Number.parseInt(label.split("/")[0] ?? "0", 10);
+                    if (year > latestYear) {
+                        latestYear = year;
+                        latestYearLabel = label;
+                    }
+                }
+
+                if (latestYearLabel) {
+                    openDaySchoolIds = new Set(
+                        openDayRows
+                            .filter((row) => row.is_active !== false)
+                            .filter((row) => row.school_year_label === latestYearLabel)
+                            .map((row) => row.school_id ?? "")
+                            .filter(Boolean)
+                    );
+                }
+
+                const { data: plannedRows, error: pErr } = await supabase
+                    .from("planned_open_days")
+                    .select("open_day:open_days(school_id,school_year_label)")
+                    .eq("workspace_id", workspaceRow.id);
+
+                if (!mounted) return;
+                if (pErr) {
+                    setError(pErr.message);
+                    setLoading(false);
+                    return;
+                }
+
+                const plannedList = (plannedRows ?? []) as PlannedOpenDayRow[];
+                plannedSchoolIds = new Set(
+                    plannedList
+                        .map((row) => {
+                            const val = row.open_day ?? null;
+                            if (Array.isArray(val)) return val[0] ?? null;
+                            return val;
+                        })
+                        .filter(Boolean)
+                        .filter((row) => row?.school_year_label === latestYearLabel)
+                        .map((row) => row?.school_id ?? "")
+                        .filter(Boolean)
+                );
             }
 
             const workspaceId = (workspaceRow as WorkspaceRow).id;
@@ -162,6 +235,8 @@ export default function SchoolsPage() {
                 ...s,
                 commute: commuteMap.get(s.id) ?? null,
                 visits: s.visits?.filter((v) => v.workspace_id === workspaceId) ?? s.visits ?? null,
+                has_open_day: openDaySchoolIds.has(s.id),
+                has_planned_open_day: plannedSchoolIds.has(s.id),
             }));
 
             setSchools(merged);
@@ -370,6 +445,12 @@ export default function SchoolsPage() {
                                                         attended
                                                     </span>
                                                 ) : null}
+                                            </div>
+                                        )}
+
+                                        {s.has_open_day && !s.has_planned_open_day && (
+                                            <div className="text-xs text-amber-700">
+                                                No planned open day yet
                                             </div>
                                         )}
 

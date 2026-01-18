@@ -55,7 +55,6 @@ Top 5 risks if we proceed without fixes
 | CL-062 | P1 | UX | OPEN | Workspace member sharing | Invite/add members to share a workspace. |
 | CL-063 | P1 | UX | OPEN | Dashboard content + setup nudges | Dashboard needs real content and setup prompts. |
 | CL-064 | P1 | UX | DONE | First-run setup gating | Require home + advies setup early in flow. |
-| CL-065 | P1 | UX/Data | OPEN | Planned open days (workspace-specific) | Store planned/attended per workspace via join table. |
 | CL-032 | P2 | Security | DONE | Admin allowlist/is_admin check | Require admin session + allowlist in admin routes. |
 
 ---
@@ -71,6 +70,7 @@ Top 5 risks if we proceed without fixes
 | CL-036 | P0 | Security/Ops | DONE | Commute compute workspace scoping | User-scoped workspace lookup before service role writes. |
 | CL-037 | P0 | Security/Ops | DONE | Remove “first workspace” selection risk | No limit(1) w/ service role for workspace selection. |
 | CL-050 | P1 | UX/Data | DONE | Open days show active by default | Public page shows active; inactive retained for ops/debug. |
+| CL-065 | P1 | UX/Data | DONE | Planned open days (workspace-specific) | Planned join table + toggles in Open Days + School detail; highlight missing planned. |
 | CL-101 | P1 | UX | DONE | Mobile bottom nav | Navigation decision locked. |
 | CL-104 | P1 | UX | DONE | Language setting NL default + EN optional | Decision locked. |
 | CL-107 | P1 | UX | DONE | One list + Top 12 subset view | Decision locked. |

@@ -50,6 +50,10 @@ type ShortlistItemRow = {
   school_id: string;
 };
 
+type PlannedOpenDayRow = {
+  open_day_id: string;
+};
+
 function stripTrailingUrlLabel(s: string) {
   return (s ?? "").replace(/\s*\(https?:\/\/[^)]+\)\s*$/i, "").trim();
 }
@@ -123,6 +127,8 @@ export default function OpenDaysPage() {
   const [showInactive, setShowInactive] = useState(false);
 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [planningId, setPlanningId] = useState<string | null>(null);
+  const [plannedIds, setPlannedIds] = useState<Set<string>>(new Set());
   const autoComputeDone = useRef(false);
 
   useEffect(() => {
@@ -157,6 +163,27 @@ export default function OpenDaysPage() {
       const wsRow = (ws ?? null) as WorkspaceRow | null;
       setWorkspace(wsRow);
       setWorkspaceId(wsRow?.id ?? null);
+
+      // Planned open days
+      if (wsRow?.id) {
+        const { data: planned, error: pErr } = await supabase
+          .from("planned_open_days")
+          .select("open_day_id")
+          .eq("workspace_id", wsRow.id);
+
+        if (!mounted) return;
+
+        if (pErr) {
+          setError(pErr.message);
+          setLoading(false);
+          return;
+        }
+
+        const plannedRows = (planned ?? []) as PlannedOpenDayRow[];
+        setPlannedIds(new Set(plannedRows.map((p) => p.open_day_id)));
+      } else {
+        setPlannedIds(new Set());
+      }
 
       // Shortlist ids
       const workspaceRow = wsRow;
@@ -289,6 +316,49 @@ export default function OpenDaysPage() {
     } finally {
       setDownloadingId(null);
     }
+  }
+
+  async function togglePlanned(openDayId: string) {
+    if (!workspaceId) return;
+    setPlanningId(openDayId);
+    setError("");
+
+    const isPlanned = plannedIds.has(openDayId);
+    if (isPlanned) {
+      const { error: delErr } = await supabase
+        .from("planned_open_days")
+        .delete()
+        .eq("workspace_id", workspaceId)
+        .eq("open_day_id", openDayId);
+
+      if (delErr) {
+        setError(delErr.message);
+        setPlanningId(null);
+        return;
+      }
+
+      setPlannedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(openDayId);
+        return next;
+      });
+      setPlanningId(null);
+      return;
+    }
+
+    const { error: insErr } = await supabase.from("planned_open_days").insert({
+      workspace_id: workspaceId,
+      open_day_id: openDayId,
+      planned_at: new Date().toISOString(),
+    });
+
+    if (insErr) {
+      setError(insErr.message);
+    } else {
+      setPlannedIds((prev) => new Set(prev).add(openDayId));
+    }
+
+    setPlanningId(null);
   }
 
   useEffect(() => {
@@ -502,6 +572,7 @@ export default function OpenDaysPage() {
                     const label = eventTypeLabel(r.event_type);
                     const displayName = r.school?.name ?? stripTrailingUrlLabel(r.school_name);
                     const location = stripAnyUrlLabel(r.location_text);
+                    const planned = plannedIds.has(r.id);
                     return (
                       <li key={r.id} className="p-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -510,6 +581,8 @@ export default function OpenDaysPage() {
                               <div className="font-medium truncate">{displayName}</div>
 
                               {label && <span className={pillClass()}>{label}</span>}
+
+                              {planned && <span className={pillClass()}>Planned</span>}
 
                               {r.is_active === false && <span className={pillClass()}>Verify</span>}
 
@@ -534,6 +607,16 @@ export default function OpenDaysPage() {
                                 Notes
                               </Link>
                             )}
+
+                            <button
+                              className={actionClass()}
+                              type="button"
+                              onClick={() => togglePlanned(r.id)}
+                              disabled={planningId === r.id}
+                              title="Mark as planned"
+                            >
+                              {planningId === r.id ? "Saving..." : planned ? "Planned" : "Plan"}
+                            </button>
 
                             <button
                               className={actionClass()}
