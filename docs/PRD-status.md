@@ -13,15 +13,15 @@ Source of truth:
 ## Core requirements
 | Requirement | Status | Notes |
 |---|---|---|
-| Accounts + Workspace model | 🟡 | Works for single workspace, but membership-sharing needs implementation (CL-062). |
+| Accounts + Workspace model | ✅ | Workspace sharing + invite/join flow implemented (CL-062). |
 | Home address (postcode + house number) | ✅ | Settings exists; used for commute compute. |
 | Cycling time + distance (bike) | ✅ | Cached compute exists; user-safe on-demand compute implemented. |
 | Advies filtering + Either/Both toggle | ✅ | Implemented per acceptance criteria. |
 | Open days best-effort with “verify” + last synced | ✅ | Implemented warning + ICS; year/event_type handling completed. User-facing wording should say “Open Days”. |
-| Save visit notes + 1–5 rating | ✅ | Visits + rating implemented. |
+| Save visit notes + 1–5 rating | ✅ | Visits + rating implemented; notes are per member. |
 | Top 12 subset view + ranked order | ✅ | Ranking implemented. |
-| Planned open days | 🟡 | Open days page exists; “planned” status still to implement (CL-065). |
-| Dashboard landing | 🟡 | Route exists in spec; implement real dashboard content + setup nudges (CL-063/064). |
+| Planned open days | ✅ | Workspace-specific planned toggle implemented (CL-065). |
+| Dashboard landing | ✅ | Dashboard content + setup nudges implemented (CL-063/064). |
 
 ## UX/navigation decisions (locked)
 - Mobile bottom nav (CL-101)

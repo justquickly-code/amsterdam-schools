@@ -46,14 +46,19 @@ Read `AGENTS.md` and `docs/00_PROJECT_BRIEF.md`, then confirm the next step from
 Note: `next build` may fail in constrained environments due to Turbopack port binding. If so, report it and continue.
 
 ## Current State Summary
-- Phases 0–3 complete.
-- Phase 4 added to `docs/RELEASE_PLAN.md`.
-- Current work should proceed from Phase 4.
+- Phases 0–3 complete; Phase 4 items are implemented through 4.5.
+- Setup gate + dashboard content live; setup required for child name + address + advies.
+- Planned open days: workspace-specific planned toggle, with missing-planned highlight on schools.
+- Workspace sharing: invite link joins workspace directly; members list in Settings (owners only).
+- Visit notes are per member; shared rating/attended remain.
+- Admin hub exists; admin routes require allowlist + token; admin menu only for allowlisted users.
+- Language toggle is in the top-right menu; Dutch default, English optional, live updates without refresh.
+- Shortlist export lives at `/shortlist/print`; print/export moved to top menu.
+- Commute compute is user-safe, scoped to workspace, and Settings can batch compute all schools.
 
-## Open Items (Phase 4)
-- 4.3 Planned open days (workspace join + UI)
-- 4.4 Workspace member sharing
-- 4.5 Language setting (NL default + EN)
+## Open Items
+- Confirm docs align with latest UI copy/flow after changes.
+- Optional: decide whether open days list should be filtered by shortlist by default.
 
 ## UX Decisions to Keep
 - Bottom nav always visible (main screens)
