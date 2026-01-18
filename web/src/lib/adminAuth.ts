@@ -6,13 +6,9 @@ type AdminCheckOptions = {
   requireTokenInDev?: boolean;
 };
 
-export async function requireAdminSession(
-  req: Request,
-  options: AdminCheckOptions = {}
-): Promise<AdminCheckResult> {
-  const adminToken = req.headers.get("x-admin-token") ?? "";
-  const expected = process.env.ADMIN_SYNC_TOKEN ?? "";
+type AdminUserResult = { ok: true } | { ok: false; error: string; status: number };
 
+async function getAdminUser(req: Request): Promise<AdminUserResult & { userEmail?: string }> {
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
     return { ok: false, error: "Missing Authorization", status: 401 };
@@ -51,6 +47,25 @@ export async function requireAdminSession(
   if (!userEmail || !adminList.includes(userEmail)) {
     return { ok: false, error: "Forbidden", status: 403 };
   }
+
+  return { ok: true, userEmail };
+}
+
+export async function requireAdminUser(req: Request): Promise<AdminUserResult> {
+  const base = await getAdminUser(req);
+  if (!base.ok) return base;
+  return { ok: true };
+}
+
+export async function requireAdminSession(
+  req: Request,
+  options: AdminCheckOptions = {}
+): Promise<AdminCheckResult> {
+  const adminToken = req.headers.get("x-admin-token") ?? "";
+  const expected = process.env.ADMIN_SYNC_TOKEN ?? "";
+
+  const base = await getAdminUser(req);
+  if (!base.ok) return base;
 
   if (process.env.NODE_ENV === "production" || options.requireTokenInDev) {
     if (!expected || adminToken !== expected) {

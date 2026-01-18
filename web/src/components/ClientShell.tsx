@@ -7,7 +7,7 @@ import TopMenu from "@/components/TopMenu";
 
 const HIDE_NAV_PREFIXES = ["/login", "/auth", "/admin"];
 const BYPASS_SETUP_PREFIXES = ["/login", "/auth", "/admin", "/settings", "/setup"];
-const HIDE_MENU_PREFIXES = ["/login", "/auth", "/admin", "/setup"];
+const HIDE_MENU_PREFIXES = ["/login", "/auth", "/setup"];
 
 function shouldHideNav(pathname: string) {
   if (pathname.startsWith("/shortlist/print")) return true;

@@ -7,12 +7,33 @@ import { supabase } from "@/lib/supabaseClient";
 export default function TopMenu() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setEmail(data.session?.user?.email ?? null);
+      setIsAdmin(false);
     });
+
+    (async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      const accessToken = sess.session?.access_token ?? "";
+      if (!accessToken) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const res = await fetch("/api/admin/check", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) {
+        setIsAdmin(false);
+        return;
+      }
+      const json = await res.json().catch(() => null);
+      setIsAdmin(Boolean(json?.ok));
+    })().catch(() => setIsAdmin(false));
   }, []);
 
   useEffect(() => {
@@ -61,6 +82,15 @@ export default function TopMenu() {
             >
               Print / Export
             </Link>
+            {isAdmin && (
+              <Link
+                className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+                href="/admin"
+                onClick={() => setOpen(false)}
+              >
+                Admin
+              </Link>
+            )}
             <button
               className="block w-full rounded px-2 py-2 text-left text-sm hover:bg-muted/40"
               type="button"
