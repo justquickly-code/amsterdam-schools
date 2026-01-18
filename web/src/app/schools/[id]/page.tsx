@@ -694,7 +694,7 @@ export default function SchoolDetailPage() {
                                 checked={attended}
                                 onChange={(e) => setAttended(e.target.checked)}
                             />
-                            <span>Attended open day</span>
+                            <span>Visited</span>
                         </label>
 
                         <StarRating value={rating} onChange={setRating} />

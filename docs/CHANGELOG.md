@@ -1,6 +1,13 @@
 # Changelog
 
 ## Unreleased
+- Login: add language toggle (NL/EN).
+- Shortlist: move rank controls to header to reduce card height.
+- Shortlist: show rating stars and bike distance for each school.
+- Open Days: remove "show inactive" toggle from public planner.
+- UI: rename attended labels to visited for flexibility beyond open days.
+- Dashboard: switch progress markers to emoji stars for better visibility.
+- Dashboard: add simple progress bar with milestone tips (profile, invite, shortlist, notes, rating, attended).
 - Dashboard: remove redundant shortlist section.
 - Dashboard: shorten upcoming open days label.
 - Schools: shorten bike-sort helper text and only warn when commute times are missing.

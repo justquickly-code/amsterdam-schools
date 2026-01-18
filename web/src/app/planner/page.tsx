@@ -128,7 +128,6 @@ export default function OpenDaysPage() {
 
   const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRangeFilter>("all");
-  const [showInactive, setShowInactive] = useState(false);
 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [planningId, setPlanningId] = useState<string | null>(null);
@@ -238,9 +237,7 @@ export default function OpenDaysPage() {
           "id,school_id,school_name,starts_at,ends_at,location_text,info_url,school_year_label,last_synced_at,event_type,is_active,missing_since,school:schools(id,name)"
         );
 
-      if (!showInactive) {
-        query = query.eq("is_active", true);
-      }
+      query = query.eq("is_active", true);
 
       const { data, error: qErr } = await query.order("starts_at", { ascending: true });
 
@@ -279,7 +276,7 @@ export default function OpenDaysPage() {
     return () => {
       mounted = false;
     };
-  }, [showInactive]);
+  }, []);
 
   async function downloadIcs(openDayId: string) {
     setDownloadingId(openDayId);
@@ -518,14 +515,6 @@ export default function OpenDaysPage() {
                   onChange={(e) => setShortlistOnly(e.target.checked)}
                 />
                 <span className="text-sm">{t(language, "open_days.shortlist_only")}</span>
-              </label>
-              <label className="flex items-center gap-2 select-none">
-                <input
-                  type="checkbox"
-                  checked={showInactive}
-                  onChange={(e) => setShowInactive(e.target.checked)}
-                />
-                <span className="text-sm">{t(language, "open_days.show_inactive")}</span>
               </label>
             </div>
           </div>

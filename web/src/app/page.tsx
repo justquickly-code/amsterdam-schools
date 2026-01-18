@@ -32,6 +32,10 @@ export default function Home() {
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [dashError, setDashError] = useState<string>("");
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [hasFamilyMember, setHasFamilyMember] = useState(false);
+  const [hasNote, setHasNote] = useState(false);
+  const [hasRating, setHasRating] = useState(false);
+  const [hasAttended, setHasAttended] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -73,6 +77,7 @@ export default function Home() {
       const wsRow = (ws ?? null) as WorkspaceRow | null;
       setWorkspace(wsRow);
       setLanguage((wsRow?.language as Language) ?? DEFAULT_LANGUAGE);
+      const workspaceId = wsRow?.id ?? "";
 
       const now = new Date();
       const end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -81,7 +86,7 @@ export default function Home() {
       const { data: shortlist, error: sErr } = await supabase
         .from("shortlists")
         .select("id,workspace_id")
-        .eq("workspace_id", wsRow?.id ?? "")
+        .eq("workspace_id", workspaceId)
         .maybeSingle();
 
       if (!mounted) return;
@@ -111,6 +116,45 @@ export default function Home() {
           .filter(Boolean);
       }
       setShortlistIds(shortlistSchoolIds);
+
+      if (workspaceId) {
+        const [
+          { data: memberRows },
+          { data: noteRows },
+          { data: ratingRows },
+          { data: attendedRows },
+        ] = await Promise.all([
+          supabase
+            .from("workspace_members")
+            .select("user_id")
+            .eq("workspace_id", workspaceId)
+            .limit(2),
+          supabase
+            .from("visit_notes")
+            .select("id")
+            .eq("workspace_id", workspaceId)
+            .limit(1),
+          supabase
+            .from("visits")
+            .select("id")
+            .eq("workspace_id", workspaceId)
+            .not("rating_stars", "is", null)
+            .limit(1),
+          supabase
+            .from("visits")
+            .select("id")
+            .eq("workspace_id", workspaceId)
+            .eq("attended", true)
+            .limit(1),
+        ]);
+
+        if (!mounted) return;
+
+        setHasFamilyMember((memberRows ?? []).length > 1);
+        setHasNote((noteRows ?? []).length > 0);
+        setHasRating((ratingRows ?? []).length > 0);
+        setHasAttended((attendedRows ?? []).length > 0);
+      }
 
       let query = supabase
         .from("open_days")
@@ -151,6 +195,59 @@ export default function Home() {
     const hasAdvies = (workspace.advies_levels ?? []).length > 0;
     return !hasChild || !hasAddress || !hasAdvies;
   }, [workspace]);
+
+  const progressState = useMemo(() => {
+    const profileDone = !setupNeeded;
+    const milestones = [
+      {
+        key: "profile",
+        done: profileDone,
+        tipKey: "dashboard.tip_profile",
+        href: "/settings",
+        ctaKey: "dashboard.tip_cta_settings",
+      },
+      {
+        key: "invite",
+        done: hasFamilyMember,
+        tipKey: "dashboard.tip_invite",
+        href: "/settings",
+        ctaKey: "dashboard.tip_cta_settings",
+      },
+      {
+        key: "shortlist",
+        done: shortlistIds.length > 0,
+        tipKey: "dashboard.tip_shortlist",
+        href: "/schools",
+        ctaKey: "dashboard.tip_cta_schools",
+      },
+      {
+        key: "note",
+        done: hasNote,
+        tipKey: "dashboard.tip_note",
+        href: "/schools",
+        ctaKey: "dashboard.tip_cta_schools",
+      },
+      {
+        key: "rating",
+        done: hasRating,
+        tipKey: "dashboard.tip_rating",
+        href: "/schools",
+        ctaKey: "dashboard.tip_cta_schools",
+      },
+      {
+        key: "attended",
+        done: hasAttended,
+        tipKey: "dashboard.tip_attended",
+        href: "/planner",
+        ctaKey: "dashboard.tip_cta_open_days",
+      },
+    ];
+    const completed = milestones.filter((m) => m.done).length;
+    const total = milestones.length;
+    const percent = Math.round((completed / total) * 100);
+    const next = milestones.find((m) => !m.done);
+    return { completed, total, percent, next };
+  }, [setupNeeded, hasFamilyMember, shortlistIds, hasNote, hasRating, hasAttended]);
 
   useEffect(() => {
     function onLang(e: Event) {
@@ -204,6 +301,43 @@ export default function Home() {
         </div>
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
+
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="font-medium">{t(language, "dashboard.progress_title")}</div>
+            <div className="text-sm text-muted-foreground">
+              {progressState.percent}% {t(language, "dashboard.progress_complete")}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-lg leading-none">
+              {Array.from({ length: progressState.total }).map((_, idx) => {
+                const filled = idx < progressState.completed;
+                return (
+                  <span key={`milestone-${idx}`} aria-hidden="true">
+                    {filled ? "⭐️" : "⚪️"}
+                  </span>
+                );
+              })}
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-foreground"
+                style={{ width: `${progressState.percent}%` }}
+              />
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {progressState.next
+              ? t(language, progressState.next.tipKey)
+              : t(language, "dashboard.tip_done")}
+          </div>
+          {progressState.next ? (
+            <Link className="text-sm underline" href={progressState.next.href}>
+              {t(language, progressState.next.ctaKey)}
+            </Link>
+          ) : null}
+        </div>
 
         {setupNeeded && (
           <div className="rounded-lg border p-4 space-y-2">

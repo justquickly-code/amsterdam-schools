@@ -2,14 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { DEFAULT_LANGUAGE, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [lastEmail, setLastEmail] = useState<string | null>(null);
-  const language = DEFAULT_LANGUAGE;
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+    const stored = window.localStorage.getItem("schools_language");
+    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("schools_language", language);
+    emitLanguageChanged(language);
+  }, [language]);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState<string>("");
 
@@ -52,10 +62,20 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
-        <h1 className="text-2xl font-semibold">{t(language, "login.title")}</h1>
-        <p className="text-sm text-muted-foreground">{t(language, "login.subtitle")}</p>
+      <main className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">{t(language, "settings.language")}</div>
+            <button
+              className="rounded-full border px-3 py-1 text-xs"
+              type="button"
+              onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
+            >
+              {language === "nl" ? "NL" : "EN"}
+            </button>
+          </div>
+          <h1 className="text-2xl font-semibold">{t(language, "login.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t(language, "login.subtitle")}</p>
 
         {lastEmail && !email && (
           <button className="text-sm underline" onClick={() => setEmail(lastEmail)} type="button">

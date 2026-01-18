@@ -94,7 +94,12 @@ Cursor must treat these files as authoritative:
 
 ---
 
-## 4) Production intent
+## 4) Future ideas (not in scope yet)
+- See `docs/FEATURE_IDEAS.md` for proposed future ideas and open questions.
+
+---
+
+## 5) Production intent
 
 - Public app must not use service role where unnecessary.
 - Admin endpoints are token-gated and server-only (see `docs/OPERATIONS.md` + `docs/SECURITY.md`).
@@ -102,7 +107,7 @@ Cursor must treat these files as authoritative:
 
 ---
 
-## 5) Cursor execution prompt (paste this into Cursor)
+## 6) Cursor execution prompt (paste this into Cursor)
 
 You are working in the amsterdam-schools repo.
 

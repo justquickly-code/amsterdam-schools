@@ -23,12 +23,18 @@ type ShortlistItem = {
   school_id: string;
   rank: number;
   school?: { id: string; name: string } | null;
+  rating_stars?: number | null;
+  commute?: { duration_minutes: number | null; distance_km: number | null } | null;
 };
+
+type VisitRow = { school_id: string; rating_stars: number | null };
+type CommuteRow = { school_id: string; duration_minutes: number | null; distance_km: number | null };
 
 export default function ShortlistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [, setWorkspace] = useState<Workspace | null>(null);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [shortlistId, setShortlistId] = useState<string | null>(null);
   const [items, setItems] = useState<ShortlistItem[]>([]);
   const [saving, setSaving] = useState(false);
@@ -61,6 +67,7 @@ export default function ShortlistPage() {
         return;
       }
       setWorkspace(workspaceRow);
+      setWorkspaceId(workspaceRow.id);
       setLanguage((workspaceRow.language as Language) ?? DEFAULT_LANGUAGE);
 
       // Ensure shortlist exists for workspace
@@ -118,7 +125,41 @@ export default function ShortlistPage() {
         const school = Array.isArray(r.school) ? r.school[0] ?? null : r.school ?? null;
         return { school_id: r.school_id, rank: r.rank, school } as ShortlistItemRow;
       });
-      setItems(normalized);
+      const schoolIds = normalized.map((x) => x.school_id).filter(Boolean);
+
+      let visits: VisitRow[] = [];
+      let commutes: CommuteRow[] = [];
+
+      if (workspaceRow.id && schoolIds.length) {
+        const [{ data: visitRows }, { data: commuteRows }] = await Promise.all([
+          supabase
+            .from("visits")
+            .select("school_id,rating_stars")
+            .eq("workspace_id", workspaceRow.id)
+            .in("school_id", schoolIds),
+          supabase
+            .from("commute_cache")
+            .select("school_id,duration_minutes,distance_km")
+            .eq("workspace_id", workspaceRow.id)
+            .eq("mode", "bike")
+            .in("school_id", schoolIds),
+        ]);
+
+        if (!mounted) return;
+        visits = (visitRows ?? []) as VisitRow[];
+        commutes = (commuteRows ?? []) as CommuteRow[];
+      }
+
+      const visitMap = new Map(visits.map((v) => [v.school_id, v]));
+      const commuteMap = new Map(commutes.map((c) => [c.school_id, c]));
+
+      setItems(
+        normalized.map((item) => ({
+          ...item,
+          rating_stars: visitMap.get(item.school_id)?.rating_stars ?? null,
+          commute: commuteMap.get(item.school_id) ?? null,
+        }))
+      );
       setLoading(false);
     }
 
@@ -292,10 +333,47 @@ export default function ShortlistPage() {
             const it = rankMap.get(rank);
             return (
               <div key={rank} className="rounded-lg border p-3 space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <div className="font-medium">
                     {t(language, "shortlist.rank")} #{rank}
                   </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="rounded-md border px-2 py-1 text-xs"
+                      disabled={saving || !it || rank === 1}
+                      onClick={() => move(rank, rank - 1)}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      className="rounded-md border px-2 py-1 text-xs"
+                      disabled={saving || !it || rank === 12}
+                      onClick={() => move(rank, rank + 1)}
+                    >
+                      ↓
+                    </button>
+                  </div>
+                </div>
+
+                <div className="min-h-10">
+                  {it ? (
+                    <div className="space-y-1">
+                      <div>{it.school?.name ?? it.school_id}</div>
+                      {(it.rating_stars || it.commute?.distance_km != null) && (
+                        <div className="text-xs text-muted-foreground">
+                          {it.rating_stars ? `★ ${it.rating_stars}/5` : ""}
+                          {it.commute?.distance_km != null
+                            ? `${it.rating_stars ? " • " : ""}🚲 ${it.commute.distance_km} km`
+                            : ""}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">{t(language, "shortlist.empty_slot")}</div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end">
                   {it && (
                     <button
                       className="text-xs underline"
@@ -307,30 +385,6 @@ export default function ShortlistPage() {
                   )}
                 </div>
 
-                <div className="min-h-10">
-                  {it ? (
-                    <div>{it.school?.name ?? it.school_id}</div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">{t(language, "shortlist.empty_slot")}</div>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    className="rounded-md border px-2 py-1 text-xs"
-                    disabled={saving || !it || rank === 1}
-                    onClick={() => move(rank, rank - 1)}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    className="rounded-md border px-2 py-1 text-xs"
-                    disabled={saving || !it || rank === 12}
-                    onClick={() => move(rank, rank + 1)}
-                  >
-                    ↓
-                  </button>
-                </div>
               </div>
             );
           })}

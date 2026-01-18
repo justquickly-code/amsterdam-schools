@@ -478,7 +478,7 @@ export default function SchoolsPage() {
                                                 {s.visits?.[0]?.rating_stars ? `★ ${s.visits?.[0]?.rating_stars}/5` : ""}
                                                 {s.visits?.[0]?.attended ? (
                                                     <span className="ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
-                                                        attended
+                                                        visited
                                                     </span>
                                                 ) : null}
                                             </div>

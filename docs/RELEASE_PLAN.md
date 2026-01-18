@@ -2,6 +2,8 @@
 
 This plan turns the audit findings into an execution order with clear “done” checks.
 
+Status update: As of **January 18, 2026**, all items in Phases 0–4 are complete. This file is kept for history and future planning.
+
 Legend:
 - P0 = must fix before public use
 - P1 = completes Acceptance / removes major friction
@@ -10,7 +12,7 @@ Legend:
 
 ---
 
-## Phase 0 — Safety + correctness (P0)
+## Phase 0 — Safety + correctness (P0) ✅ Done
 
 ### 0.1 Fix commute compute workspace scoping (CL-036 / CL-037)
 **Why:** current API can operate on the wrong workspace (service role + `.limit(1)`).
@@ -58,7 +60,7 @@ Legend:
 
 ---
 
-## Phase 1 — Acceptance completeness (P1)
+## Phase 1 — Acceptance completeness (P1) ✅ Done
 
 ### 1.1 Canonical Planner route (CL-018)
 **Work**
@@ -129,7 +131,7 @@ Legend:
 
 ---
 
-## Phase 2 — Improvements (P2)
+## Phase 2 — Improvements (P2) ✅ Done
 
 ### 2.1 Settings validation + postcode normalization (CL-052 / CL-053 / CL-054)
 **Work**
@@ -163,7 +165,7 @@ Legend:
 
 ---
 
-## Phase 3 — Polish (P3)
+## Phase 3 — Polish (P3) ✅ Done
 
 ### 3.1 Compute only missing commutes (CL-038)
 **Work**
@@ -179,7 +181,7 @@ Legend:
 
 ---
 
-## Phase 4 — Remaining MVP commitments (P1/P2)
+## Phase 4 — Remaining MVP commitments (P1/P2) ✅ Done
 
 ### 4.1 Dashboard + bottom nav (CL-063 / CL-101)
 **Work**
