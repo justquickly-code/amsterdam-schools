@@ -24,6 +24,9 @@ Provide a reliable, step-by-step workflow for Codex sessions and keep this repo�
 4) After changes, summarize what changed, run lint/build, and list manual checks.
 5) At the end of each session, update `AGENTS.md` with the latest Current State Summary and Open Items.
 
+## Recommended Session Start Prompt (copy/paste)
+Read `AGENTS.md` and `docs/00_PROJECT_BRIEF.md`, then confirm the next step from `docs/RELEASE_PLAN.md` and proceed only with that step.
+
 ## Project Structure
 - `web/` — Next.js App Router frontend
 - `web/src/app/` — pages and API routes
