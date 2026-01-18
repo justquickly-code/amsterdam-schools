@@ -43,7 +43,7 @@ export default function AdminComputeCommutesPage() {
         return;
       }
 
-      const res = await fetch("/api/admin/guard", {
+      const res = await fetch("/api/admin/check", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (!res.ok) {
