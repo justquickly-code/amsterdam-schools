@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Settings: advies is a single dropdown with combined options (e.g., HAVO/VWO) using "either" matching.
+- Docs: add future feature ideas pack (gamification, data quality, reporting, auth, monetisation).
+- Docs: mark RELEASE_PLAN complete through Phase 4 (Jan 18, 2026).
 - Schools detail: fix hook order error after language toggle changes.
 - Setup: after completion, redirect from welcome screen to Dashboard.
 - Docs: add future idea for gamified dashboard progress (Top 12 + visits + notes).

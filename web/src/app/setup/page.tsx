@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 
 type WorkspaceRow = {
   id: string;
@@ -34,9 +35,7 @@ export default function SetupPage() {
   const [childName, setChildName] = useState("");
   const [homePostcode, setHomePostcode] = useState("");
   const [homeHouseNumber, setHomeHouseNumber] = useState("");
-  const [advies1, setAdvies1] = useState("");
-  const [advies2, setAdvies2] = useState("");
-  const [matchMode, setMatchMode] = useState<"either" | "both">("either");
+  const [adviesOption, setAdviesOption] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -64,9 +63,7 @@ export default function SetupPage() {
       setChildName(ws?.child_name ?? "");
       setHomePostcode(ws?.home_postcode ?? "");
       setHomeHouseNumber(ws?.home_house_number ?? "");
-      setAdvies1(ws?.advies_levels?.[0] ?? "");
-      setAdvies2(ws?.advies_levels?.[1] ?? "");
-      setMatchMode(ws?.advies_match_mode ?? "either");
+      setAdviesOption(adviesOptionFromLevels(ws?.advies_levels ?? []));
 
       setLoading(false);
     }
@@ -119,14 +116,15 @@ export default function SetupPage() {
       setSaving(false);
       return;
     }
-    const levels = [advies1.trim(), advies2.trim()].filter(Boolean);
+    const option = ADVIES_OPTIONS.find((opt) => opt.key === adviesOption);
+    const levels = option?.levels ?? [];
     if (!levels.length) {
       setError("Please choose at least one advies level.");
       setSaving(false);
       return;
     }
 
-    const mode: "either" | "both" = levels.length === 2 ? matchMode : "either";
+    const mode: "either" | "both" = "either";
 
     const { error: upErr } = await supabase
       .from("workspaces")
@@ -282,38 +280,23 @@ export default function SetupPage() {
               </label>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
               <label className="space-y-1">
                 <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
-                <input
+                <select
                   className="w-full rounded-md border px-3 py-2"
-                  value={advies1}
-                  onChange={(e) => setAdvies1(e.target.value)}
-                  placeholder="havo"
-                />
-              </label>
-
-              <label className="space-y-1">
-                <div className="text-sm font-medium">{t(language, "settings.advies2")}</div>
-                <input
-                  className="w-full rounded-md border px-3 py-2"
-                  value={advies2}
-                  onChange={(e) => setAdvies2(e.target.value)}
-                  placeholder="vwo"
-                />
+                  value={adviesOption}
+                  onChange={(e) => setAdviesOption(e.target.value)}
+                >
+                  <option value="">{t(language, "settings.advies_select")}</option>
+                  {ADVIES_OPTIONS.map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               </label>
             </div>
-
-            {Boolean(advies1.trim()) && Boolean(advies2.trim()) && (
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={matchMode === "both"}
-                  onChange={(e) => setMatchMode(e.target.checked ? "both" : "either")}
-                />
-                <span>{t(language, "settings.both_levels")}</span>
-              </label>
-            )}
 
             <button
               className="w-full rounded-md border px-3 py-2"

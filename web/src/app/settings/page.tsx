@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 
 type Workspace = {
     id: string;
@@ -40,9 +41,7 @@ export default function SettingsPage() {
     const [homePostcode, setHomePostcode] = useState("");
     const [homeHouseNumber, setHomeHouseNumber] = useState("");
     const [childName, setChildName] = useState("");
-    const [advies1, setAdvies1] = useState("");
-    const [advies2, setAdvies2] = useState("");
-    const [matchMode, setMatchMode] = useState<"either" | "both">("either");
+    const [adviesOption, setAdviesOption] = useState("");
     const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
     const [saving, setSaving] = useState(false);
     const [savedMsg, setSavedMsg] = useState("");
@@ -92,9 +91,7 @@ export default function SettingsPage() {
                 setHomeHouseNumber(ws?.home_house_number ?? "");
 
                 const levels = ws?.advies_levels ?? [];
-                setAdvies1(levels?.[0] ?? "");
-                setAdvies2(levels?.[1] ?? "");
-                setMatchMode(ws?.advies_match_mode ?? "either");
+                setAdviesOption(adviesOptionFromLevels(levels));
                 setLanguage((ws?.language as Language) ?? DEFAULT_LANGUAGE);
             }
 
@@ -167,10 +164,14 @@ export default function SettingsPage() {
             return;
         }
 
-        const levels = [advies1.trim(), advies2.trim()].filter(Boolean);
-
-        // If only one advies level, force match_mode to either.
-        const mode: "either" | "both" = levels.length === 2 ? matchMode : "either";
+        const option = ADVIES_OPTIONS.find((opt) => opt.key === adviesOption);
+        const levels = option?.levels ?? [];
+        if (!levels.length) {
+            setError("Please choose at least one advies level.");
+            setSaving(false);
+            return;
+        }
+        const mode: "either" | "both" = "either";
 
         setHomePostcode(postcode);
 
@@ -400,41 +401,24 @@ export default function SettingsPage() {
                                 </label>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-2">
                                 <label className="space-y-1">
                                     <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
-                                    <input
+                                    <select
                                         className="w-full rounded-md border px-3 py-2"
-                                        value={advies1}
-                                        onChange={(e) => setAdvies1(e.target.value)}
-                                        placeholder="havo"
+                                        value={adviesOption}
+                                        onChange={(e) => setAdviesOption(e.target.value)}
                                         disabled={!isOwner}
-                                    />
-                                </label>
-
-                                <label className="space-y-1">
-                                    <div className="text-sm font-medium">{t(language, "settings.advies2")}</div>
-                                    <input
-                                        className="w-full rounded-md border px-3 py-2"
-                                        value={advies2}
-                                        onChange={(e) => setAdvies2(e.target.value)}
-                                        placeholder="vwo"
-                                        disabled={!isOwner}
-                                    />
+                                    >
+                                        <option value="">{t(language, "settings.advies_select")}</option>
+                                        {ADVIES_OPTIONS.map((opt) => (
+                                            <option key={opt.key} value={opt.key}>
+                                                {opt.label}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </label>
                             </div>
-
-                            {Boolean(advies1.trim()) && Boolean(advies2.trim()) && (
-                                <label className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={matchMode === "both"}
-                                        onChange={(e) => setMatchMode(e.target.checked ? "both" : "either")}
-                                        disabled={!isOwner}
-                                    />
-                                    <span>{t(language, "settings.both_levels")}</span>
-                                </label>
-                            )}
 
                             <div className="flex items-center gap-3">
                                 <button
