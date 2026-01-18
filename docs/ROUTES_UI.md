@@ -35,6 +35,7 @@
   - home location: postcode + house number
   - advies: single or combined + match mode either/both
   - workspace members (invite/add)
+  - language (Dutch default, English optional)
 
 ## UI states (every page)
 - Loading

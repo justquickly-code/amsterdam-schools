@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
 type OpenDay = {
   id: string;
@@ -41,6 +42,7 @@ type WorkspaceRow = {
   id: string;
   home_postcode?: string | null;
   home_house_number?: string | null;
+  language?: Language | null;
 };
 
 type ShortlistRow = {
@@ -64,9 +66,9 @@ function stripAnyUrlLabel(s: string | null) {
   return s.replace(/\s*\(https?:\/\/[^)]+\)\s*/gi, " ").replace(/\s+/g, " ").trim();
 }
 
-function fmtDate(iso: string) {
+function fmtDate(iso: string, locale: string) {
   const d = new Date(iso);
-  return d.toLocaleDateString("nl-NL", {
+  return d.toLocaleDateString(locale, {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -74,9 +76,9 @@ function fmtDate(iso: string) {
   });
 }
 
-function fmtTime(iso: string) {
+function fmtTime(iso: string, locale: string) {
   const d = new Date(iso);
-  return d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
 }
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -119,6 +121,7 @@ export default function OpenDaysPage() {
 
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
   const [shortlistOnly, setShortlistOnly] = useState(false);
   const [shortlistSchoolIds, setShortlistSchoolIds] = useState<string[]>([]);
@@ -148,7 +151,7 @@ export default function OpenDaysPage() {
 
       // Workspace (MVP assumes 1 per user)
       const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-        "id,home_postcode,home_house_number"
+        "id,home_postcode,home_house_number,language"
       );
 
       if (!mounted) return;
@@ -162,6 +165,7 @@ export default function OpenDaysPage() {
       const wsRow = (ws ?? null) as WorkspaceRow | null;
       setWorkspace(wsRow);
       setWorkspaceId(wsRow?.id ?? null);
+      setLanguage((wsRow?.language as Language) ?? DEFAULT_LANGUAGE);
 
       // Planned open days
       if (wsRow?.id) {
@@ -366,6 +370,15 @@ export default function OpenDaysPage() {
     autoComputeDone.current = true;
   }, [loading, workspace]);
 
+  useEffect(() => {
+    function onLang(e: Event) {
+      const next = (e as CustomEvent<Language>).detail;
+      if (next) setLanguage(next);
+    }
+    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
+  }, []);
+
   const yearOptions = useMemo(() => {
     const set = new Set(rows.map((r) => r.school_year_label).filter(Boolean));
     const list = Array.from(set);
@@ -439,25 +452,28 @@ export default function OpenDaysPage() {
   const grouped = useMemo(() => {
     const g = new Map<string, OpenDay[]>();
     for (const r of visibleRows) {
-      const key = r.starts_at ? fmtDate(r.starts_at) : "Unknown date";
+      const locale = getLocale(language);
+      const key = r.starts_at ? fmtDate(r.starts_at, locale) : "Unknown date";
       if (!g.has(key)) g.set(key, []);
       g.get(key)!.push(r);
     }
     return Array.from(g.entries());
-  }, [visibleRows]);
+  }, [visibleRows, language]);
 
   return (
     <main className="min-h-screen p-6 flex items-start justify-center">
       <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Open days</h1>
+          <h1 className="text-2xl font-semibold">{t(language, "open_days.title")}</h1>
         </div>
 
         <div className="rounded-lg border p-4 text-sm space-y-3">
           <div>
-            <div className="font-medium">Important</div>
+            <div className="font-medium">
+              {t(language, "open_days.important")}
+            </div>
             <div className="text-muted-foreground">
-              Open day details can change. Always verify on the school’s website before you go.
+              {t(language, "open_days.important_body")}
             </div>
           </div>
 
@@ -466,7 +482,13 @@ export default function OpenDaysPage() {
               {year ? (
                 <>
                   Data: <span className="font-medium">{year}</span>
-                  {syncedAt ? <> • Synced {new Date(syncedAt).toLocaleString("nl-NL")}</> : null}
+                  {syncedAt ? (
+                    <>
+                      {" "}
+                      • Synced{" "}
+                      {new Date(syncedAt).toLocaleString(getLocale(language))}
+                    </>
+                  ) : null}
                 </>
               ) : null}
               {workspaceId ? null : null}
@@ -495,7 +517,7 @@ export default function OpenDaysPage() {
                   checked={shortlistOnly}
                   onChange={(e) => setShortlistOnly(e.target.checked)}
                 />
-                <span className="text-sm">Shortlist only</span>
+                <span className="text-sm">{t(language, "open_days.shortlist_only")}</span>
               </label>
               <label className="flex items-center gap-2 select-none">
                 <input
@@ -503,14 +525,16 @@ export default function OpenDaysPage() {
                   checked={showInactive}
                   onChange={(e) => setShowInactive(e.target.checked)}
                 />
-                <span className="text-sm">Show inactive</span>
+                <span className="text-sm">{t(language, "open_days.show_inactive")}</span>
               </label>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="text-sm">
-              <div className="text-xs text-muted-foreground mb-1">Event type</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t(language, "open_days.event_type")}
+              </div>
               <select
                 className="w-full rounded-md border px-3 py-2 text-sm"
                 value={eventTypeFilter}
@@ -526,15 +550,23 @@ export default function OpenDaysPage() {
             </label>
 
             <label className="text-sm">
-              <div className="text-xs text-muted-foreground mb-1">When</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t(language, "open_days.when")}
+              </div>
               <select
                 className="w-full rounded-md border px-3 py-2 text-sm"
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as DateRangeFilter)}
               >
-                <option value="all">All dates</option>
-                <option value="7">Next 7 days</option>
-                <option value="14">Next 14 days</option>
+                <option value="all">
+                  {t(language, "open_days.all_dates")}
+                </option>
+                <option value="7">
+                  {t(language, "open_days.next7")}
+                </option>
+                <option value="14">
+                  {t(language, "open_days.next14")}
+                </option>
               </select>
             </label>
           </div>
@@ -571,6 +603,7 @@ export default function OpenDaysPage() {
                     const label = eventTypeLabel(r.event_type);
                     const displayName = r.school?.name ?? stripTrailingUrlLabel(r.school_name);
                     const location = stripAnyUrlLabel(r.location_text);
+                    const locale = getLocale(language);
                     const planned = plannedIds.has(r.id);
                     return (
                       <li key={r.id} className="p-3">
@@ -588,8 +621,8 @@ export default function OpenDaysPage() {
                             </div>
 
                             <div className="text-sm text-muted-foreground">
-                              {r.starts_at ? fmtTime(r.starts_at) : "—"}
-                              {r.ends_at ? `–${fmtTime(r.ends_at)}` : ""}
+                              {r.starts_at ? fmtTime(r.starts_at, locale) : "—"}
+                              {r.ends_at ? `–${fmtTime(r.ends_at, locale)}` : ""}
                               {location ? ` • ${location}` : ""}
                             </div>
 

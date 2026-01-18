@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { friendlyLevel } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
 type Workspace = {
     id: string;
@@ -12,6 +13,7 @@ type Workspace = {
     advies_match_mode: "either" | "both";
     home_postcode?: string | null;
     home_house_number?: string | null;
+    language?: Language | null;
 };
 
 type WorkspaceRow = {
@@ -20,6 +22,7 @@ type WorkspaceRow = {
     advies_match_mode: "either" | "both";
     home_postcode?: string | null;
     home_house_number?: string | null;
+    language?: Language | null;
 };
 
 type VisitRow = {
@@ -104,6 +107,7 @@ export default function SchoolsPage() {
     const [error, setError] = useState("");
     const [shortlistMsg, setShortlistMsg] = useState<string>("");
     const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
+    const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
     useEffect(() => {
         let mounted = true;
@@ -120,7 +124,7 @@ export default function SchoolsPage() {
             }
 
             const { workspace, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-                "id,advies_levels,advies_match_mode,home_postcode,home_house_number"
+                "id,advies_levels,advies_match_mode,home_postcode,home_house_number,language"
             );
 
             if (!mounted) return;
@@ -133,6 +137,7 @@ export default function SchoolsPage() {
 
             const workspaceRow = (workspace ?? null) as WorkspaceRow | null;
             setWs(workspaceRow);
+            setLanguage((workspaceRow?.language as Language) ?? DEFAULT_LANGUAGE);
 
             const { data: schoolsData, error: sErr } = await supabase
                 .from("schools")
@@ -246,6 +251,15 @@ export default function SchoolsPage() {
         return () => {
             mounted = false;
         };
+    }, []);
+
+    useEffect(() => {
+        function onLang(e: Event) {
+            const next = (e as CustomEvent<Language>).detail;
+            if (next) setLanguage(next);
+        }
+        window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+        return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
     }, []);
 
     // Commutes are precomputed on Settings save; avoid background refresh here.
@@ -366,7 +380,9 @@ export default function SchoolsPage() {
         <main className="min-h-screen p-6 flex items-start justify-center">
             <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">Schools</h1>
+                    <h1 className="text-2xl font-semibold">
+                        {t(language, "schools.title")}
+                    </h1>
                 </div>
 
                 {loading && <p className="text-sm">Loading…</p>}
@@ -386,14 +402,20 @@ export default function SchoolsPage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <label className="text-sm text-muted-foreground">Sort</label>
+                            <label className="text-sm text-muted-foreground">
+                                {t(language, "schools.sort")}
+                            </label>
                             <select
                                 className="rounded-md border px-2 py-1 text-sm"
                                 value={sortMode}
                                 onChange={(e) => setSortMode(e.target.value as SortMode)}
                             >
-                                <option value="name">Name</option>
-                                <option value="bike">Bike time</option>
+                                <option value="name">
+                                    {t(language, "schools.sort_name")}
+                                </option>
+                                <option value="bike">
+                                    {t(language, "schools.sort_bike")}
+                                </option>
                             </select>
                         {sortMode === "bike" && (
                             <span className="text-xs text-muted-foreground">
@@ -407,7 +429,7 @@ export default function SchoolsPage() {
 
                         <input
                             className="w-full rounded-md border px-3 py-2"
-                            placeholder="Search schools…"
+                            placeholder={t(language, "schools.search")}
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />

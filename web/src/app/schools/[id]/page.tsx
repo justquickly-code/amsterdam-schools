@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT } from "@/lib/i18n";
 
 type Workspace = { id: string };
 
-type WorkspaceRow = { id: string };
+type WorkspaceRow = { id: string; language?: Language | null };
 
 type School = {
     id: string;
@@ -109,9 +110,9 @@ function eventTypeLabel(t: string | null) {
     return EVENT_TYPE_LABELS[normalizeEventType(t)] ?? null;
 }
 
-function fmtDate(iso: string) {
+function fmtDate(iso: string, locale: string) {
     const d = new Date(iso);
-    return d.toLocaleDateString("nl-NL", {
+    return d.toLocaleDateString(locale, {
         weekday: "long",
         year: "numeric",
         month: "long",
@@ -119,9 +120,9 @@ function fmtDate(iso: string) {
     });
 }
 
-function fmtTime(iso: string) {
+function fmtTime(iso: string, locale: string) {
     const d = new Date(iso);
-    return d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
 }
 
 function stripAnyUrlLabel(s: string | null) {
@@ -190,6 +191,7 @@ export default function SchoolDetailPage() {
     const [otherNotes, setOtherNotes] = useState<
         Array<{ user_id: string; email: string; notes: string }>
     >([]);
+    const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
     const [openDays, setOpenDays] = useState<OpenDay[]>([]);
     const [plannedOpenDayIds, setPlannedOpenDayIds] = useState<Set<string>>(new Set());
     const [planningId, setPlanningId] = useState<string | null>(null);
@@ -216,7 +218,9 @@ export default function SchoolDetailPage() {
             }
             setCurrentUserId(session.session.user.id);
 
-            const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id");
+            const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+                "id,language"
+            );
 
             if (!mounted) return;
             const workspaceRow = (ws ?? null) as WorkspaceRow | null;
@@ -226,6 +230,7 @@ export default function SchoolDetailPage() {
                 return;
             }
             setWorkspace(workspaceRow);
+            setLanguage((workspaceRow?.language as Language) ?? DEFAULT_LANGUAGE);
 
             const { data: sch, error: sErr } = await supabase
                 .from("schools")
@@ -579,6 +584,17 @@ export default function SchoolDetailPage() {
         );
     }
 
+    const locale = getLocale(language);
+
+    useEffect(() => {
+        function onLang(e: Event) {
+            const next = (e as CustomEvent<Language>).detail;
+            if (next) setLanguage(next);
+        }
+        window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+        return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    }, []);
+
     return (
         <main className="min-h-screen p-6 flex items-start justify-center">
             <div className="w-full max-w-2xl rounded-xl border p-6 space-y-4">
@@ -621,7 +637,7 @@ export default function SchoolDetailPage() {
                                 const label = eventTypeLabel(r.event_type);
                                 const location = stripAnyUrlLabel(r.location_text);
                                 const planned = plannedOpenDayIds.has(r.id);
-                                const dateLabel = r.starts_at ? fmtDate(r.starts_at) : "Unknown date";
+                                const dateLabel = r.starts_at ? fmtDate(r.starts_at, locale) : "Unknown date";
                                 return (
                                     <li key={r.id} className="p-3">
                                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -632,8 +648,8 @@ export default function SchoolDetailPage() {
                                                     {planned && <span className={pillClass()}>Planned</span>}
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    {r.starts_at ? fmtTime(r.starts_at) : "—"}
-                                                    {r.ends_at ? `–${fmtTime(r.ends_at)}` : ""}
+                                                    {r.starts_at ? fmtTime(r.starts_at, locale) : "—"}
+                                                    {r.ends_at ? `–${fmtTime(r.ends_at, locale)}` : ""}
                                                     {location ? ` • ${location}` : ""}
                                                 </div>
                                             </div>

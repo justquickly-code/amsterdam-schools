@@ -49,3 +49,4 @@
 - Settings: add workspace members list + invite flow (owners only).
 - Members: invite email link now joins workspace directly (no pre-sign-in).
 - Visits: notes are per member; shared rating/attended remain.
+- Settings: add language selection (Dutch default, English optional).

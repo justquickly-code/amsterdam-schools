@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
 type Workspace = { id: string };
 
-type WorkspaceRow = { id: string };
+type WorkspaceRow = { id: string; language?: Language | null };
 
 type ShortlistRow = { id: string; workspace_id: string };
 
@@ -32,6 +33,7 @@ export default function ShortlistPage() {
   const [items, setItems] = useState<ShortlistItem[]>([]);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState("");
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
   useEffect(() => {
     let mounted = true;
@@ -48,7 +50,7 @@ export default function ShortlistPage() {
         return;
       }
 
-      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id");
+      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id,language");
 
       if (!mounted) return;
 
@@ -59,6 +61,7 @@ export default function ShortlistPage() {
         return;
       }
       setWorkspace(workspaceRow);
+      setLanguage((workspaceRow.language as Language) ?? DEFAULT_LANGUAGE);
 
       // Ensure shortlist exists for workspace
       const { data: existing, error: sErr } = await supabase
@@ -126,6 +129,15 @@ export default function ShortlistPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const onLang = (event: Event) => {
+      const next = (event as CustomEvent<Language>).detail;
+      if (next) setLanguage(next);
+    };
+    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
+  }, []);
+
   const rankMap = useMemo(() => {
     const m = new Map<number, ShortlistItem>();
     for (const it of items) m.set(it.rank, it);
@@ -150,7 +162,7 @@ export default function ShortlistPage() {
     if (error) setError(error.message);
     else {
       setItems((prev) => prev.filter((x) => x.rank !== rank));
-      setSavedMsg("Saved.");
+      setSavedMsg(t(language, "shortlist.saved"));
     }
 
     setSaving(false);
@@ -196,7 +208,7 @@ export default function ShortlistPage() {
           .sort((x, y) => x.rank - y.rank)
       );
     
-      setSavedMsg("Saved.");
+      setSavedMsg(t(language, "shortlist.saved"));
       setSaving(false);
       return;
     }
@@ -236,7 +248,7 @@ export default function ShortlistPage() {
           setItems((prev) =>
             prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)).sort((x, y) => x.rank - y.rank)
           );
-          setSavedMsg("Saved.");
+          setSavedMsg(t(language, "shortlist.saved"));
         }
       } else {
         setError(error.message);
@@ -246,7 +258,7 @@ export default function ShortlistPage() {
       setItems((prev) =>
         prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)).sort((x, y) => x.rank - y.rank)
       );
-      setSavedMsg("Saved.");
+      setSavedMsg(t(language, "shortlist.saved"));
     }
 
     setSaving(false);
@@ -264,14 +276,14 @@ export default function ShortlistPage() {
     <main className="min-h-screen p-6 flex items-start justify-center">
       <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Top 12 Shortlist</h1>
+          <h1 className="text-2xl font-semibold">{t(language, "shortlist.title")}</h1>
         </div>
 
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
         {savedMsg && <p className="text-sm text-green-700">{savedMsg}</p>}
 
         <div className="text-sm text-muted-foreground">
-          Exactly these 12 (ranked) are what you’ll submit.
+          {t(language, "shortlist.subtitle")}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -281,14 +293,16 @@ export default function ShortlistPage() {
             return (
               <div key={rank} className="rounded-lg border p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="font-medium">#{rank}</div>
+                  <div className="font-medium">
+                    {t(language, "shortlist.rank")} #{rank}
+                  </div>
                   {it && (
                     <button
                       className="text-xs underline"
                       onClick={() => removeRank(rank)}
                       disabled={saving}
                     >
-                      remove
+                      {t(language, "shortlist.remove")}
                     </button>
                   )}
                 </div>
@@ -297,7 +311,7 @@ export default function ShortlistPage() {
                   {it ? (
                     <div>{it.school?.name ?? it.school_id}</div>
                   ) : (
-                    <div className="text-sm text-muted-foreground">Empty</div>
+                    <div className="text-sm text-muted-foreground">{t(language, "shortlist.empty_slot")}</div>
                   )}
                 </div>
 
@@ -323,7 +337,7 @@ export default function ShortlistPage() {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Next: add “Add to shortlist” from the Schools list / School detail page.
+          {t(language, "shortlist.footer")}
         </p>
       </div>
     </main>

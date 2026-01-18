@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
 type WorkspaceRow = {
   id: string;
@@ -11,6 +12,7 @@ type WorkspaceRow = {
   home_postcode: string | null;
   home_house_number: string | null;
   advies_levels: string[];
+  language?: Language | null;
 };
 
 type OpenDayRow = {
@@ -29,6 +31,7 @@ export default function Home() {
   const [upcoming, setUpcoming] = useState<OpenDayRow[]>([]);
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [dashError, setDashError] = useState<string>("");
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
   useEffect(() => {
     let mounted = true;
@@ -57,7 +60,7 @@ export default function Home() {
       if (!email) return;
 
       const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-        "id,child_name,home_postcode,home_house_number,advies_levels"
+        "id,child_name,home_postcode,home_house_number,advies_levels,language"
       );
 
       if (!mounted) return;
@@ -69,6 +72,7 @@ export default function Home() {
 
       const wsRow = (ws ?? null) as WorkspaceRow | null;
       setWorkspace(wsRow);
+      setLanguage((wsRow?.language as Language) ?? DEFAULT_LANGUAGE);
 
       const now = new Date();
       const end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -148,6 +152,17 @@ export default function Home() {
     return !hasChild || !hasAddress || !hasAdvies;
   }, [workspace]);
 
+  useEffect(() => {
+    function onLang(e: Event) {
+      const next = (e as CustomEvent<Language>).detail;
+      if (next) setLanguage(next);
+    }
+    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
+  }, []);
+
+  const locale = getLocale(language);
+
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">
@@ -162,15 +177,14 @@ export default function Home() {
         <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
           <h1 className="text-2xl font-semibold">Amsterdam Schools</h1>
           <p className="text-sm text-muted-foreground">
-            Sign in with a family member email. The app stays signed in on this device.
+            {t(DEFAULT_LANGUAGE, "dashboard.signin_body")}
           </p>
           <Link className="inline-block rounded-md border px-3 py-2" href="/login">
-            Go to sign in
+            {t(DEFAULT_LANGUAGE, "login.sign_in")}
           </Link>
 
           <div className="pt-2 text-xs text-muted-foreground">
-            Tip: once signed in, you’ll be able to browse schools, save visit notes, build a ranked Top 12,
-            and see open days.
+            {t(DEFAULT_LANGUAGE, "dashboard.tip")}
           </div>
         </div>
       </main>
@@ -181,9 +195,11 @@ export default function Home() {
     <main className="min-h-screen p-6 flex items-start justify-center">
       <div className="w-full max-w-3xl rounded-xl border p-6 space-y-6">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <h1 className="text-2xl font-semibold">{t(language, "dashboard.title")}</h1>
           {workspace?.child_name ? (
-            <p className="text-sm text-muted-foreground">Welcome, {workspace.child_name}</p>
+            <p className="text-sm text-muted-foreground">
+              {t(language, "dashboard.welcome")}, {workspace.child_name}
+            </p>
           ) : null}
         </div>
 
@@ -191,29 +207,28 @@ export default function Home() {
 
         {setupNeeded && (
           <div className="rounded-lg border p-4 space-y-2">
-            <div className="font-medium">Finish setup</div>
+            <div className="font-medium">{t(language, "dashboard.finish_setup")}</div>
             <div className="text-sm text-muted-foreground">
-              Add the child’s name, home address, and advies level to personalize school filters and commute
-              times.
+              {t(language, "dashboard.finish_setup_body")}
             </div>
             <Link className="inline-block rounded-md border px-3 py-2 text-sm" href="/settings">
-              Go to Settings
+              {t(language, "dashboard.finish_setup_cta")}
             </Link>
           </div>
         )}
 
         <div className="rounded-lg border p-4 space-y-2">
           <div className="font-medium">
-            Upcoming open days (next 30 days)
+            {t(language, "dashboard.upcoming")}
             {shortlistIds.length ? " • Shortlist" : ""}
           </div>
           {upcoming.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No upcoming open days found.</div>
+            <div className="text-sm text-muted-foreground">{t(language, "dashboard.no_upcoming")}</div>
           ) : (
             <ul className="space-y-2 text-sm">
               {upcoming.map((r) => {
                 const name = r.school?.[0]?.name ?? r.school_name ?? "School";
-                const date = r.starts_at ? new Date(r.starts_at).toLocaleDateString("nl-NL") : "—";
+                const date = r.starts_at ? new Date(r.starts_at).toLocaleDateString(locale) : "—";
                 return (
                   <li key={r.id} className="flex items-center justify-between gap-3">
                     <span className="truncate">{name}</span>
@@ -225,18 +240,16 @@ export default function Home() {
           )}
           <div className="pt-2">
             <Link className="text-sm underline" href="/planner">
-              View all open days
+              {t(language, "dashboard.view_all")}
             </Link>
           </div>
         </div>
 
         <div className="rounded-lg border p-4 space-y-3">
-          <div className="font-medium">Shortlist</div>
-          <div className="text-sm text-muted-foreground">
-            Keep your ranked Top 12 up to date as you visit schools.
-          </div>
+          <div className="font-medium">{t(language, "dashboard.shortlist_title")}</div>
+          <div className="text-sm text-muted-foreground">{t(language, "dashboard.shortlist_body")}</div>
           <Link className="inline-block rounded-md border px-3 py-2 text-sm" href="/shortlist">
-            Open Top 12
+            {t(language, "dashboard.shortlist_cta")}
           </Link>
         </div>
 

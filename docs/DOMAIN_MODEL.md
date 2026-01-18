@@ -4,6 +4,7 @@
 - User
 - Workspace
   - child_name (optional, MVP: one child per workspace)
+  - language (nl default; en optional)
 - WorkspaceMember (role: owner/editor/viewer)
 
 ## Auth model (MVP)

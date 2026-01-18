@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
 type WorkspaceRow = {
   id: string;
@@ -13,6 +14,7 @@ type WorkspaceRow = {
   home_house_number: string | null;
   advies_levels: string[];
   advies_match_mode: "either" | "both";
+  language?: Language | null;
 };
 
 function normalizePostcode(input: string) {
@@ -27,6 +29,7 @@ export default function SetupPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [role, setRole] = useState<WorkspaceRole | null>(null);
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
   const [childName, setChildName] = useState("");
   const [homePostcode, setHomePostcode] = useState("");
@@ -43,7 +46,7 @@ export default function SetupPage() {
       setError("");
 
       const { workspace: data, role, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-        "id,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode"
+        "id,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode,language"
       );
 
       if (!mounted) return;
@@ -57,6 +60,7 @@ export default function SetupPage() {
       setRole(role ?? null);
       const ws = (data ?? null) as WorkspaceRow | null;
       setWorkspace(ws);
+      setLanguage((ws?.language as Language) ?? DEFAULT_LANGUAGE);
       setChildName(ws?.child_name ?? "");
       setHomePostcode(ws?.home_postcode ?? "");
       setHomeHouseNumber(ws?.home_house_number ?? "");
@@ -71,6 +75,15 @@ export default function SetupPage() {
     return () => {
       mounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const onLang = (event: Event) => {
+      const next = (event as CustomEvent<Language>).detail;
+      if (next) setLanguage(next);
+    };
+    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
 
   async function saveSetup() {
@@ -180,20 +193,18 @@ export default function SetupPage() {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md rounded-xl border p-6 space-y-3 text-sm">
-          <h1 className="text-2xl font-semibold">Setup required</h1>
-          <p className="text-muted-foreground">
-            Only the workspace owner can complete setup. Ask them to finish the profile.
-          </p>
+          <h1 className="text-2xl font-semibold">{t(language, "setup.required_title")}</h1>
+          <p className="text-muted-foreground">{t(language, "setup.required_body")}</p>
           <div className="flex flex-wrap gap-2">
             <Link className="inline-block rounded-md border px-3 py-2" href="/">
-              Back to Dashboard
+              {t(language, "setup.go_dashboard")}
             </Link>
             <button
               className="rounded-md border px-3 py-2 text-sm"
               type="button"
               onClick={handleSignOut}
             >
-              Sign out
+              {t(language, "setup.signout")}
             </button>
           </div>
         </div>
@@ -204,11 +215,9 @@ export default function SetupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
-        <h1 className="text-2xl font-semibold">Welcome</h1>
+        <h1 className="text-2xl font-semibold">{t(language, "setup.title")}</h1>
         {!saved && (
-          <p className="text-sm text-muted-foreground">
-            Let’s set things up for a great school search. It takes about a minute.
-          </p>
+          <p className="text-sm text-muted-foreground">{t(language, "setup.intro")}</p>
         )}
 
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
@@ -216,25 +225,25 @@ export default function SetupPage() {
         {saved ? (
           <div className="space-y-3">
             <div className="text-sm">
-              Thanks, {childName}! You’re all set. Good luck on your school search. 🎉
+              {t(language, "setup.thanks")}, {childName}! 🎉
             </div>
             <div className="flex flex-wrap gap-2">
               <Link className="inline-block rounded-md border px-3 py-2" href="/">
-                Go to Dashboard
+                {t(language, "setup.go_dashboard")}
               </Link>
               <button
                 className="rounded-md border px-3 py-2 text-sm"
                 type="button"
                 onClick={handleSignOut}
               >
-                Sign out
+                {t(language, "setup.signout")}
               </button>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             <label className="block space-y-1">
-              <span className="text-sm font-medium">Child name</span>
+              <span className="text-sm font-medium">{t(language, "settings.child_name")}</span>
               <input
                 className="w-full rounded-md border px-3 py-2"
                 value={childName}
@@ -245,7 +254,7 @@ export default function SetupPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="space-y-1">
-                <div className="text-sm font-medium">Postcode</div>
+                <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
                 <input
                   className="w-full rounded-md border px-3 py-2"
                   value={homePostcode}
@@ -255,7 +264,7 @@ export default function SetupPage() {
               </label>
 
               <label className="space-y-1">
-                <div className="text-sm font-medium">House number</div>
+                <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
                 <input
                   className="w-full rounded-md border px-3 py-2"
                   value={homeHouseNumber}
@@ -267,7 +276,7 @@ export default function SetupPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="space-y-1">
-                <div className="text-sm font-medium">Advies level 1</div>
+                <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
                 <input
                   className="w-full rounded-md border px-3 py-2"
                   value={advies1}
@@ -277,7 +286,7 @@ export default function SetupPage() {
               </label>
 
               <label className="space-y-1">
-                <div className="text-sm font-medium">Advies level 2 (optional)</div>
+                <div className="text-sm font-medium">{t(language, "settings.advies2")}</div>
                 <input
                   className="w-full rounded-md border px-3 py-2"
                   value={advies2}
@@ -294,7 +303,7 @@ export default function SetupPage() {
                   checked={matchMode === "both"}
                   onChange={(e) => setMatchMode(e.target.checked ? "both" : "either")}
                 />
-                <span>Only show schools that offer BOTH levels</span>
+                <span>{t(language, "settings.both_levels")}</span>
               </label>
             )}
 
@@ -303,14 +312,14 @@ export default function SetupPage() {
               onClick={saveSetup}
               disabled={saving}
             >
-              {saving ? "Saving..." : "Finish setup"}
+              {saving ? t(language, "setup.saving") : t(language, "setup.finish")}
             </button>
             <button
               className="w-full rounded-md border px-3 py-2 text-sm"
               type="button"
               onClick={handleSignOut}
             >
-              Sign out
+              {t(language, "setup.signout")}
             </button>
           </div>
         )}

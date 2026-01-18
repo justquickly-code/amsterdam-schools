@@ -1,14 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const items = [
-  { href: "/", label: "Dashboard" },
-  { href: "/schools", label: "Schools" },
-  { href: "/planner", label: "Open Days" },
-  { href: "/shortlist", label: "Shortlist" },
-];
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -17,6 +13,28 @@ function isActive(pathname: string, href: string) {
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+
+  useEffect(() => {
+    (async () => {
+      const { workspace } = await fetchCurrentWorkspace<{ language?: Language | null }>("language");
+      setLanguage((workspace?.language as Language) ?? DEFAULT_LANGUAGE);
+    })().catch(() => null);
+
+    function onLang(e: Event) {
+      const next = (e as CustomEvent<Language>).detail;
+      if (next) setLanguage(next);
+    }
+    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
+  }, []);
+
+  const items = [
+    { href: "/", label: t(language, "nav.dashboard") },
+    { href: "/schools", label: t(language, "nav.schools") },
+    { href: "/planner", label: t(language, "nav.open_days") },
+    { href: "/shortlist", label: t(language, "nav.shortlist") },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">

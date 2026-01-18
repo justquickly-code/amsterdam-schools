@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
 type WorkspaceRow = {
   child_name: string | null;
   home_postcode: string | null;
   home_house_number: string | null;
   advies_levels: string[] | null;
+  language?: Language | null;
 };
 
 export default function SetupGate({
@@ -28,6 +30,7 @@ export default function SetupGate({
   const [gate, setGate] = useState(false);
   const [role, setRole] = useState<WorkspaceRole | null>(null);
   const [redirecting, setRedirecting] = useState(false);
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
   useEffect(() => {
     let mounted = true;
@@ -39,7 +42,7 @@ export default function SetupGate({
       }
 
       const { workspace, role, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-        "child_name,home_postcode,home_house_number,advies_levels"
+        "child_name,home_postcode,home_house_number,advies_levels,language"
       );
 
       if (!mounted) return;
@@ -50,6 +53,7 @@ export default function SetupGate({
       }
 
       setRole(role ?? null);
+      setLanguage((workspace?.language as Language) ?? DEFAULT_LANGUAGE);
       const ws = (workspace ?? null) as WorkspaceRow | null;
       const hasChild = Boolean((ws?.child_name ?? "").trim());
       const hasAddress = Boolean(ws?.home_postcode && ws?.home_house_number);
@@ -63,6 +67,15 @@ export default function SetupGate({
       mounted = false;
     };
   }, [bypass]);
+
+  useEffect(() => {
+    const onLang = (event: Event) => {
+      const next = (event as CustomEvent<Language>).detail;
+      if (next) setLanguage(next);
+    };
+    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
+  }, []);
 
   useEffect(() => {
     if (!gate) return;
@@ -86,9 +99,9 @@ export default function SetupGate({
       return (
         <main className="min-h-screen flex items-center justify-center p-6">
           <div className="w-full max-w-md rounded-xl border p-6 space-y-3 text-sm">
-            <div className="text-base font-semibold">Setup required</div>
+            <div className="text-base font-semibold">{t(language, "setup.required_title")}</div>
             <p className="text-muted-foreground">
-              The workspace owner needs to finish setup before you can use the app.
+              {t(language, "setup.required_body")}
             </p>
           </div>
         </main>

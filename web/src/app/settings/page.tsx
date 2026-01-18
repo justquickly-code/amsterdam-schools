@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
 type Workspace = {
     id: string;
@@ -12,6 +13,7 @@ type Workspace = {
     home_house_number: string | null;
     advies_levels: string[];
     advies_match_mode: "either" | "both";
+    language?: Language | null;
 };
 
 type WorkspaceRow = {
@@ -22,6 +24,7 @@ type WorkspaceRow = {
     home_house_number: string | null;
     advies_levels: string[];
     advies_match_mode: "either" | "both";
+    language?: Language | null;
 };
 
 type WorkspaceMemberRow = {
@@ -40,6 +43,7 @@ export default function SettingsPage() {
     const [advies1, setAdvies1] = useState("");
     const [advies2, setAdvies2] = useState("");
     const [matchMode, setMatchMode] = useState<"either" | "both">("either");
+    const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
     const [saving, setSaving] = useState(false);
     const [savedMsg, setSavedMsg] = useState("");
     const [commuteMsg, setCommuteMsg] = useState("");
@@ -71,7 +75,7 @@ export default function SettingsPage() {
             setCurrentUserId(session.session.user.id);
 
             const { workspace: data, role, error } = await fetchCurrentWorkspace<WorkspaceRow>(
-                "id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode"
+                "id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode,language"
             );
 
             if (!mounted) return;
@@ -91,6 +95,7 @@ export default function SettingsPage() {
                 setAdvies1(levels?.[0] ?? "");
                 setAdvies2(levels?.[1] ?? "");
                 setMatchMode(ws?.advies_match_mode ?? "either");
+                setLanguage((ws?.language as Language) ?? DEFAULT_LANGUAGE);
             }
 
             setRole(role ?? null);
@@ -115,8 +120,15 @@ export default function SettingsPage() {
 
         load();
 
+        function onLang(e: Event) {
+            const next = (e as CustomEvent<Language>).detail;
+            if (next) setLanguage(next);
+        }
+        window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+
         return () => {
             mounted = false;
+            window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
         };
     }, []);
 
@@ -171,6 +183,7 @@ export default function SettingsPage() {
                 ...(addressChanged ? { home_lat: null, home_lng: null } : {}),
                 advies_levels: levels,
                 advies_match_mode: mode,
+                language,
             })
             .eq("id", workspace.id);
 
@@ -182,7 +195,7 @@ export default function SettingsPage() {
             // Reload workspace to reflect saved values
             const { data: refreshed } = await supabase
                 .from("workspaces")
-                .select("id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode")
+                .select("id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode,language")
                 .eq("id", workspace.id)
                 .maybeSingle();
             setWorkspace((refreshed ?? null) as WorkspaceRow | null);
@@ -334,7 +347,7 @@ export default function SettingsPage() {
         <main className="min-h-screen p-6 flex items-start justify-center">
             <div className="w-full max-w-xl rounded-xl border p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">Settings</h1>
+                    <h1 className="text-2xl font-semibold">{t(language, "settings.title")}</h1>
                 </div>
 
                 {loading && <p className="text-sm">Loading…</p>}
@@ -350,11 +363,11 @@ export default function SettingsPage() {
                 {!loading && workspace && (
                     <div className="space-y-6 text-sm">
                         <div className="space-y-4">
-                            <h2 className="text-base font-semibold">Edit settings</h2>
+                            <h2 className="text-base font-semibold">{t(language, "settings.edit")}</h2>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <label className="space-y-1 sm:col-span-2">
-                                    <div className="text-sm font-medium">Child name</div>
+                                    <div className="text-sm font-medium">{t(language, "settings.child_name")}</div>
                                     <input
                                         className="w-full rounded-md border px-3 py-2"
                                         value={childName}
@@ -365,7 +378,7 @@ export default function SettingsPage() {
                                 </label>
 
                                 <label className="space-y-1">
-                                    <div className="text-sm font-medium">Postcode</div>
+                                    <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
                                     <input
                                         className="w-full rounded-md border px-3 py-2"
                                         value={homePostcode}
@@ -376,7 +389,7 @@ export default function SettingsPage() {
                                 </label>
 
                                 <label className="space-y-1">
-                                    <div className="text-sm font-medium">House number</div>
+                                    <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
                                     <input
                                         className="w-full rounded-md border px-3 py-2"
                                         value={homeHouseNumber}
@@ -389,7 +402,7 @@ export default function SettingsPage() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <label className="space-y-1">
-                                    <div className="text-sm font-medium">Advies level 1</div>
+                                    <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
                                     <input
                                         className="w-full rounded-md border px-3 py-2"
                                         value={advies1}
@@ -400,7 +413,7 @@ export default function SettingsPage() {
                                 </label>
 
                                 <label className="space-y-1">
-                                    <div className="text-sm font-medium">Advies level 2 (optional)</div>
+                                    <div className="text-sm font-medium">{t(language, "settings.advies2")}</div>
                                     <input
                                         className="w-full rounded-md border px-3 py-2"
                                         value={advies2}
@@ -419,7 +432,7 @@ export default function SettingsPage() {
                                         onChange={(e) => setMatchMode(e.target.checked ? "both" : "either")}
                                         disabled={!isOwner}
                                     />
-                                    <span>Only show schools that offer BOTH levels</span>
+                                    <span>{t(language, "settings.both_levels")}</span>
                                 </label>
                             )}
 
@@ -429,7 +442,7 @@ export default function SettingsPage() {
                                     onClick={saveSettings}
                                     disabled={saving || !isOwner}
                                 >
-                                    {saving ? "Saving..." : "Save"}
+                                    {saving ? t(language, "settings.saving") : t(language, "settings.save")}
                                 </button>
                                 {savedMsg && <span className="text-green-700">{savedMsg}</span>}
                                 {commuteMsg && <span className="text-muted-foreground">{commuteMsg}</span>}
