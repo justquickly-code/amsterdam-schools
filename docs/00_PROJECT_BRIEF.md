@@ -67,12 +67,14 @@ Cursor must treat these files as authoritative:
 ### 3.1 Navigation
 - Mobile should have a **bottom nav** (always visible).
 - Default landing after login: **Dashboard** (lightweight, high value).
-- Core screens remain simple: Schools, Open days, Shortlist, Settings.
+- Core screens remain simple: Dashboard, Schools, Open days, Shortlist.
+- Settings, Print/Export, Language toggle, and Sign out live in the top-right menu.
+- Admin entry appears in the top-right menu only for allowlisted admin accounts.
 
 ### 3.2 Language
 - App supports **Dutch + English**.
 - Default language: **Dutch**.
-- Language must be a **setting**.
+- Language is toggled from the **top-right menu** (not the Settings form).
 
 ### 3.3 Onboarding requirement (critical)
 - Users must enter **postcode + house number + advice/level** early (setup flow).

@@ -16,7 +16,7 @@
   - school info + website link
   - open days list (with warning + last synced)
   - planned toggle per open day
-  - visit notes + 1–5 star rating
+  - visit notes (per member) + shared 1–5 star rating
   - add/remove from Top 12
 
 - /planner (Open Days)
@@ -30,17 +30,28 @@
   - drag/drop ranking 1–12
   - export/print view
 
+- /shortlist/print (Print export)
+  - printable Top 12
+
 - /settings
   - workspace name
   - home location: postcode + house number
   - advies: single or combined + match mode either/both
   - workspace members (invite/add)
-  - language (Dutch default, English optional)
+
+- /admin (Admin hub, allowlisted only)
+  - entry point to admin sync tools
+  - requires admin allowlist + admin token guard
 
 ## UI states (every page)
 - Loading
 - Empty state (what to do next)
 - Error state (what happened + retry)
+
+## Global UI
+- Bottom nav (Dashboard, Schools, Open Days, Shortlist).
+- Top-right menu: Settings, Print/Export, Language toggle, Sign out.
+- Admin entry appears in top-right menu for allowlisted users.
 
 ## Routing note
 - /planner is the canonical route.
