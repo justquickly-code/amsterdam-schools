@@ -576,16 +576,6 @@ export default function SchoolDetailPage() {
         setPlanningId(null);
     }
 
-    if (loading) {
-        return (
-            <main className="min-h-screen flex items-center justify-center p-6">
-                <p className="text-sm">Loading…</p>
-            </main>
-        );
-    }
-
-    const locale = getLocale(language);
-
     useEffect(() => {
         function onLang(e: Event) {
             const next = (e as CustomEvent<Language>).detail;
@@ -594,6 +584,16 @@ export default function SchoolDetailPage() {
         window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
         return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
     }, []);
+
+    const locale = getLocale(language);
+
+    if (loading) {
+        return (
+            <main className="min-h-screen flex items-center justify-center p-6">
+                <p className="text-sm">Loading…</p>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen p-6 flex items-start justify-center">

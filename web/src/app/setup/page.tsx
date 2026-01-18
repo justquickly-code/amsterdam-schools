@@ -86,6 +86,14 @@ export default function SetupPage() {
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
 
+  useEffect(() => {
+    if (!saved) return;
+    const timer = window.setTimeout(() => {
+      router.replace("/");
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [saved, router]);
+
   async function saveSetup() {
     if (!workspace) return;
 

@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Schools detail: fix hook order error after language toggle changes.
+- Setup: after completion, redirect from welcome screen to Dashboard.
+- Docs: add future idea for gamified dashboard progress (Top 12 + visits + notes).
 - Public /planner: remove/hide “Show inactive” toggle (not intuitive for end users).
 - Admin: keep “Show inactive” capability, move it to an admin-only open-days view (/admin/open-days).
 - Docs: clarified canonical planner route and Top 12 wording; added Doc Audit Report to CHANGELOG_AUDIT.
