@@ -312,16 +312,11 @@ export default function SchoolDetailPage() {
     return (
         <main className="min-h-screen p-6 flex items-start justify-center">
             <div className="w-full max-w-2xl rounded-xl border p-6 space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Link className="text-sm underline" href="/schools" aria-label="Back to Schools">
+                        ← Back
+                    </Link>
                     <h1 className="text-2xl font-semibold">{school?.name ?? "School"}</h1>
-                    <div className="flex gap-3">
-                        <Link className="text-sm underline" href="/schools">
-                            Back to Schools
-                        </Link>
-                        <Link className="text-sm underline" href="/settings">
-                            Settings
-                        </Link>
-                    </div>
                 </div>
 
                 {error && <p className="text-sm text-red-600">Error: {error}</p>}

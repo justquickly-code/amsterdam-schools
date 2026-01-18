@@ -54,7 +54,7 @@ Top 5 risks if we proceed without fixes
 | CL-061 | P3 | UX | DONE | Friendly supported level labels | Map tokens to human text. |
 | CL-062 | P1 | UX | OPEN | Workspace member sharing | Invite/add members to share a workspace. |
 | CL-063 | P1 | UX | OPEN | Dashboard content + setup nudges | Dashboard needs real content and setup prompts. |
-| CL-064 | P1 | UX | OPEN | First-run setup gating | Require home + advies setup early in flow. |
+| CL-064 | P1 | UX | DONE | First-run setup gating | Require home + advies setup early in flow. |
 | CL-065 | P1 | UX/Data | OPEN | Planned open days (workspace-specific) | Store planned/attended per workspace via join table. |
 | CL-032 | P2 | Security | DONE | Admin allowlist/is_admin check | Require admin session + allowlist in admin routes. |
 

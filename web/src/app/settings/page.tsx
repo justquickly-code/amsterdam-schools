@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Workspace = {
     id: string;
     name: string;
+    child_name: string | null;
     home_postcode: string | null;
     home_house_number: string | null;
     advies_levels: string[];
@@ -16,6 +16,7 @@ type Workspace = {
 type WorkspaceRow = {
     id: string;
     name: string;
+    child_name: string | null;
     home_postcode: string | null;
     home_house_number: string | null;
     advies_levels: string[];
@@ -28,6 +29,7 @@ export default function SettingsPage() {
     const [error, setError] = useState<string>("");
     const [homePostcode, setHomePostcode] = useState("");
     const [homeHouseNumber, setHomeHouseNumber] = useState("");
+    const [childName, setChildName] = useState("");
     const [advies1, setAdvies1] = useState("");
     const [advies2, setAdvies2] = useState("");
     const [matchMode, setMatchMode] = useState<"either" | "both">("either");
@@ -56,7 +58,7 @@ export default function SettingsPage() {
             // Default workspace: first workspace (MVP assumes one per user).
             const { data, error } = await supabase
                 .from("workspaces")
-                .select("id,name,home_postcode,home_house_number,advies_levels,advies_match_mode")
+                .select("id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode")
                 .limit(1)
                 .maybeSingle();
 
@@ -69,6 +71,7 @@ export default function SettingsPage() {
                 const ws = (data ?? null) as WorkspaceRow | null;
                 setWorkspace(ws);
 
+                setChildName(ws?.child_name ?? "");
                 setHomePostcode(ws?.home_postcode ?? "");
                 setHomeHouseNumber(ws?.home_house_number ?? "");
 
@@ -95,6 +98,7 @@ export default function SettingsPage() {
         setSavedMsg("");
         setError("");
 
+        const name = childName.trim();
         const postcode = normalizePostcode(homePostcode.trim());
         const house = homeHouseNumber.trim();
         const prevPostcode = normalizePostcode((workspace.home_postcode ?? "").trim());
@@ -102,6 +106,11 @@ export default function SettingsPage() {
         const addressChanged = postcode !== prevPostcode || house !== prevHouse;
 
         // basic validation (MVP)
+        if (!name) {
+            setError("Child name is required.");
+            setSaving(false);
+            return;
+        }
         if (postcode && !/^\d{4}[A-Z]{2}$/.test(postcode)) {
             setError("Postcode must look like 1234AB.");
             setSaving(false);
@@ -123,6 +132,7 @@ export default function SettingsPage() {
         const { error } = await supabase
             .from("workspaces")
             .update({
+                child_name: name,
                 home_postcode: postcode || null,
                 home_house_number: house || null,
                 ...(addressChanged ? { home_lat: null, home_lng: null } : {}),
@@ -139,7 +149,7 @@ export default function SettingsPage() {
             // Reload workspace to reflect saved values
             const { data } = await supabase
                 .from("workspaces")
-                .select("id,name,home_postcode,home_house_number,advies_levels,advies_match_mode")
+                .select("id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode")
                 .eq("id", workspace.id)
                 .maybeSingle();
             setWorkspace((data ?? null) as WorkspaceRow | null);
@@ -222,14 +232,12 @@ export default function SettingsPage() {
         setSaving(false);
     }
 
+
     return (
         <main className="min-h-screen p-6 flex items-start justify-center">
             <div className="w-full max-w-xl rounded-xl border p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Settings</h1>
-                    <Link className="text-sm underline" href="/">
-                        Home
-                    </Link>
                 </div>
 
                 {loading && <p className="text-sm">Loading…</p>}
@@ -244,38 +252,20 @@ export default function SettingsPage() {
 
                 {!loading && workspace && (
                     <div className="space-y-6 text-sm">
-                        <div className="space-y-3">
-                            <div>
-                                <div className="font-medium">Workspace</div>
-                                <div>{workspace.name}</div>
-                            </div>
-
-                            <div>
-                                <div className="font-medium">Home address</div>
-                                <div>
-                                    {workspace.home_postcode ?? "—"} {workspace.home_house_number ?? ""}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="font-medium">Advies</div>
-                                <div>
-                                    {(workspace.advies_levels ?? []).join(" / ") || "—"}{" "}
-                                    {workspace.advies_levels?.length === 2 && (
-                                        <span className="text-xs text-muted-foreground">
-                                            (match: {workspace.advies_match_mode})
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr />
-
                         <div className="space-y-4">
                             <h2 className="text-base font-semibold">Edit settings</h2>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label className="space-y-1 sm:col-span-2">
+                                    <div className="text-sm font-medium">Child name</div>
+                                    <input
+                                        className="w-full rounded-md border px-3 py-2"
+                                        value={childName}
+                                        onChange={(e) => setChildName(e.target.value)}
+                                        placeholder="Sam"
+                                    />
+                                </label>
+
                                 <label className="space-y-1">
                                     <div className="text-sm font-medium">Postcode</div>
                                     <input

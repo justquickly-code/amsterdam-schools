@@ -3,6 +3,7 @@
 ## Core entities
 - User
 - Workspace
+  - child_name (optional, MVP: one child per workspace)
 - WorkspaceMember (role: owner/editor/viewer)
 
 ## Auth model (MVP)

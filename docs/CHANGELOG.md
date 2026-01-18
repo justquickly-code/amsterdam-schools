@@ -35,3 +35,13 @@
 - Docs: added Phase 4 to RELEASE_PLAN for remaining MVP commitments.
 - UI: added bottom nav and dashboard content; dashboard is default landing after login.
 - Dashboard: upcoming open days are filtered to shortlist when available.
+- UX: first-run setup gate blocks main screens until address + advies are set.
+- Setup: added child name field and dedicated setup wizard.
+- Setup: require postcode + house number in setup wizard.
+- Setup: computes bike commutes after finishing setup.
+- Settings: removed redundant summary block above form.
+- UI: bottom nav now 4 items; sign out + account info moved to Settings.
+- UI: removed top-of-page nav links (Home/Schools/Settings) to reduce clutter.
+- UI: added top-right menu with settings, print/export, and sign out.
+- UI: added back link on school detail; adjusted top menu spacing.
+- UI: removed shortlist print link from page (now in top menu).

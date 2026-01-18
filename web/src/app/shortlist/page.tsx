@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Workspace = { id: string };
@@ -269,17 +268,6 @@ export default function ShortlistPage() {
       <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Top 12 Shortlist</h1>
-          <div className="flex gap-3">
-            <Link className="text-sm underline" href="/shortlist/print" target="_blank">
-              Print / Export
-            </Link>
-            <Link className="text-sm underline" href="/schools">
-              Schools
-            </Link>
-            <Link className="text-sm underline" href="/">
-              Home
-            </Link>
-          </div>
         </div>
 
         {error && <p className="text-sm text-red-600">Error: {error}</p>}

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 type WorkspaceRow = {
   id: string;
+  child_name: string | null;
   home_postcode: string | null;
   home_house_number: string | null;
   advies_levels: string[];
@@ -56,7 +57,7 @@ export default function Home() {
 
       const { data: ws, error: wErr } = await supabase
         .from("workspaces")
-        .select("id,home_postcode,home_house_number,advies_levels")
+        .select("id,child_name,home_postcode,home_house_number,advies_levels")
         .limit(1)
         .maybeSingle();
 
@@ -142,14 +143,11 @@ export default function Home() {
 
   const setupNeeded = useMemo(() => {
     if (!workspace) return false;
+    const hasChild = Boolean((workspace.child_name ?? "").trim());
     const hasAddress = Boolean(workspace.home_postcode && workspace.home_house_number);
     const hasAdvies = (workspace.advies_levels ?? []).length > 0;
-    return !hasAddress || !hasAdvies;
+    return !hasChild || !hasAddress || !hasAdvies;
   }, [workspace]);
-
-  async function signOut() {
-    await supabase.auth.signOut();
-  }
 
   if (loading) {
     return (
@@ -185,7 +183,9 @@ export default function Home() {
       <div className="w-full max-w-3xl rounded-xl border p-6 space-y-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Signed in as: {email}</p>
+          {workspace?.child_name ? (
+            <p className="text-sm text-muted-foreground">Welcome, {workspace.child_name}</p>
+          ) : null}
         </div>
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
@@ -194,7 +194,8 @@ export default function Home() {
           <div className="rounded-lg border p-4 space-y-2">
             <div className="font-medium">Finish setup</div>
             <div className="text-sm text-muted-foreground">
-              Add your home address and advies level to personalize school filters and commute times.
+              Add the child’s name, home address, and advies level to personalize school filters and commute
+              times.
             </div>
             <Link className="inline-block rounded-md border px-3 py-2 text-sm" href="/settings">
               Go to Settings
@@ -240,13 +241,8 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t">
-          <button className="text-sm underline" onClick={signOut}>
-            Sign out
-          </button>
-          <div className="text-xs text-muted-foreground">
-            Tip: Open day details can change — always verify on the school website.
-          </div>
+        <div className="pt-2 border-t text-xs text-muted-foreground">
+          Tip: Open day details can change — always verify on the school website.
         </div>
       </div>
     </main>

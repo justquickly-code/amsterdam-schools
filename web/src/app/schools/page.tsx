@@ -293,14 +293,6 @@ export default function SchoolsPage() {
             <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Schools</h1>
-                    <div className="flex gap-3">
-                        <Link className="text-sm underline" href="/settings">
-                            Settings
-                        </Link>
-                        <Link className="text-sm underline" href="/">
-                            Home
-                        </Link>
-                    </div>
                 </div>
 
                 {loading && <p className="text-sm">Loading…</p>}

@@ -8,7 +8,6 @@ const items = [
   { href: "/schools", label: "Schools" },
   { href: "/planner", label: "Open Days" },
   { href: "/shortlist", label: "Shortlist" },
-  { href: "/settings", label: "Settings" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -22,7 +21,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">
       <div className="mx-auto max-w-3xl px-4 py-2">
-        <div className="grid grid-cols-5 gap-2 text-center text-xs">
+        <div className="grid grid-cols-4 gap-2 text-center text-xs">
           {items.map((item) => {
             const active = isActive(pathname, item.href);
             return (

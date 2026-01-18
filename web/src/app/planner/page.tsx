@@ -382,14 +382,6 @@ export default function OpenDaysPage() {
       <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Open days</h1>
-          <div className="flex gap-3">
-            <Link className="text-sm underline" href="/schools">
-              Schools
-            </Link>
-            <Link className="text-sm underline" href="/">
-              Home
-            </Link>
-          </div>
         </div>
 
         <div className="rounded-lg border p-4 text-sm space-y-3">
