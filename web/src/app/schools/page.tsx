@@ -448,7 +448,7 @@ export default function SchoolsPage() {
                                             </div>
                                         )}
 
-                                        {s.has_open_day && !s.has_planned_open_day && (
+                                        {s.has_open_day && !s.has_planned_open_day && !s.visits?.[0]?.attended && (
                                             <div className="text-xs text-amber-700">
                                                 No planned open day yet
                                             </div>
