@@ -35,7 +35,7 @@ export default function LoginPage() {
         email: trimmed,
         options: {
           // After clicking the email link, user returns to the app
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: "http://localhost:3000/auth/callback",
         },
       });
 
