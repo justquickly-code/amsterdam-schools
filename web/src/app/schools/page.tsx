@@ -103,11 +103,20 @@ export default function SchoolsPage() {
     const [ws, setWs] = useState<Workspace | null>(null);
     const [schools, setSchools] = useState<School[]>([]);
     const [query, setQuery] = useState("");
-    const [sortMode, setSortMode] = useState<SortMode>("name");
+    const [sortMode, setSortMode] = useState<SortMode>(() => {
+        if (typeof window === "undefined") return "name";
+        const stored = window.localStorage.getItem("schools_sort_mode");
+        return stored === "name" || stored === "bike" ? stored : "name";
+    });
     const [error, setError] = useState("");
     const [shortlistMsg, setShortlistMsg] = useState<string>("");
     const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
     const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        window.localStorage.setItem("schools_sort_mode", sortMode);
+    }, [sortMode]);
 
     useEffect(() => {
         let mounted = true;
@@ -291,6 +300,11 @@ export default function SchoolsPage() {
         return withCommute.concat(withoutCommute);
     }, [filtered, sortMode]);
 
+    const hasMissingCommutes = useMemo(
+        () => schools.some((s) => s.commute?.duration_minutes == null),
+        [schools]
+    );
+
     async function addSchoolToShortlist(schoolId: string) {
         if (!ws) return;
 
@@ -417,14 +431,15 @@ export default function SchoolsPage() {
                                     {t(language, "schools.sort_bike")}
                                 </option>
                             </select>
-                        {sortMode === "bike" && (
-                            <span className="text-xs text-muted-foreground">
-                                Commute times appear first; unknowns are at the bottom.
-                                {!ws?.home_postcode || !ws?.home_house_number
-                                    ? " Set home address in Settings to compute bike times."
-                                    : null}
-                            </span>
-                        )}
+                            {sortMode === "bike" ? (
+                                <span className="text-xs text-muted-foreground">
+                                    {!ws?.home_postcode || !ws?.home_house_number
+                                        ? "Add home address to see bike times."
+                                        : hasMissingCommutes
+                                        ? "Some schools are missing bike times."
+                                        : null}
+                                </span>
+                            ) : null}
                         </div>
 
                         <input

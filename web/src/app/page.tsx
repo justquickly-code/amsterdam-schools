@@ -245,14 +245,6 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="rounded-lg border p-4 space-y-3">
-          <div className="font-medium">{t(language, "dashboard.shortlist_title")}</div>
-          <div className="text-sm text-muted-foreground">{t(language, "dashboard.shortlist_body")}</div>
-          <Link className="inline-block rounded-md border px-3 py-2 text-sm" href="/shortlist">
-            {t(language, "dashboard.shortlist_cta")}
-          </Link>
-        </div>
-
         <div className="pt-2 border-t text-xs text-muted-foreground">
           Tip: Open day details can change — always verify on the school website.
         </div>

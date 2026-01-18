@@ -49,7 +49,7 @@ export default function SettingsPage() {
     const [members, setMembers] = useState<WorkspaceMemberRow[]>([]);
     const [currentUserId, setCurrentUserId] = useState<string>("");
     const [inviteEmail, setInviteEmail] = useState("");
-    const [inviteRole, setInviteRole] = useState<"editor" | "viewer">("editor");
+    const [inviteRole] = useState<"editor">("editor");
     const [inviteMsg, setInviteMsg] = useState("");
     const [inviteBusy, setInviteBusy] = useState(false);
     const [role, setRole] = useState<WorkspaceRole | null>(null);
@@ -470,14 +470,9 @@ export default function SettingsPage() {
                                             onChange={(e) => setInviteEmail(e.target.value)}
                                             placeholder="parent@example.com"
                                         />
-                                        <select
-                                            className="rounded-md border px-3 py-2 text-sm"
-                                            value={inviteRole}
-                                            onChange={(e) => setInviteRole(e.target.value as "editor" | "viewer")}
-                                        >
-                                            <option value="editor">Editor</option>
-                                            <option value="viewer">Viewer</option>
-                                        </select>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        New family members join as editors.
                                     </div>
                                     <button
                                         className="rounded-md border px-3 py-2"

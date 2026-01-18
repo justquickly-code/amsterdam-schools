@@ -23,12 +23,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.finish_setup_body":
       "Vul de naam van het kind, het adres en het advies in om filters en reistijd te personaliseren.",
     "dashboard.finish_setup_cta": "Ga naar instellingen",
-    "dashboard.upcoming": "Aankomende open dagen (volgende 30 dagen)",
+    "dashboard.upcoming": "Aankomende open dagen",
     "dashboard.no_upcoming": "Geen open dagen gevonden.",
     "dashboard.view_all": "Bekijk alle open dagen",
-    "dashboard.shortlist_title": "Shortlist",
-    "dashboard.shortlist_body": "Houd je Top 12 actueel terwijl je scholen bezoekt.",
-    "dashboard.shortlist_cta": "Open Top 12",
     "dashboard.tip":
       "Tip: na het inloggen kun je scholen bekijken, notities maken, een Top 12 ranglijst bouwen en open dagen zien.",
     "dashboard.signin_body":
@@ -115,12 +112,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.finish_setup_body":
       "Add the child’s name, home address, and advies level to personalize filters and commute times.",
     "dashboard.finish_setup_cta": "Go to settings",
-    "dashboard.upcoming": "Upcoming open days (next 30 days)",
+    "dashboard.upcoming": "Upcoming open days",
     "dashboard.no_upcoming": "No upcoming open days found.",
     "dashboard.view_all": "View all open days",
-    "dashboard.shortlist_title": "Shortlist",
-    "dashboard.shortlist_body": "Keep your ranked Top 12 up to date as you visit schools.",
-    "dashboard.shortlist_cta": "Open Top 12",
     "dashboard.tip":
       "Tip: once signed in, you’ll be able to browse schools, save visit notes, build a ranked Top 12, and see open days.",
     "dashboard.signin_body":

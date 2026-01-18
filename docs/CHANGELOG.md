@@ -1,6 +1,13 @@
 # Changelog
 
 ## Unreleased
+- Dashboard: remove redundant shortlist section.
+- Dashboard: shorten upcoming open days label.
+- Schools: shorten bike-sort helper text and only warn when commute times are missing.
+- Schools: fix bike-sort missing-commutes check in UI.
+- Schools: persist sort mode via localStorage without initial overwrite.
+- Schools: persist sort mode between sessions.
+- Settings: invite flow now defaults all members to editor (no viewer option).
 - Settings: advies is a single dropdown with combined options (e.g., HAVO/VWO) using "either" matching.
 - Docs: add future feature ideas pack (gamification, data quality, reporting, auth, monetisation).
 - Docs: mark RELEASE_PLAN complete through Phase 4 (Jan 18, 2026).
