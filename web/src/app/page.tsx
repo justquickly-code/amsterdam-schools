@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 type WorkspaceRow = {
   id: string;
@@ -55,16 +56,14 @@ export default function Home() {
     async function loadDashboard() {
       if (!email) return;
 
-      const { data: ws, error: wErr } = await supabase
-        .from("workspaces")
-        .select("id,child_name,home_postcode,home_house_number,advies_levels")
-        .limit(1)
-        .maybeSingle();
+      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+        "id,child_name,home_postcode,home_house_number,advies_levels"
+      );
 
       if (!mounted) return;
 
       if (wErr) {
-        setDashError(wErr.message);
+        setDashError(wErr);
         return;
       }
 
@@ -163,7 +162,7 @@ export default function Home() {
         <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
           <h1 className="text-2xl font-semibold">Amsterdam Schools</h1>
           <p className="text-sm text-muted-foreground">
-            Sign in with a parent email. The app stays signed in on this device.
+            Sign in with a family member email. The app stays signed in on this device.
           </p>
           <Link className="inline-block rounded-md border px-3 py-2" href="/login">
             Go to sign in

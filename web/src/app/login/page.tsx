@@ -54,7 +54,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
         <h1 className="text-2xl font-semibold">Sign in</h1>
         <p className="text-sm text-muted-foreground">
-          Use a parent email. The app stays signed in on this device.
+          Use a family member email. The app stays signed in on this device.
         </p>
 
         {lastEmail && !email && (
@@ -75,7 +75,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="parent@example.com"
+              placeholder="family@example.com"
               autoComplete="email"
             />
           </label>

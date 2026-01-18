@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 
 type Workspace = {
     id: string;
@@ -23,6 +24,12 @@ type WorkspaceRow = {
     advies_match_mode: "either" | "both";
 };
 
+type WorkspaceMemberRow = {
+    user_id: string;
+    role: "owner" | "editor" | "viewer";
+    member_email: string | null;
+};
+
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -36,6 +43,13 @@ export default function SettingsPage() {
     const [saving, setSaving] = useState(false);
     const [savedMsg, setSavedMsg] = useState("");
     const [commuteMsg, setCommuteMsg] = useState("");
+    const [members, setMembers] = useState<WorkspaceMemberRow[]>([]);
+    const [currentUserId, setCurrentUserId] = useState<string>("");
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [inviteRole, setInviteRole] = useState<"editor" | "viewer">("editor");
+    const [inviteMsg, setInviteMsg] = useState("");
+    const [inviteBusy, setInviteBusy] = useState(false);
+    const [role, setRole] = useState<WorkspaceRole | null>(null);
 
     function normalizePostcode(input: string) {
         return input.toUpperCase().replace(/\s+/g, "").replace(/[^0-9A-Z]/g, "");
@@ -54,13 +68,11 @@ export default function SettingsPage() {
                 setLoading(false);
                 return;
             }
+            setCurrentUserId(session.session.user.id);
 
-            // Default workspace: first workspace (MVP assumes one per user).
-            const { data, error } = await supabase
-                .from("workspaces")
-                .select("id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode")
-                .limit(1)
-                .maybeSingle();
+            const { workspace: data, role, error } = await fetchCurrentWorkspace<WorkspaceRow>(
+                "id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode"
+            );
 
             if (!mounted) return;
 
@@ -81,6 +93,23 @@ export default function SettingsPage() {
                 setMatchMode(ws?.advies_match_mode ?? "either");
             }
 
+            setRole(role ?? null);
+
+            if (data?.id) {
+                const { data: memberRows, error: mErr } = await supabase
+                    .from("workspace_members")
+                    .select("user_id,role,member_email")
+                    .eq("workspace_id", data.id)
+                    .order("created_at", { ascending: true });
+
+                if (!mounted) return;
+                if (mErr) {
+                    setError(mErr.message);
+                } else {
+                    setMembers((memberRows ?? []) as WorkspaceMemberRow[]);
+                }
+            }
+
             setLoading(false);
         }
 
@@ -93,6 +122,10 @@ export default function SettingsPage() {
 
     async function saveSettings() {
         if (!workspace) return;
+        if (!isOwner) {
+            setError("Only the workspace owner can edit settings.");
+            return;
+        }
 
         setSaving(true);
         setSavedMsg("");
@@ -147,12 +180,12 @@ export default function SettingsPage() {
             setSavedMsg("Saved.");
             setCommuteMsg("");
             // Reload workspace to reflect saved values
-            const { data } = await supabase
+            const { data: refreshed } = await supabase
                 .from("workspaces")
                 .select("id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode")
                 .eq("id", workspace.id)
                 .maybeSingle();
-            setWorkspace((data ?? null) as WorkspaceRow | null);
+            setWorkspace((refreshed ?? null) as WorkspaceRow | null);
 
             if (addressChanged) {
                 const { error: delErr } = await supabase
@@ -232,6 +265,70 @@ export default function SettingsPage() {
         setSaving(false);
     }
 
+    async function inviteMember() {
+        if (!workspace) return;
+        setInviteBusy(true);
+        setInviteMsg("");
+        setError("");
+
+        const email = inviteEmail.trim().toLowerCase();
+        if (!email || !email.includes("@")) {
+            setInviteMsg("Enter a valid email address.");
+            setInviteBusy(false);
+            return;
+        }
+
+        const { data: session } = await supabase.auth.getSession();
+        const token = session.session?.access_token ?? "";
+        if (!token) {
+            setInviteMsg("You must be signed in.");
+            setInviteBusy(false);
+            return;
+        }
+
+        try {
+            const res = await fetch("/api/workspaces/invite", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    workspace_id: workspace.id,
+                    email,
+                    role: inviteRole,
+                }),
+            });
+
+            const json = await res.json().catch(() => null);
+            if (!res.ok) {
+                setInviteMsg(json?.error ?? "Invite failed.");
+                setInviteBusy(false);
+                return;
+            }
+
+            if (json?.already_invited) {
+                setInviteMsg("Invite already sent.");
+            } else {
+                setInviteMsg("Invite sent.");
+            }
+            setInviteEmail("");
+
+            const { data: memberRows } = await supabase
+                .from("workspace_members")
+                .select("user_id,role,member_email")
+                .eq("workspace_id", workspace.id)
+                .order("created_at", { ascending: true });
+            setMembers((memberRows ?? []) as WorkspaceMemberRow[]);
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : "Invite failed.";
+            setInviteMsg(msg);
+        }
+
+        setInviteBusy(false);
+    }
+
+    const isOwner = role === "owner";
 
     return (
         <main className="min-h-screen p-6 flex items-start justify-center">
@@ -262,7 +359,8 @@ export default function SettingsPage() {
                                         className="w-full rounded-md border px-3 py-2"
                                         value={childName}
                                         onChange={(e) => setChildName(e.target.value)}
-                                        placeholder="Sam"
+                                        placeholder="Sam (child)"
+                                        disabled={!isOwner}
                                     />
                                 </label>
 
@@ -273,6 +371,7 @@ export default function SettingsPage() {
                                         value={homePostcode}
                                         onChange={(e) => setHomePostcode(e.target.value)}
                                         placeholder="1234 AB"
+                                        disabled={!isOwner}
                                     />
                                 </label>
 
@@ -283,6 +382,7 @@ export default function SettingsPage() {
                                         value={homeHouseNumber}
                                         onChange={(e) => setHomeHouseNumber(e.target.value)}
                                         placeholder="10"
+                                        disabled={!isOwner}
                                     />
                                 </label>
                             </div>
@@ -295,6 +395,7 @@ export default function SettingsPage() {
                                         value={advies1}
                                         onChange={(e) => setAdvies1(e.target.value)}
                                         placeholder="havo"
+                                        disabled={!isOwner}
                                     />
                                 </label>
 
@@ -305,6 +406,7 @@ export default function SettingsPage() {
                                         value={advies2}
                                         onChange={(e) => setAdvies2(e.target.value)}
                                         placeholder="vwo"
+                                        disabled={!isOwner}
                                     />
                                 </label>
                             </div>
@@ -315,6 +417,7 @@ export default function SettingsPage() {
                                         type="checkbox"
                                         checked={matchMode === "both"}
                                         onChange={(e) => setMatchMode(e.target.checked ? "both" : "either")}
+                                        disabled={!isOwner}
                                     />
                                     <span>Only show schools that offer BOTH levels</span>
                                 </label>
@@ -324,7 +427,7 @@ export default function SettingsPage() {
                                 <button
                                     className="rounded-md border px-3 py-2"
                                     onClick={saveSettings}
-                                    disabled={saving}
+                                    disabled={saving || !isOwner}
                                 >
                                     {saving ? "Saving..." : "Save"}
                                 </button>
@@ -336,6 +439,66 @@ export default function SettingsPage() {
                                 Next: we’ll use these settings to filter schools and calculate cycling
                                 time/distance.
                             </p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h2 className="text-base font-semibold">Workspace members</h2>
+                            <div className="space-y-2 text-sm">
+                                {members.length === 0 ? (
+                                    <p className="text-muted-foreground">No members found.</p>
+                                ) : (
+                                    <ul className="divide-y rounded-lg border">
+                                        {members.map((m) => (
+                                            <li key={m.user_id} className="flex items-center justify-between p-3">
+                                                <div>
+                                                    <div className="font-medium">
+                                                        {m.member_email ?? "Member"}
+                                                        {m.user_id === currentUserId ? " (you)" : ""}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{m.role}</div>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+
+                            {isOwner ? (
+                                <div className="space-y-2">
+                                    <div className="text-sm font-medium">Invite a member</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+                                        <input
+                                            className="w-full rounded-md border px-3 py-2"
+                                            value={inviteEmail}
+                                            onChange={(e) => setInviteEmail(e.target.value)}
+                                            placeholder="parent@example.com"
+                                        />
+                                        <select
+                                            className="rounded-md border px-3 py-2 text-sm"
+                                            value={inviteRole}
+                                            onChange={(e) => setInviteRole(e.target.value as "editor" | "viewer")}
+                                        >
+                                            <option value="editor">Editor</option>
+                                            <option value="viewer">Viewer</option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        className="rounded-md border px-3 py-2"
+                                        onClick={inviteMember}
+                                        disabled={inviteBusy || !inviteEmail.trim()}
+                                    >
+                                        {inviteBusy ? "Inviting..." : "Invite"}
+                                    </button>
+                                    {inviteMsg && <div className="text-sm text-muted-foreground">{inviteMsg}</div>}
+                                    <div className="text-xs text-muted-foreground">
+                                        We’ll email a link to join this workspace.
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-xs text-muted-foreground">
+                                    Only workspace owners can edit settings or invite members.
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

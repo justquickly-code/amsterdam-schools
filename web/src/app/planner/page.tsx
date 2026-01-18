@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 type OpenDay = {
   id: string;
@@ -146,16 +147,14 @@ export default function OpenDaysPage() {
       }
 
       // Workspace (MVP assumes 1 per user)
-      const { data: ws, error: wErr } = await supabase
-        .from("workspaces")
-        .select("id,home_postcode,home_house_number")
-        .limit(1)
-        .maybeSingle();
+      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+        "id,home_postcode,home_house_number"
+      );
 
       if (!mounted) return;
 
       if (wErr) {
-        setError(wErr.message);
+        setError(wErr);
         setLoading(false);
         return;
       }

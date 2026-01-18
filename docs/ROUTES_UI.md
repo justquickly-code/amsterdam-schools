@@ -34,7 +34,7 @@
   - workspace name
   - home location: postcode + house number
   - advies: single or combined + match mode either/both
-  - workspace members (invite later)
+  - workspace members (invite/add)
 
 ## UI states (every page)
 - Loading

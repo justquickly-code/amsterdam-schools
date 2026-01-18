@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 
 type WorkspaceRow = {
   id: string;
@@ -18,11 +20,13 @@ function normalizePostcode(input: string) {
 }
 
 export default function SetupPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [error, setError] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [role, setRole] = useState<WorkspaceRole | null>(null);
 
   const [childName, setChildName] = useState("");
   const [homePostcode, setHomePostcode] = useState("");
@@ -38,27 +42,19 @@ export default function SetupPage() {
       setLoading(true);
       setError("");
 
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        setError("Not signed in.");
-        setLoading(false);
-        return;
-      }
-
-      const { data, error: wErr } = await supabase
-        .from("workspaces")
-        .select("id,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode")
-        .limit(1)
-        .maybeSingle();
+      const { workspace: data, role, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+        "id,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode"
+      );
 
       if (!mounted) return;
 
       if (wErr) {
-        setError(wErr.message);
+        setError(wErr);
         setLoading(false);
         return;
       }
 
+      setRole(role ?? null);
       const ws = (data ?? null) as WorkspaceRow | null;
       setWorkspace(ws);
       setChildName(ws?.child_name ?? "");
@@ -175,6 +171,36 @@ export default function SetupPage() {
     );
   }
 
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
+
+  if (role && role !== "owner") {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-xl border p-6 space-y-3 text-sm">
+          <h1 className="text-2xl font-semibold">Setup required</h1>
+          <p className="text-muted-foreground">
+            Only the workspace owner can complete setup. Ask them to finish the profile.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link className="inline-block rounded-md border px-3 py-2" href="/">
+              Back to Dashboard
+            </Link>
+            <button
+              className="rounded-md border px-3 py-2 text-sm"
+              type="button"
+              onClick={handleSignOut}
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
@@ -192,9 +218,18 @@ export default function SetupPage() {
             <div className="text-sm">
               Thanks, {childName}! You’re all set. Good luck on your school search. 🎉
             </div>
-            <Link className="inline-block rounded-md border px-3 py-2" href="/">
-              Go to Dashboard
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link className="inline-block rounded-md border px-3 py-2" href="/">
+                Go to Dashboard
+              </Link>
+              <button
+                className="rounded-md border px-3 py-2 text-sm"
+                type="button"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -269,6 +304,13 @@ export default function SetupPage() {
               disabled={saving}
             >
               {saving ? "Saving..." : "Finish setup"}
+            </button>
+            <button
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              type="button"
+              onClick={handleSignOut}
+            >
+              Sign out
             </button>
           </div>
         )}

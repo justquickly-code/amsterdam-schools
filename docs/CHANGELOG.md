@@ -46,3 +46,6 @@
 - UI: added back link on school detail; adjusted top menu spacing.
 - UI: removed shortlist print link from page (now in top menu).
 - Open Days: add planned toggle in planner + school detail; highlight schools missing planned open day.
+- Settings: add workspace members list + invite flow (owners only).
+- Members: invite email link now joins workspace directly (no pre-sign-in).
+- Visits: notes are per member; shared rating/attended remain.

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 type Workspace = { id: string };
 
@@ -47,17 +48,13 @@ export default function ShortlistPage() {
         return;
       }
 
-      const { data: ws, error: wErr } = await supabase
-        .from("workspaces")
-        .select("id")
-        .limit(1)
-        .maybeSingle();
+      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id");
 
       if (!mounted) return;
 
       const workspaceRow = (ws ?? null) as WorkspaceRow | null;
       if (wErr || !workspaceRow) {
-        setError(wErr?.message ?? "No workspace found.");
+        setError(wErr ?? "No workspace found.");
         setLoading(false);
         return;
       }

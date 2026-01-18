@@ -29,9 +29,12 @@
 - Visit (workspace-specific)
   - school_id
   - attended: boolean
-  - notes
-  - pros / cons
   - rating_stars: 1–5
+
+- VisitNote (per member)
+  - school_id
+  - user_id
+  - notes
 
 - SavedSchool (workspace-specific)
   - school_id

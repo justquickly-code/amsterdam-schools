@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 type Json = Record<string, unknown> | unknown[] | null;
 
@@ -21,16 +22,12 @@ export default function AdminComputeCommutesPage() {
     setToken(saved ?? "");
 
     (async () => {
-      const { data, error: wErr } = await supabase
-        .from("workspaces")
-        .select("id")
-        .limit(1)
-        .maybeSingle();
+      const { workspace, error: wErr } = await fetchCurrentWorkspace<{ id: string }>("id");
       if (wErr) {
-        setError(wErr.message);
+        setError(wErr);
         return;
       }
-      setWorkspaceId((data?.id ?? "") as string);
+      setWorkspaceId((workspace?.id ?? "") as string);
     })();
   }, []);
 

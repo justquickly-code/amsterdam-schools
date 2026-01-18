@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 
 type WorkspaceRow = {
   child_name: string | null;
@@ -26,6 +26,8 @@ export default function SetupGate({
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [gate, setGate] = useState(false);
+  const [role, setRole] = useState<WorkspaceRole | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -36,17 +38,9 @@ export default function SetupGate({
         return;
       }
 
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        setLoading(false);
-        return;
-      }
-
-      const { data, error: wErr } = await supabase
-        .from("workspaces")
-        .select("child_name,home_postcode,home_house_number,advies_levels")
-        .limit(1)
-        .maybeSingle();
+      const { workspace, role, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+        "child_name,home_postcode,home_house_number,advies_levels"
+      );
 
       if (!mounted) return;
 
@@ -55,7 +49,8 @@ export default function SetupGate({
         return;
       }
 
-      const ws = (data ?? null) as WorkspaceRow | null;
+      setRole(role ?? null);
+      const ws = (workspace ?? null) as WorkspaceRow | null;
       const hasChild = Boolean((ws?.child_name ?? "").trim());
       const hasAddress = Boolean(ws?.home_postcode && ws?.home_house_number);
       const hasAdvies = (ws?.advies_levels ?? []).length > 0;
@@ -69,6 +64,14 @@ export default function SetupGate({
     };
   }, [bypass]);
 
+  useEffect(() => {
+    if (!gate) return;
+    if (role && role !== "owner") return;
+    if (pathname === "/setup") return;
+    setRedirecting(true);
+    router.replace("/setup");
+  }, [gate, role, pathname, router]);
+
   if (loading) {
     return (
       <div className={showNav ? "pb-20" : ""}>
@@ -79,9 +82,25 @@ export default function SetupGate({
   }
 
   if (gate) {
-    if (pathname !== "/setup") {
-      router.replace("/setup");
-      return null;
+    if (role && role !== "owner") {
+      return (
+        <main className="min-h-screen flex items-center justify-center p-6">
+          <div className="w-full max-w-md rounded-xl border p-6 space-y-3 text-sm">
+            <div className="text-base font-semibold">Setup required</div>
+            <p className="text-muted-foreground">
+              The workspace owner needs to finish setup before you can use the app.
+            </p>
+          </div>
+        </main>
+      );
+    }
+    if (redirecting) {
+      return (
+        <div className={showNav ? "pb-20" : ""}>
+          {children}
+          {showNav ? nav : null}
+        </div>
+      );
     }
   }
 

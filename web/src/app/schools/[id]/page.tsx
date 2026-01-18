@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 type Workspace = { id: string };
 
@@ -30,10 +31,8 @@ type Visit = {
     workspace_id: string;
     school_id: string;
     attended: boolean;
-    notes: string | null;
-    pros: string | null;
-    cons: string | null;
     rating_stars: number | null;
+    updated_at?: string | null;
 };
 
 type VisitRow = {
@@ -41,10 +40,22 @@ type VisitRow = {
     workspace_id: string;
     school_id: string;
     attended: boolean;
-    notes: string | null;
-    pros: string | null;
-    cons: string | null;
     rating_stars: number | null;
+    updated_at?: string | null;
+};
+
+type VisitNoteRow = {
+    id: string;
+    workspace_id: string;
+    school_id: string;
+    user_id: string;
+    notes: string | null;
+    updated_at: string | null;
+};
+
+type MemberRow = {
+    user_id: string;
+    member_email: string | null;
 };
 
 type ShortlistRow = { id: string };
@@ -172,15 +183,19 @@ export default function SchoolDetailPage() {
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
     const [school, setSchool] = useState<School | null>(null);
     const [visit, setVisit] = useState<Visit | null>(null);
+    const [visitUpdatedAt, setVisitUpdatedAt] = useState<string | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string>("");
+    const [noteText, setNoteText] = useState("");
+    const [noteUpdatedAt, setNoteUpdatedAt] = useState<string | null>(null);
+    const [otherNotes, setOtherNotes] = useState<
+        Array<{ user_id: string; email: string; notes: string }>
+    >([]);
     const [openDays, setOpenDays] = useState<OpenDay[]>([]);
     const [plannedOpenDayIds, setPlannedOpenDayIds] = useState<Set<string>>(new Set());
     const [planningId, setPlanningId] = useState<string | null>(null);
 
     const [attended, setAttended] = useState(false);
     const [rating, setRating] = useState<number | null>(null);
-    const [notes, setNotes] = useState("");
-    const [pros, setPros] = useState("");
-    const [cons, setCons] = useState("");
     const [saving, setSaving] = useState(false);
     const [savedMsg, setSavedMsg] = useState("");
     const [shortlistMsg, setShortlistMsg] = useState("");
@@ -199,17 +214,14 @@ export default function SchoolDetailPage() {
                 setLoading(false);
                 return;
             }
+            setCurrentUserId(session.session.user.id);
 
-            const { data: ws, error: wErr } = await supabase
-                .from("workspaces")
-                .select("id")
-                .limit(1)
-                .maybeSingle();
+            const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id");
 
             if (!mounted) return;
             const workspaceRow = (ws ?? null) as WorkspaceRow | null;
             if (wErr || !workspaceRow) {
-                setError(wErr?.message ?? "No workspace found.");
+                setError(wErr ?? "No workspace found.");
                 setLoading(false);
                 return;
             }
@@ -232,7 +244,7 @@ export default function SchoolDetailPage() {
 
             const { data: v, error: vErr } = await supabase
                 .from("visits")
-                .select("id,workspace_id,school_id,attended,notes,pros,cons,rating_stars")
+                .select("id,workspace_id,school_id,attended,rating_stars,updated_at")
                 .eq("workspace_id", workspaceRow.id)
                 .eq("school_id", schoolId)
                 .maybeSingle();
@@ -246,13 +258,50 @@ export default function SchoolDetailPage() {
 
             const visitRow = (v ?? null) as VisitRow | null;
             setVisit(visitRow);
+            setVisitUpdatedAt(visitRow?.updated_at ?? null);
 
             const existing = visitRow;
             setAttended(existing?.attended ?? false);
             setRating(existing?.rating_stars ?? null);
-            setNotes(existing?.notes ?? "");
-            setPros(existing?.pros ?? "");
-            setCons(existing?.cons ?? "");
+
+            const { data: memberRows } = await supabase
+                .from("workspace_members")
+                .select("user_id,member_email")
+                .eq("workspace_id", workspaceRow.id);
+
+            const memberList = (memberRows ?? []) as MemberRow[];
+            const memberMap = new Map<string, string>();
+            for (const m of memberList) {
+                if (m.user_id) memberMap.set(m.user_id, m.member_email ?? "Member");
+            }
+
+            const { data: noteRows, error: nErr } = await supabase
+                .from("visit_notes")
+                .select("id,workspace_id,school_id,user_id,notes,updated_at")
+                .eq("workspace_id", workspaceRow.id)
+                .eq("school_id", schoolId);
+
+            if (!mounted) return;
+            if (nErr) {
+                setError(nErr.message);
+                setLoading(false);
+                return;
+            }
+
+            const notesList = (noteRows ?? []) as VisitNoteRow[];
+            const own = notesList.find((n) => n.user_id === session.session?.user.id) ?? null;
+            setNoteText(own?.notes ?? "");
+            setNoteUpdatedAt(own?.updated_at ?? null);
+            setOtherNotes(
+                notesList
+                    .filter((n) => n.user_id !== session.session?.user.id)
+                    .map((n) => ({
+                        user_id: n.user_id,
+                        email: memberMap.get(n.user_id) ?? "Member",
+                        notes: n.notes ?? "",
+                    }))
+                    .filter((n) => n.notes.trim().length > 0)
+            );
 
             const { data: openDaysRows, error: oErr } = await supabase
                 .from("open_days")
@@ -327,22 +376,74 @@ export default function SchoolDetailPage() {
             school_id: school.id,
             attended,
             rating_stars: rating,
-            notes: notes.trim() || null,
-            pros: pros.trim() || null,
-            cons: cons.trim() || null,
         };
+        if (visit) {
+            const { data, error } = await supabase
+                .from("visits")
+                .update(payload)
+                .eq("workspace_id", workspace.id)
+                .eq("school_id", school.id)
+                .eq("updated_at", visitUpdatedAt)
+                .select("id,workspace_id,school_id,attended,notes,pros,cons,rating_stars,updated_at");
 
-        const { data, error } = await supabase
-            .from("visits")
-            .upsert(payload, { onConflict: "workspace_id,school_id" })
-            .select("id,workspace_id,school_id,attended,notes,pros,cons,rating_stars")
-            .maybeSingle();
-
-        if (error) {
-            setError(error.message);
+            if (error) {
+                setError(error.message);
+            } else if (!data || data.length === 0) {
+                setError("This note was updated by someone else. Please reload and try again.");
+            } else {
+                const row = (data ?? [])[0] as VisitRow;
+                setVisit(row);
+                setVisitUpdatedAt(row.updated_at ?? null);
+                setSavedMsg("Saved.");
+            }
         } else {
-            setVisit((data ?? null) as VisitRow | null);
-            setSavedMsg("Saved.");
+            const { data, error } = await supabase
+                .from("visits")
+                .insert(payload)
+                .select("id,workspace_id,school_id,attended,rating_stars,updated_at")
+                .maybeSingle();
+
+            if (error) {
+                if (error.code === "23505") {
+                    setError("This note was just created by someone else. Please reload.");
+                } else {
+                    setError(error.message);
+                }
+            } else {
+                setVisit((data ?? null) as VisitRow | null);
+                setVisitUpdatedAt((data as VisitRow | null)?.updated_at ?? null);
+                setSavedMsg("Saved.");
+            }
+        }
+
+        const trimmedNote = noteText.trim();
+        if (trimmedNote) {
+            const { data: noteRow, error: noteErr } = await supabase
+                .from("visit_notes")
+                .upsert(
+                    {
+                        workspace_id: workspace.id,
+                        school_id: school.id,
+                        user_id: currentUserId,
+                        notes: trimmedNote,
+                    },
+                    { onConflict: "workspace_id,school_id,user_id" }
+                )
+                .select("id,notes,updated_at")
+                .maybeSingle();
+
+            if (noteErr) {
+                setError(noteErr.message);
+            } else {
+                setNoteUpdatedAt(noteRow?.updated_at ?? null);
+            }
+        } else if (noteUpdatedAt) {
+            await supabase
+                .from("visit_notes")
+                .delete()
+                .eq("workspace_id", workspace.id)
+                .eq("school_id", school.id)
+                .eq("user_id", currentUserId);
         }
 
         setSaving(false);
@@ -584,36 +685,28 @@ export default function SchoolDetailPage() {
                     </div>
 
                     <label className="space-y-1 block">
-                        <div className="text-sm font-medium">Notes</div>
+                        <div className="text-sm font-medium">Your notes</div>
                         <textarea
                             className="w-full rounded-md border px-3 py-2 min-h-28"
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
+                            value={noteText}
+                            onChange={(e) => setNoteText(e.target.value)}
                             placeholder="What stood out? Atmosphere, teachers, vibe…"
                         />
                     </label>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label className="space-y-1 block">
-                            <div className="text-sm font-medium">Pros</div>
-                            <textarea
-                                className="w-full rounded-md border px-3 py-2 min-h-24"
-                                value={pros}
-                                onChange={(e) => setPros(e.target.value)}
-                                placeholder="Good points…"
-                            />
-                        </label>
-
-                        <label className="space-y-1 block">
-                            <div className="text-sm font-medium">Cons</div>
-                            <textarea
-                                className="w-full rounded-md border px-3 py-2 min-h-24"
-                                value={cons}
-                                onChange={(e) => setCons(e.target.value)}
-                                placeholder="Concerns…"
-                            />
-                        </label>
-                    </div>
+                    {otherNotes.length > 0 && (
+                        <div className="space-y-2">
+                            <div className="text-sm font-medium">Notes from others</div>
+                            <ul className="divide-y rounded-lg border">
+                                {otherNotes.map((n) => (
+                                    <li key={n.user_id} className="p-3">
+                                        <div className="text-xs text-muted-foreground">{n.email}</div>
+                                        <div className="text-sm whitespace-pre-wrap">{n.notes}</div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
                     <div className="flex items-center gap-3">
                         <button

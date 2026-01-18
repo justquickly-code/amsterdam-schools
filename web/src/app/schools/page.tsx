@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { friendlyLevel } from "@/lib/levels";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 type Workspace = {
     id: string;
@@ -118,16 +119,14 @@ export default function SchoolsPage() {
                 return;
             }
 
-            const { data: workspace, error: wErr } = await supabase
-                .from("workspaces")
-                .select("id,advies_levels,advies_match_mode,home_postcode,home_house_number")
-                .limit(1)
-                .maybeSingle();
+            const { workspace, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+                "id,advies_levels,advies_match_mode,home_postcode,home_house_number"
+            );
 
             if (!mounted) return;
 
             if (wErr) {
-                setError(wErr.message);
+                setError(wErr);
                 setLoading(false);
                 return;
             }
