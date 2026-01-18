@@ -27,6 +27,10 @@ Provide a reliable, step-by-step workflow for Codex sessions and keep this repo�
 ## Recommended Session Start Prompt (copy/paste)
 Read `AGENTS.md` and `docs/00_PROJECT_BRIEF.md`, then confirm the next step from `docs/RELEASE_PLAN.md` and proceed only with that step.
 
+## Context Hygiene
+- Start a fresh Codex session after each milestone.
+- Paste the session start prompt + any new decisions instead of relying on long chat history.
+
 ## Project Structure
 - `web/` — Next.js App Router frontend
 - `web/src/app/` — pages and API routes
