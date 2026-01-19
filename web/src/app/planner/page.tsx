@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 
 type OpenDay = {
   id: string;
@@ -164,7 +164,7 @@ export default function OpenDaysPage() {
       const wsRow = (ws ?? null) as WorkspaceRow | null;
       setWorkspace(wsRow);
       setWorkspaceId(wsRow?.id ?? null);
-      setLanguage((wsRow?.language as Language) ?? DEFAULT_LANGUAGE);
+      setLanguage((wsRow?.language as Language) ?? readStoredLanguage());
 
       // Planned open days
       if (wsRow?.id) {

@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { useRouter } from "next/navigation";
 
 type WorkspaceRow = {
   id: string;
@@ -25,13 +26,18 @@ type ShortlistRow = { id: string; workspace_id: string };
 type ShortlistItemRow = { school_id: string };
 
 export default function Home() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [upcoming, setUpcoming] = useState<OpenDayRow[]>([]);
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [dashError, setDashError] = useState<string>("");
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+    const stored = window.localStorage.getItem("schools_language");
+    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+  });
   const [hasFamilyMember, setHasFamilyMember] = useState(false);
   const [hasNote, setHasNote] = useState(false);
   const [hasRating, setHasRating] = useState(false);
@@ -76,7 +82,7 @@ export default function Home() {
 
       const wsRow = (ws ?? null) as WorkspaceRow | null;
       setWorkspace(wsRow);
-      setLanguage((wsRow?.language as Language) ?? DEFAULT_LANGUAGE);
+      setLanguage((wsRow?.language as Language) ?? readStoredLanguage());
       const workspaceId = wsRow?.id ?? "";
 
       const now = new Date();
@@ -118,6 +124,8 @@ export default function Home() {
       setShortlistIds(shortlistSchoolIds);
 
       if (workspaceId) {
+        const inviteSent =
+          typeof window !== "undefined" && window.localStorage.getItem(`invite_sent_${workspaceId}`) === "1";
         const [
           { data: memberRows },
           { data: noteRows },
@@ -150,7 +158,7 @@ export default function Home() {
 
         if (!mounted) return;
 
-        setHasFamilyMember((memberRows ?? []).length > 1);
+        setHasFamilyMember((memberRows ?? []).length > 1 || inviteSent);
         setHasNote((noteRows ?? []).length > 0);
         setHasRating((ratingRows ?? []).length > 0);
         setHasAttended((attendedRows ?? []).length > 0);
@@ -258,6 +266,17 @@ export default function Home() {
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("schools_language", language);
+  }, [language]);
+
+  useEffect(() => {
+    if (!loading && !email) {
+      router.replace("/login");
+    }
+  }, [loading, email, router]);
+
   const locale = getLocale(language);
 
   if (loading) {
@@ -271,19 +290,7 @@ export default function Home() {
   if (!email) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
-          <h1 className="text-2xl font-semibold">Amsterdam Schools</h1>
-          <p className="text-sm text-muted-foreground">
-            {t(DEFAULT_LANGUAGE, "dashboard.signin_body")}
-          </p>
-          <Link className="inline-block rounded-md border px-3 py-2" href="/login">
-            {t(DEFAULT_LANGUAGE, "login.sign_in")}
-          </Link>
-
-          <div className="pt-2 text-xs text-muted-foreground">
-            {t(DEFAULT_LANGUAGE, "dashboard.tip")}
-          </div>
-        </div>
+        <p className="text-sm text-muted-foreground">{t(language, "login.sign_in")}</p>
       </main>
     );
   }

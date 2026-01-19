@@ -15,6 +15,9 @@ export async function fetchCurrentWorkspace<T>(select: string) {
     return { workspace: null as T | null, role: null as WorkspaceRole | null };
   }
 
+  const activeWorkspaceId =
+    typeof window !== "undefined" ? window.localStorage.getItem("active_workspace_id") : null;
+
   const { data, error } = await supabase
     .from("workspace_members")
     .select(`role,workspace:workspaces(${select})`)
@@ -38,7 +41,13 @@ export async function fetchCurrentWorkspace<T>(select: string) {
     return { workspace: null as T | null, role: null as WorkspaceRole | null };
   }
 
+  const activePick = activeWorkspaceId
+    ? list.find((item) => {
+        const ws = item.workspace as unknown as { id?: string } | undefined;
+        return ws?.id === activeWorkspaceId;
+      })
+    : null;
   const nonOwner = list.find((item) => item.role !== "owner");
-  const pick = nonOwner ?? list[0];
+  const pick = activePick ?? nonOwner ?? list[0];
   return { workspace: pick.workspace, role: pick.role };
 }

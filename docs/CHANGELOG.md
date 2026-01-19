@@ -1,6 +1,26 @@
 # Changelog
 
 ## Unreleased
+- Setup: remove commute-calculating helper text from invite step.
+- Setup: skip redirect when setup=done query param is present.
+- Setup: pass setup=done to prevent redirect loop after invite step.
+- Setup: avoid redirect loop right after profile save (short grace window).
+- Setup: initialize grace window before redirect to prevent immediate bounce back.
+- Setup: skip/continue now go straight to Dashboard (no intermediate welcome flash).
+- Auth: persist chosen language through magic-link redirect via lang param.
+- Auth: canonicalize localhost redirects to preserve stored language on login.
+- Language: fall back to stored preference when workspace language is unset.
+- Login: persist language immediately when toggling to keep setup in sync.
+- Login: fix hydration mismatch by deferring language read to client.
+- Setup: show language toggle and keep login language through setup.
+- Dashboard: fix hook order by moving redirect effect before early returns.
+- Dashboard: redirect signed-out users directly to /login (remove redundant screen).
+- Dashboard (signed-out): add language toggle and persist the selection.
+- Dashboard: mark “invite family” milestone complete after sending an invite in setup.
+- Setup: respect login language choice and persist it when profile is saved.
+- Invite: warn when joining a new workspace and let members keep their current workspace.
+- Settings: add workspace switcher when multiple memberships exist.
+- Setup: add optional invite step with shared-workspace explanation and “skip for now”.
 - Login: add language toggle (NL/EN).
 - Shortlist: move rank controls to header to reduce card height.
 - Shortlist: show rating stars and bike distance for each school.

@@ -5,6 +5,12 @@ export type Language = "nl" | "en";
 export const DEFAULT_LANGUAGE: Language = "nl";
 export const LANGUAGE_EVENT = "language-changed";
 
+export function readStoredLanguage(): Language {
+  if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+  const stored = window.localStorage.getItem("schools_language");
+  return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+}
+
 const STRINGS: Record<Language, Record<string, string>> = {
   nl: {
     "login.title": "Inloggen",
@@ -46,6 +52,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.title": "Welkom",
     "setup.intro": "Laten we het even instellen. Dit duurt ongeveer een minuut.",
     "setup.finish": "Setup afronden",
+    "setup.next": "Volgende",
     "setup.saving": "Opslaan...",
     "setup.thanks": "Bedankt",
     "setup.go_dashboard": "Ga naar Dashboard",
@@ -53,6 +60,20 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.required_title": "Setup vereist",
     "setup.required_body":
       "Alleen de eigenaar kan de setup afronden. Vraag de eigenaar om het profiel af te maken.",
+    "setup.invite_intro": "Wil je samen plannen? Nodig een familielid uit.",
+    "setup.invite_shared":
+      "Familieleden zien dezelfde scholen, shortlist en open dagen. Notities zijn per persoon en voor iedereen zichtbaar.",
+    "setup.invite_label": "E-mailadres familielid",
+    "setup.invite_send": "Stuur uitnodiging",
+    "setup.invite_sending": "Versturen...",
+    "setup.invite_invalid": "Vul een geldig e-mailadres in.",
+    "setup.invite_auth_required": "Je moet ingelogd zijn om een uitnodiging te sturen.",
+    "setup.invite_failed": "Uitnodiging mislukt.",
+    "setup.invite_already_sent": "Uitnodiging is al verstuurd.",
+    "setup.invite_sent": "Uitnodiging verstuurd.",
+    "setup.invite_later": "Je kunt later ook familie toevoegen via Instellingen.",
+    "setup.skip": "Nu overslaan",
+    "setup.continue": "Doorgaan",
 
     "settings.title": "Instellingen",
     "settings.edit": "Instellingen bewerken",
@@ -147,12 +168,27 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.title": "Welcome",
     "setup.intro": "Let’s set things up. It takes about a minute.",
     "setup.finish": "Finish setup",
+    "setup.next": "Next",
     "setup.saving": "Saving...",
     "setup.thanks": "Thanks",
     "setup.go_dashboard": "Go to Dashboard",
     "setup.signout": "Sign out",
     "setup.required_title": "Setup required",
     "setup.required_body": "Only the workspace owner can complete setup. Ask them to finish the profile.",
+    "setup.invite_intro": "Plan together? Invite a family member.",
+    "setup.invite_shared":
+      "Family members share the same schools, shortlist, and open days. Notes are per person and visible to everyone.",
+    "setup.invite_label": "Family member email",
+    "setup.invite_send": "Send invite",
+    "setup.invite_sending": "Sending...",
+    "setup.invite_invalid": "Enter a valid email address.",
+    "setup.invite_auth_required": "You must be signed in to send an invite.",
+    "setup.invite_failed": "Invite failed.",
+    "setup.invite_already_sent": "Invite already sent.",
+    "setup.invite_sent": "Invite sent.",
+    "setup.invite_later": "You can add family later from Settings.",
+    "setup.skip": "Skip for now",
+    "setup.continue": "Continue",
 
     "settings.title": "Settings",
     "settings.edit": "Edit settings",

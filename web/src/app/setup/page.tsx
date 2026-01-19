@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 
 type WorkspaceRow = {
@@ -24,13 +24,21 @@ function normalizePostcode(input: string) {
 
 export default function SetupPage() {
   const router = useRouter();
+  const params = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [error, setError] = useState<string>("");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [role, setRole] = useState<WorkspaceRole | null>(null);
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+    const stored = window.localStorage.getItem("schools_language");
+    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+  });
+  const [step, setStep] = useState<"profile" | "invite">("profile");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState("");
 
   const [childName, setChildName] = useState("");
   const [homePostcode, setHomePostcode] = useState("");
@@ -59,7 +67,9 @@ export default function SetupPage() {
       setRole(role ?? null);
       const ws = (data ?? null) as WorkspaceRow | null;
       setWorkspace(ws);
-      setLanguage((ws?.language as Language) ?? DEFAULT_LANGUAGE);
+      if (ws?.language) {
+        setLanguage(ws.language as Language);
+      }
       setChildName(ws?.child_name ?? "");
       setHomePostcode(ws?.home_postcode ?? "");
       setHomeHouseNumber(ws?.home_house_number ?? "");
@@ -84,12 +94,80 @@ export default function SetupPage() {
   }, []);
 
   useEffect(() => {
-    if (!saved) return;
-    const timer = window.setTimeout(() => {
-      router.replace("/");
-    }, 1200);
-    return () => window.clearTimeout(timer);
-  }, [saved, router]);
+    const fromUrl = params.get("lang");
+    if (fromUrl === "en" || fromUrl === "nl") {
+      setLanguage(fromUrl);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("schools_language", fromUrl);
+        emitLanguageChanged(fromUrl);
+      }
+    }
+  }, [params]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("schools_language", language);
+    emitLanguageChanged(language);
+  }, [language]);
+
+  async function inviteMember() {
+    if (!workspace) return;
+    setInviteBusy(true);
+    setInviteMsg("");
+    setError("");
+
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      setInviteMsg(t(language, "setup.invite_invalid"));
+      setInviteBusy(false);
+      return;
+    }
+
+    const { data: session } = await supabase.auth.getSession();
+    const token = session.session?.access_token ?? "";
+    if (!token) {
+      setInviteMsg(t(language, "setup.invite_auth_required"));
+      setInviteBusy(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/workspaces/invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          workspace_id: workspace.id,
+          email,
+          role: "editor",
+        }),
+      });
+
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        setInviteMsg(json?.error ?? t(language, "setup.invite_failed"));
+        setInviteBusy(false);
+        return;
+      }
+
+      if (json?.already_invited) {
+        setInviteMsg(t(language, "setup.invite_already_sent"));
+      } else {
+        setInviteMsg(t(language, "setup.invite_sent"));
+      }
+      if (typeof window !== "undefined" && workspace?.id) {
+        window.localStorage.setItem(`invite_sent_${workspace.id}`, "1");
+      }
+      setInviteEmail("");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : t(language, "setup.invite_failed");
+      setInviteMsg(msg);
+    }
+
+    setInviteBusy(false);
+  }
 
   async function saveSetup() {
     if (!workspace) return;
@@ -134,6 +212,7 @@ export default function SetupPage() {
         home_house_number: house || null,
         advies_levels: levels,
         advies_match_mode: mode,
+        language,
       })
       .eq("id", workspace.id);
 
@@ -141,6 +220,10 @@ export default function SetupPage() {
       setError(upErr.message);
       setSaving(false);
       return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("setup_completed_at", new Date().toISOString());
     }
 
     // Kick off commute compute in background
@@ -178,7 +261,7 @@ export default function SetupPage() {
       }
     })().catch(() => null);
 
-    setSaved(true);
+    setStep("invite");
     setSaving(false);
   }
 
@@ -221,28 +304,64 @@ export default function SetupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">{t(language, "settings.language")}</div>
+          <button
+            className="rounded-full border px-3 py-1 text-xs"
+            type="button"
+            onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
+          >
+            {language === "nl" ? "NL" : "EN"}
+          </button>
+        </div>
         <h1 className="text-2xl font-semibold">{t(language, "setup.title")}</h1>
-        {!saved && (
+        {step === "profile" && (
           <p className="text-sm text-muted-foreground">{t(language, "setup.intro")}</p>
         )}
 
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
 
-        {saved ? (
+        {step === "invite" ? (
           <div className="space-y-3">
-            <div className="text-sm">
-              {t(language, "setup.thanks")}, {childName}! 🎉
+            <div className="text-sm text-muted-foreground">{t(language, "setup.invite_intro")}</div>
+            <div className="text-sm text-muted-foreground">{t(language, "setup.invite_shared")}</div>
+
+            <div className="space-y-2">
+              <label className="space-y-1">
+                <div className="text-sm font-medium">{t(language, "setup.invite_label")}</div>
+                <input
+                  className="w-full rounded-md border px-3 py-2"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="parent@example.com"
+                />
+              </label>
+              <button
+                className="w-full rounded-md border px-3 py-2"
+                onClick={inviteMember}
+                disabled={inviteBusy || !inviteEmail.trim()}
+              >
+                {inviteBusy ? t(language, "setup.invite_sending") : t(language, "setup.invite_send")}
+              </button>
+              {inviteMsg && <div className="text-sm text-muted-foreground">{inviteMsg}</div>}
             </div>
+
+            <div className="text-xs text-muted-foreground">{t(language, "setup.invite_later")}</div>
+
             <div className="flex flex-wrap gap-2">
-              <Link className="inline-block rounded-md border px-3 py-2" href="/">
-                {t(language, "setup.go_dashboard")}
-              </Link>
               <button
                 className="rounded-md border px-3 py-2 text-sm"
                 type="button"
-                onClick={handleSignOut}
+                onClick={() => router.replace("/?setup=done")}
               >
-                {t(language, "setup.signout")}
+                {t(language, "setup.skip")}
+              </button>
+              <button
+                className="rounded-md border px-3 py-2 text-sm"
+                type="button"
+                onClick={() => router.replace("/?setup=done")}
+              >
+                {t(language, "setup.continue")}
               </button>
             </div>
           </div>
@@ -303,7 +422,7 @@ export default function SetupPage() {
               onClick={saveSetup}
               disabled={saving}
             >
-              {saving ? t(language, "setup.saving") : t(language, "setup.finish")}
+              {saving ? t(language, "setup.saving") : t(language, "setup.next")}
             </button>
             <button
               className="w-full rounded-md border px-3 py-2 text-sm"

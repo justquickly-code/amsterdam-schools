@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 
 export default function TopMenu() {
@@ -25,7 +25,7 @@ export default function TopMenu() {
       const { workspace, role } = await fetchCurrentWorkspace<{ id: string; language?: Language | null }>(
         "id,language"
       );
-      setLanguage((workspace?.language as Language) ?? DEFAULT_LANGUAGE);
+      setLanguage((workspace?.language as Language) ?? readStoredLanguage());
       setWorkspaceId(workspace?.id ?? "");
       setRole(role ?? null);
     })().catch(() => null);

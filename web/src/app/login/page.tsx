@@ -9,17 +9,31 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [lastEmail, setLastEmail] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>(() => {
-    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
-    const stored = window.localStorage.getItem("schools_language");
-    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
-  });
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("schools_language");
+    if (stored === "en" || stored === "nl") {
+      setLanguage(stored);
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     window.localStorage.setItem("schools_language", language);
     emitLanguageChanged(language);
-  }, [language]);
+  }, [language, hydrated]);
+
+  const toggleLanguage = () => {
+    const next = language === "nl" ? "en" : "nl";
+    setLanguage(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("schools_language", next);
+      emitLanguageChanged(next);
+    }
+  };
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState<string>("");
 
@@ -47,7 +61,7 @@ export default function LoginPage() {
         email: trimmed,
         options: {
           // After clicking the email link, user returns to the app
-          emailRedirectTo: "http://localhost:3000/auth/callback",
+          emailRedirectTo: `http://localhost:3000/auth/callback?lang=${language}`,
         },
       });
 
@@ -65,11 +79,13 @@ export default function LoginPage() {
       <main className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">{t(language, "settings.language")}</div>
+            <div className="text-sm text-muted-foreground">
+              {t(hydrated ? language : DEFAULT_LANGUAGE, "settings.language")}
+            </div>
             <button
               className="rounded-full border px-3 py-1 text-xs"
               type="button"
-              onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
+              onClick={toggleLanguage}
             >
               {language === "nl" ? "NL" : "EN"}
             </button>

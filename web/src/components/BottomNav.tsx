@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 function isActive(pathname: string, href: string) {
@@ -18,7 +18,7 @@ export default function BottomNav() {
   useEffect(() => {
     (async () => {
       const { workspace } = await fetchCurrentWorkspace<{ language?: Language | null }>("language");
-      setLanguage((workspace?.language as Language) ?? DEFAULT_LANGUAGE);
+      setLanguage((workspace?.language as Language) ?? readStoredLanguage());
     })().catch(() => null);
 
     function onLang(e: Event) {

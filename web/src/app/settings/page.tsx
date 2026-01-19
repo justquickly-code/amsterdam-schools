@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 
 type Workspace = {
@@ -53,6 +53,8 @@ export default function SettingsPage() {
     const [inviteMsg, setInviteMsg] = useState("");
     const [inviteBusy, setInviteBusy] = useState(false);
     const [role, setRole] = useState<WorkspaceRole | null>(null);
+    const [availableWorkspaces, setAvailableWorkspaces] = useState<Array<{ id: string; name: string }>>([]);
+    const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
 
     function normalizePostcode(input: string) {
         return input.toUpperCase().replace(/\s+/g, "").replace(/[^0-9A-Z]/g, "");
@@ -73,6 +75,9 @@ export default function SettingsPage() {
             }
             setCurrentUserId(session.session.user.id);
 
+            const activeId =
+                typeof window !== "undefined" ? window.localStorage.getItem("active_workspace_id") ?? "" : "";
+
             const { workspace: data, role, error } = await fetchCurrentWorkspace<WorkspaceRow>(
                 "id,name,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode,language"
             );
@@ -92,10 +97,30 @@ export default function SettingsPage() {
 
                 const levels = ws?.advies_levels ?? [];
                 setAdviesOption(adviesOptionFromLevels(levels));
-                setLanguage((ws?.language as Language) ?? DEFAULT_LANGUAGE);
+                setLanguage((ws?.language as Language) ?? readStoredLanguage());
             }
 
             setRole(role ?? null);
+            if (data?.id) {
+                setActiveWorkspaceId(activeId || data.id);
+            }
+
+            const { data: membershipRows } = await supabase
+                .from("workspace_members")
+                .select("workspace:workspaces(id,name)")
+                .eq("user_id", session.session.user.id)
+                .order("created_at", { ascending: true });
+
+            const workspaceList =
+                (membershipRows ?? [])
+                    .map((row) => {
+                        const ws = Array.isArray(row.workspace) ? row.workspace[0] : row.workspace;
+                        if (!ws) return null;
+                        return { id: ws.id as string, name: (ws.name as string) || "Workspace" };
+                    })
+                    .filter(Boolean) as Array<{ id: string; name: string }>;
+
+            setAvailableWorkspaces(workspaceList);
 
             if (data?.id) {
                 const { data: memberRows, error: mErr } = await supabase
@@ -438,8 +463,31 @@ export default function SettingsPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-4">
-                            <h2 className="text-base font-semibold">Workspace members</h2>
+                    <div className="space-y-4">
+                        <h2 className="text-base font-semibold">Workspace members</h2>
+                        {availableWorkspaces.length > 1 && (
+                            <div className="space-y-1 text-sm">
+                                <div className="text-xs text-muted-foreground">Current workspace</div>
+                                <select
+                                    className="w-full rounded-md border px-3 py-2 text-sm"
+                                    value={activeWorkspaceId}
+                                    onChange={(e) => {
+                                        const next = e.target.value;
+                                        setActiveWorkspaceId(next);
+                                        if (typeof window !== "undefined") {
+                                            window.localStorage.setItem("active_workspace_id", next);
+                                            window.location.assign("/settings");
+                                        }
+                                    }}
+                                >
+                                    {availableWorkspaces.map((ws) => (
+                                        <option key={ws.id} value={ws.id}>
+                                            {ws.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                             <div className="space-y-2 text-sm">
                                 {members.length === 0 ? (
                                     <p className="text-muted-foreground">No members found.</p>

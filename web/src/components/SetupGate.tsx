@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
@@ -26,11 +26,23 @@ export default function SetupGate({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [gate, setGate] = useState(false);
   const [role, setRole] = useState<WorkspaceRole | null>(null);
   const [redirecting, setRedirecting] = useState(false);
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+    const stored = window.localStorage.getItem("schools_language");
+    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+  });
+  const [recentCompletion, setRecentCompletion] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const ts = window.localStorage.getItem("setup_completed_at");
+    if (!ts) return false;
+    const ageMs = Date.now() - new Date(ts).getTime();
+    return Number.isFinite(ageMs) && ageMs < 2 * 60 * 1000;
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -53,7 +65,10 @@ export default function SetupGate({
       }
 
       setRole(role ?? null);
-      setLanguage((workspace?.language as Language) ?? DEFAULT_LANGUAGE);
+      const stored =
+        typeof window !== "undefined" ? window.localStorage.getItem("schools_language") : null;
+      const fallback = stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+      setLanguage((workspace?.language as Language) ?? (fallback as Language));
       const ws = (workspace ?? null) as WorkspaceRow | null;
       const hasChild = Boolean((ws?.child_name ?? "").trim());
       const hasAddress = Boolean(ws?.home_postcode && ws?.home_house_number);
@@ -69,6 +84,21 @@ export default function SetupGate({
   }, [bypass]);
 
   useEffect(() => {
+    const param = searchParams.get("setup");
+    if (param !== "done") return;
+    setRecentCompletion(true);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("setup_completed_at", new Date().toISOString());
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!recentCompletion) return;
+    const timer = window.setTimeout(() => setRecentCompletion(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [recentCompletion]);
+
+  useEffect(() => {
     const onLang = (event: Event) => {
       const next = (event as CustomEvent<Language>).detail;
       if (next) setLanguage(next);
@@ -79,11 +109,13 @@ export default function SetupGate({
 
   useEffect(() => {
     if (!gate) return;
+    if (searchParams.get("setup") === "done") return;
+    if (recentCompletion) return;
     if (role && role !== "owner") return;
     if (pathname === "/setup") return;
     setRedirecting(true);
     router.replace("/setup");
-  }, [gate, role, pathname, router]);
+  }, [gate, role, pathname, router, recentCompletion, searchParams]);
 
   if (loading) {
     return (

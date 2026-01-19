@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 
 type Workspace = { id: string };
 
@@ -68,7 +68,7 @@ export default function ShortlistPage() {
       }
       setWorkspace(workspaceRow);
       setWorkspaceId(workspaceRow.id);
-      setLanguage((workspaceRow.language as Language) ?? DEFAULT_LANGUAGE);
+      setLanguage((workspaceRow.language as Language) ?? readStoredLanguage());
 
       // Ensure shortlist exists for workspace
       const { data: existing, error: sErr } = await supabase

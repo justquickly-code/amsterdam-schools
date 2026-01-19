@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { friendlyLevel } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 
 type Workspace = {
     id: string;
@@ -146,7 +146,7 @@ export default function SchoolsPage() {
 
             const workspaceRow = (workspace ?? null) as WorkspaceRow | null;
             setWs(workspaceRow);
-            setLanguage((workspaceRow?.language as Language) ?? DEFAULT_LANGUAGE);
+            setLanguage((workspaceRow?.language as Language) ?? readStoredLanguage());
 
             const { data: schoolsData, error: sErr } = await supabase
                 .from("schools")

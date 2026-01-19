@@ -3,11 +3,17 @@ import { createClient } from "@supabase/supabase-js";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
+  const isLocalHost =
+    requestUrl.hostname === "127.0.0.1" || requestUrl.hostname === "0.0.0.0";
+  const redirectOrigin = isLocalHost
+    ? `http://localhost:${requestUrl.port || "3000"}`
+    : requestUrl.origin;
   const code = requestUrl.searchParams.get("code");
   const token = requestUrl.searchParams.get("token");
   const type = requestUrl.searchParams.get("type");
   const invite = requestUrl.searchParams.get("invite");
   const workspaceId = requestUrl.searchParams.get("workspace_id");
+  const lang = requestUrl.searchParams.get("lang");
 
   // Local client is fine here; for production you may prefer server-side auth helpers later.
   const supabase = createClient(
@@ -89,18 +95,22 @@ export async function GET(request: Request) {
       }
 
       if (inviteStatus === "error") {
-        const errorUrl = new URL("/invite", requestUrl.origin);
+        const errorUrl = new URL("/invite", redirectOrigin);
         errorUrl.searchParams.set("status", "error");
         if (inviteReason) errorUrl.searchParams.set("reason", inviteReason);
+        if (lang === "en" || lang === "nl") errorUrl.searchParams.set("lang", lang);
         return NextResponse.redirect(errorUrl);
       }
 
-      const okUrl = new URL("/invite", requestUrl.origin);
+      const okUrl = new URL("/invite", redirectOrigin);
       okUrl.searchParams.set("status", "ok");
+      if (lang === "en" || lang === "nl") okUrl.searchParams.set("lang", lang);
       return NextResponse.redirect(okUrl);
     }
   }
 
   // After successful exchange, redirect home.
-  return NextResponse.redirect(new URL("/", requestUrl.origin));
+  const homeUrl = new URL("/", redirectOrigin);
+  if (lang === "en" || lang === "nl") homeUrl.searchParams.set("lang", lang);
+  return NextResponse.redirect(homeUrl);
 }
