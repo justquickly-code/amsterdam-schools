@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Admin: show feedback notification dot when new items arrive.
+- Feedback: add “new response” indicator in menu and per-item badge.
 - Feedback: add user feedback page, admin console, and response support.
 - Setup: remove commute-calculating helper text from invite step.
 - Setup: skip redirect when setup=done query param is present.

@@ -51,7 +51,11 @@ export default function AdminFeedbackPage() {
         return;
       }
       const json = await listRes.json().catch(() => null);
-      setItems((json?.items ?? []) as FeedbackRow[]);
+      const list = (json?.items ?? []) as FeedbackRow[];
+      setItems(list);
+      if (typeof window !== "undefined" && list.length > 0) {
+        window.localStorage.setItem("admin_feedback_last_seen", list[0].created_at);
+      }
     })().catch(() => setForbidden(true));
   }, []);
 

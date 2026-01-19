@@ -13,6 +13,7 @@ export default function TopMenu() {
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [workspaceId, setWorkspaceId] = useState<string>("");
   const [role, setRole] = useState<WorkspaceRole | null>(null);
+  const [hasNewFeedback, setHasNewFeedback] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -58,6 +59,54 @@ export default function TopMenu() {
   }, []);
 
   useEffect(() => {
+    if (!workspaceId) return;
+    (async () => {
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session.session?.user.id ?? "";
+      if (!userId) return;
+
+      if (isAdmin) {
+        const lastSeen =
+          typeof window !== "undefined"
+            ? new Date(window.localStorage.getItem("admin_feedback_last_seen") ?? 0).getTime()
+            : 0;
+
+        const res = await fetch("/api/admin/feedback", {
+          headers: { Authorization: `Bearer ${session.session?.access_token ?? ""}` },
+        });
+        const json = await res.json().catch(() => null);
+        const latest = (json?.items ?? [])[0];
+        const latestTs = latest?.created_at ? new Date(latest.created_at).getTime() : 0;
+        setHasNewFeedback(latestTs > lastSeen);
+        return;
+      }
+
+      const { data: memberRow } = await supabase
+        .from("workspace_members")
+        .select("feedback_last_seen_at")
+        .eq("workspace_id", workspaceId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const lastSeen = memberRow?.feedback_last_seen_at
+        ? new Date(memberRow.feedback_last_seen_at).getTime()
+        : 0;
+
+      const { data: latest } = await supabase
+        .from("feedback")
+        .select("admin_responded_at")
+        .eq("user_id", userId)
+        .not("admin_responded_at", "is", null)
+        .order("admin_responded_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const latestTs = latest?.admin_responded_at ? new Date(latest.admin_responded_at).getTime() : 0;
+      setHasNewFeedback(latestTs > lastSeen);
+    })().catch(() => null);
+  }, [workspaceId, isAdmin]);
+
+  useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (!menuRef.current) return;
       if (menuRef.current.contains(e.target as Node)) return;
@@ -93,6 +142,9 @@ export default function TopMenu() {
         >
           ☰
         </button>
+        {hasNewFeedback && (
+          <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500" aria-hidden="true" />
+        )}
 
         {open && (
           <div className="absolute right-0 mt-2 w-56 rounded-md border bg-white p-2 shadow-md">
@@ -136,7 +188,10 @@ export default function TopMenu() {
               href="/feedback"
               onClick={() => setOpen(false)}
             >
-              {t(language, "menu.feedback")}
+              <span className="flex items-center justify-between">
+                {t(language, "menu.feedback")}
+                {hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
+              </span>
             </Link>
             <Link
               className="block rounded px-2 py-2 text-sm hover:bg-muted/40"

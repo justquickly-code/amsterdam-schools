@@ -35,6 +35,7 @@ export default function FeedbackPage() {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
   const [items, setItems] = useState<FeedbackRow[]>([]);
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -76,6 +77,15 @@ export default function FeedbackPage() {
       }
 
       setItems((rows ?? []) as FeedbackRow[]);
+
+      const { data: memberRow } = await supabase
+        .from("workspace_members")
+        .select("feedback_last_seen_at")
+        .eq("workspace_id", workspace.id)
+        .eq("user_id", session.session.user.id)
+        .maybeSingle();
+
+      setLastSeenAt(memberRow?.feedback_last_seen_at ?? null);
       setLoading(false);
     }
 
@@ -84,6 +94,28 @@ export default function FeedbackPage() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    if (items.length === 0) return;
+    const latestResponse = items
+      .map((item) => item.admin_responded_at)
+      .filter(Boolean)
+      .sort()
+      .slice(-1)[0];
+    if (!latestResponse) return;
+    const lastSeen = lastSeenAt ? new Date(lastSeenAt).getTime() : 0;
+    const latest = new Date(latestResponse as string).getTime();
+    if (latest <= lastSeen) return;
+
+    (async () => {
+      await supabase
+        .from("workspace_members")
+        .update({ feedback_last_seen_at: new Date().toISOString() })
+        .eq("workspace_id", workspaceId)
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
+    })().catch(() => null);
+  }, [items, lastSeenAt, workspaceId]);
 
   useEffect(() => {
     const onLang = (event: Event) => {
@@ -223,9 +255,14 @@ export default function FeedbackPage() {
                     <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-1">
                       <div className="text-xs text-muted-foreground">{t(language, "feedback.response")}</div>
                       <div>{item.admin_response}</div>
-                      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
-                        {t(language, "feedback.new_response")}
-                      </span>
+                      {(item.admin_responded_at &&
+                        (!lastSeenAt ||
+                          new Date(item.admin_responded_at).getTime() >
+                            new Date(lastSeenAt).getTime())) && (
+                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
+                          {t(language, "feedback.new_response")}
+                        </span>
+                      )}
                     </div>
                   ) : null}
                 </li>
