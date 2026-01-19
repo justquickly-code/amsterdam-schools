@@ -77,7 +77,7 @@ Legend:
 ### 1.2 Shortlist print/export view (CL-011)
 **Work**
 - Add `/shortlist/print` (or `/shortlist/export`) with:
-  - rank
+  - rank (1–N, where N = advice-based cap)
   - school name
   - rating
   - attended

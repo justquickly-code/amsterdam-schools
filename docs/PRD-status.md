@@ -19,7 +19,7 @@ Source of truth:
 | Advies filtering + Either/Both toggle | ✅ | Implemented per acceptance criteria. |
 | Open days best-effort with “verify” + last synced | ✅ | Implemented warning + ICS; year/event_type handling completed. User-facing wording should say “Open Days”. |
 | Save visit notes + 1–5 rating | ✅ | Visits + rating implemented; notes are per member. |
-| Top 12 subset view + ranked order | ✅ | Ranking implemented. |
+| Ranked subset view + ranked order (cap by advice) | ✅ | Ranking implemented. |
 | Planned open days | ✅ | Workspace-specific planned toggle implemented (CL-065). |
 | Dashboard landing | ✅ | Dashboard content + setup nudges implemented (CL-063/064). |
 
@@ -28,4 +28,4 @@ Source of truth:
 - Dashboard default after login (CL-063)
 - First-run setup gating (CL-064)
 - Language setting NL default + EN optional (CL-104)
-- One list + Top12 subset view (CL-107)
+- One list + ranked subset view (cap by advice) (CL-107)

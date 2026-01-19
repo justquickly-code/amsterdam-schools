@@ -156,7 +156,7 @@ Implement cycling ETA and distance from home lat/lng to school lat/lng using the
 
 ⸻
 
-H) Visits, rating, and the Top 12
+H) Visits, rating, and the ranked list
 
 H1 — Visit notes + 1–5 star rating
 
@@ -168,13 +168,13 @@ H2 — Shortlist: strict 12 cap + ranking
 
 Prompt
 
-Implement a Top 12 shortlist per workspace with strict cap of 12. Prevent adding a 13th with clear UI messaging. Add ranking (drag-and-drop or up/down controls). Add tests for the cap rule and ranking persistence.
+Implement a ranked shortlist per workspace with a cap based on advice (4/6/12). Users can save any number of schools but only rank up to the cap. Add ranking (drag-and-drop or up/down controls). Add tests for the cap rule and ranking persistence.
 
 H3 — Export/print view
 
 Prompt
 
-Add an export/print-friendly page for the Top 12 showing: rank, school name, rating, and key notes. Keep styling minimal and readable.
+Add an export/print-friendly page for the ranked list showing: rank, school name, rating, and key notes. Keep styling minimal and readable.
 
 ⸻
 

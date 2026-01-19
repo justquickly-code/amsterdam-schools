@@ -10,7 +10,7 @@ Locked Decisions
 
 [User-provided] Auth + DB: Supabase
 [User-provided] Rating: single 1–5 stars
-[User-provided] One list of saved schools with a ranked Top 12 subset (cap 12)
+[User-provided] One list of saved schools with a ranked subset (cap depends on advice)
 [User-provided] Home input: NL postcode + house number
 [User-provided] Advies filtering: combined advice supported; default match EITHER with toggle for BOTH
 [User-provided] Open days UI honesty: always warn users to verify on school websites + show last synced

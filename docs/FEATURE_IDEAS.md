@@ -34,8 +34,8 @@ Milestones (v1):
 6. Open Day Attended
    - Trigger: user marks an open day as attended (per school event)
    - Reward: badge per attendance (or streak counter)
-7. Top 12 Finalised
-   - Trigger: user marks "Top 12 locked"
+7. Ranked List Finalised
+   - Trigger: user marks "Ranked list locked"
    - Reward: badge + progress bump + visual "locked" state
 8. Submitted to Government
    - Trigger: manual flag: "submitted our 12"

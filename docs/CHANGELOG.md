@@ -7,6 +7,7 @@
 - Docs: plan Keuzegids tutorial, menu entry, and dashboard next-date widget (Phase 5).
 - Docs: clarify setup flow sequencing, tutorial intent, and progress bar “recently completed” list.
 - Docs: add Keuzegids guidance on recommended shortlist length by advice (4/6/12 + profile-class caveat).
+- Docs: update ranked list cap wording by advice.
 - Admin: show feedback notification dot when new items arrive.
 - Feedback: add “new response” indicator in menu and per-item badge.
 - Feedback: add user feedback page, admin console, and response support.
@@ -49,11 +50,11 @@
 - Docs: mark RELEASE_PLAN complete through Phase 4 (Jan 18, 2026).
 - Schools detail: fix hook order error after language toggle changes.
 - Setup: after completion, redirect from welcome screen to Dashboard.
-- Docs: add future idea for gamified dashboard progress (Top 12 + visits + notes).
+- Docs: add future idea for gamified dashboard progress (ranked list + visits + notes).
 - Public /planner: remove/hide “Show inactive” toggle (not intuitive for end users).
 - Admin: keep “Show inactive” capability, move it to an admin-only open-days view (/admin/open-days).
-- Docs: clarified canonical planner route and Top 12 wording; added Doc Audit Report to CHANGELOG_AUDIT.
-- Docs: aligned PRD-status CL IDs, Open Days routing notes, Top 12 subset wording, planned open day model, and admin auth requirements.
+- Docs: clarified canonical planner route and ranked list wording; added Doc Audit Report to CHANGELOG_AUDIT.
+- Docs: aligned PRD-status CL IDs, Open Days routing notes, ranked subset wording, planned open day model, and admin auth requirements.
 - Docs: aligned Open Days wording in README/PRD-status/Cursor prompt pack.
 - Docs: removed boilerplate web/README.md (use root README only).
 - Docs: added minimal web/README.md pointer to root README.

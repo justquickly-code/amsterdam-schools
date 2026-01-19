@@ -3,7 +3,7 @@
 This repo builds a lightweight planner for Amsterdam parents + children to:
 - discover schools,
 - see open days,
-- shortlist & rank schools,
+- shortlist & rank schools (rank cap depends on advice),
 - plan visits,
 - capture notes/ratings,
 - and (optionally) see bike commute estimates.
@@ -85,8 +85,8 @@ Cursor must treat these files as authoritative:
 - Keep the capability for ops/debug **in admin tooling** only.
 
 ### 3.5 Shortlist model (agreed direction)
-- Option A: **One list** with a **Top 12 subset view**.
-- Parents may explore more than 12; the UI must still highlight the top 12.
+- Option A: **One list** with a **ranked subset** (cap depends on advice).
+- Parents may explore more than the cap; the UI must still highlight the ranked subset.
 
 ### 3.6 Planned visits
 - A simple status is enough for now: **Planned** (no separate “Booked” yet).

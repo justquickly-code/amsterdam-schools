@@ -20,15 +20,16 @@
   - last synced timestamp
 - Can add a visit note
 - Can set a 1–5 star rating
-- Can add/remove from Top 12
+- Can add/remove from ranked list (cap depends on advice)
 
 ## Open days
 - Each open day includes a source link where possible
 - If open days data is old (policy later): show “may be outdated” label
 
-## Shortlist (Top 12)
+## Shortlist (Ranked list)
 - User can save schools to one list
-- Top 12 is a ranked subset view capped at 12
-- App prevents adding a 13th to the Top 12
-- User can rank 1–12 (drag/drop or up/down)
+- Ranked list is a subset of the saved list; cap depends on advice (4/6/12)
+- Users can add any number to the saved shortlist, but only rank up to the cap
+- If advice changes, keep the saved list and adjust the rankable cap
+- User can rank 1–N (drag/drop or up/down), where N = cap
 - Export/print view shows ranked list with ratings and key notes

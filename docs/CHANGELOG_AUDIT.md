@@ -74,14 +74,14 @@ Top 5 risks if we proceed without fixes
 | CL-065 | P1 | UX/Data | DONE | Planned open days (workspace-specific) | Planned join table + toggles in Open Days + School detail; highlight missing planned. |
 | CL-101 | P1 | UX | DONE | Mobile bottom nav | Navigation decision locked. |
 | CL-104 | P1 | UX | DONE | Language setting NL default + EN optional | Decision locked. |
-| CL-107 | P1 | UX | DONE | One list + Top 12 subset view | Decision locked. |
+| CL-107 | P1 | UX | DONE | One list + ranked subset view (cap by advice) | Decision locked. |
 
 ---
 
 ## Decisions log
 
 - Public /planner: do not show “inactive” (ops/debug belongs in admin tooling).
-- Shortlist: one list + Top 12 subset view (Option A).
+- Shortlist: one list + ranked subset view (cap by advice) (Option A).
 - Planned visits: single status “Planned” for now (no separate Booked).
 - Bilingual support required; default Dutch; language setting required.
 - Bottom nav on mobile; dashboard landing after login.

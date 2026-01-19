@@ -1,7 +1,7 @@
 # PRD — Amsterdam Schools Open Day Planner
 
 ## Goal
-Help a family plan Amsterdam secondary school open days, capture notes + a 1–5 star rating, and produce a ranked Top 12 shortlist (cap 12) within a larger saved list.
+Help a family plan Amsterdam secondary school open days, capture notes + a 1–5 star rating, and produce a ranked shortlist (cap depends on advice) within a larger saved list.
 
 ## Key requirements
 - Accounts + Workspace (shareable with friends)
@@ -9,10 +9,10 @@ Help a family plan Amsterdam secondary school open days, capture notes + a 1–5
 - Cycling time + distance to each school (bike)
 - Advies filtering (single dropdown with combined options; matching is “either”)
 - Open days are “best effort”: show last synced + warn users to verify on school websites
-- One saved list of schools with a ranked Top 12 subset (cap 12)
+- One saved list of schools with a ranked subset (cap depends on advice)
 - One rating only (1–5 stars)
 - Auth: Parent email login (Supabase). One family account used across devices. Sessions should stay logged in by default.
-- Save many schools; Top 12 is a ranked subset view capped at 12.
+- Save many schools; the ranked subset cap depends on advice (4/6/12). The saved list never shrinks if advice changes.
 - Scope: focus on schools in the **central lottery/matching** system. Exclude praktijkonderwijs, voortgezet speciaal onderwijs (VSO), kopklas, kleinschalig ondersteunend voortgezet onderwijs (kovo), and internationale schakelklassen.
 - Tutorial: an optional, kid-friendly “How it works” walkthrough based on Keuzegids dates. Accessible from setup and from the top-right menu.
 - Dashboard: show the next important date(s) from the lottery timeline.

@@ -41,7 +41,7 @@
   - school_id
   - saved_at
 
-- Top12Item (workspace-specific ranked subset)
+- RankedItem (workspace-specific ranked subset; cap depends on advice)
   - school_id
   - rank: 1–12 (max 12)
 
@@ -72,7 +72,7 @@
   - admin_response (optional)
 
 ## Non-negotiables
-- Top 12 hard cap: 12 (subset of saved schools)
+- Ranked cap depends on advice (4/6/12); saved list is not capped
 - One rating per school (1–5 stars)
 - Advies can be combined (two levels)
 - Open days must show “verify on school website” + “last synced”

@@ -4,7 +4,7 @@
 - / (Dashboard)
   - upcoming open days (next 30 days)
   - reminders to add notes after attended visits
-  - quick link to Top 12
+  - quick link to ranked list
 
 - /schools (Schools list)
   - default filtered by advies
@@ -17,21 +17,21 @@
   - open days list (with warning + last synced)
   - planned toggle per open day
   - visit notes (per member) + shared 1–5 star rating
-  - add/remove from Top 12
+  - add/remove from ranked list
 
 - /planner (Open Days)
   - chronological list
   - filters: event type, date range, shortlist-only
   - planned status toggle
 
-- /shortlist (Top 12)
+- /shortlist (Ranked list)
   - add/remove
-  - strict cap: 12
-  - drag/drop ranking 1–12
+  - rankable cap depends on advice (4/6/12)
+  - drag/drop ranking 1–N (N = cap)
   - export/print view
 
 - /shortlist/print (Print export)
-  - printable Top 12
+  - printable ranked list
 
 - /feedback
   - submit feedback (bug/idea/question/other)
