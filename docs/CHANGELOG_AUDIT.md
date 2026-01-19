@@ -53,7 +53,7 @@ Top 5 risks if we proceed without fixes
 | CL-060 | P3 | UX | DONE | Retry once on shortlist rank conflicts | Handle unique constraint fail with refresh + retry. |
 | CL-061 | P3 | UX | DONE | Friendly supported level labels | Map tokens to human text. |
 | CL-062 | P1 | UX | DONE | Workspace member sharing | Invite/add members to share a workspace. |
-| CL-063 | P1 | UX | OPEN | Dashboard content + setup nudges | Dashboard needs real content and setup prompts. |
+| CL-063 | P1 | UX | DONE | Dashboard content + setup nudges | Progress panel, recent list, and next dates added. |
 | CL-064 | P1 | UX | DONE | First-run setup gating | Require home + advies setup early in flow. |
 | CL-032 | P2 | Security | DONE | Admin allowlist/is_admin check | Require admin session + allowlist in admin routes. |
 | CL-110 | P1 | Data | DONE | Scope schools to central lottery/matching | Exclude praktijkonderwijs, VSO, kopklas, kovo, schakelklassen. |

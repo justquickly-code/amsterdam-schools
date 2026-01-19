@@ -1,6 +1,14 @@
 # Changelog
 
 ## Unreleased
+- Tutorial: add /how-it-works page with Keuzegids timeline, next dates, and shortlist length guidance.
+- Setup: add optional tutorial step after invites; “finish setup” now routes through tutorial or dashboard.
+- Dashboard: add “next important dates” widget and recent-completed list in progress panel.
+- Shortlist: advice-based rank cap with unranked saved list; “rank next” swaps out bottom slot when full.
+- Shortlist print: include only ranked items up to cap; show cap in header.
+- Data: track tutorial completion per member via workspace_members.tutorial_completed_at.
+- Auth: use token_hash for magic-link verify; guard invite session nulls; settings error handling.
+- Admin sync: count deactivated/reactivated open days via returned rows to satisfy TS build.
 - Docs: clarify scope to central lottery/matching schools and exclude praktijkonderwijs/VSO/kopklas/kovo/schakelklassen.
 - Admin sync: supplement Schoolwijzer with Keuzegids regular VO schools (including address/website) if missing from API.
 - Admin sync: geocode supplemental schools via Mapbox when available.
