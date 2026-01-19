@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import SetupGate from "@/components/SetupGate";
@@ -29,9 +30,11 @@ export default function ClientShell({ children }: { children: React.ReactNode })
   return (
     <>
       {showMenu && <TopMenu />}
-      <SetupGate bypass={bypass} showNav={!hideNav} nav={nav}>
-        {children}
-      </SetupGate>
+      <Suspense fallback={null}>
+        <SetupGate bypass={bypass} showNav={!hideNav} nav={nav}>
+          {children}
+        </SetupGate>
+      </Suspense>
     </>
   );
 }
