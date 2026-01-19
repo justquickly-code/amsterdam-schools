@@ -62,6 +62,15 @@
   - advies_levels: array (e.g., ["havo"] or ["havo","vwo"])
   - match_mode: either | both
 
+- Feedback (user-submitted)
+  - workspace_id
+  - user_id
+  - category: bug | idea | question | other
+  - title (optional)
+  - body
+  - status (admin only): open | in_review | resolved
+  - admin_response (optional)
+
 ## Non-negotiables
 - Top 12 hard cap: 12 (subset of saved schools)
 - One rating per school (1–5 stars)

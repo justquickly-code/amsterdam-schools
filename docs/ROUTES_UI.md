@@ -33,6 +33,10 @@
 - /shortlist/print (Print export)
   - printable Top 12
 
+- /feedback
+  - submit feedback (bug/idea/question/other)
+  - list your feedback + admin responses
+
 - /settings
   - workspace name
   - home location: postcode + house number
@@ -42,6 +46,10 @@
 - /admin (Admin hub, allowlisted only)
   - entry point to admin sync tools
   - requires admin allowlist + admin token guard
+
+- /admin/feedback (Admin)
+  - review feedback
+  - respond + set status
 
 ## UI states (every page)
 - Loading

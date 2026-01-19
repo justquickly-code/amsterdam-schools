@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Feedback: add user feedback page, admin console, and response support.
 - Setup: remove commute-calculating helper text from invite step.
 - Setup: skip redirect when setup=done query param is present.
 - Setup: pass setup=done to prevent redirect loop after invite step.

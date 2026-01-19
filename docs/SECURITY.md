@@ -21,6 +21,10 @@ Routes under /api/admin/*:
   - workspace owners/members for workspace-owned tables
   - service role only for ingestion tables if desired (schools/open_days)
 
+## Feedback (RLS)
+- Users can insert/select only their own feedback.
+- Admin responses + status updates are handled server-side with service role + admin allowlist.
+
 ## High-risk areas to review before production
 - Any code path using SUPABASE_SERVICE_ROLE_KEY must be:
   - server-only

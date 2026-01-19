@@ -133,6 +133,13 @@ export default function TopMenu() {
             </Link>
             <Link
               className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+              href="/feedback"
+              onClick={() => setOpen(false)}
+            >
+              {t(language, "menu.feedback")}
+            </Link>
+            <Link
+              className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
               href="/shortlist/print"
               target="_blank"
               onClick={() => setOpen(false)}

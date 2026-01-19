@@ -34,6 +34,11 @@ These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 IMPORTANT:
 - Ensure the route computes commutes for the caller’s workspace (never “first workspace in DB”).
 
+### Feedback (admin)
+- Endpoint: GET/PATCH /api/admin/feedback
+- Purpose: list user feedback and respond as admin.
+- Requires allowlisted admin session (Authorization header).
+
 ### On-demand Commute Compute (user-safe)
 - Endpoint: POST /api/commutes/compute
 - Purpose: compute a limited batch of missing commutes for the signed-in user.

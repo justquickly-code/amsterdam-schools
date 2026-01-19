@@ -54,6 +54,10 @@ export default function AdminHomePage() {
             <div className="font-medium">Compute commutes</div>
             <div className="text-sm text-muted-foreground">Batch bike time + distance cache.</div>
           </Link>
+          <Link className="rounded-lg border p-4 hover:bg-muted/30" href="/admin/feedback">
+            <div className="font-medium">Feedback</div>
+            <div className="text-sm text-muted-foreground">Review and respond to user feedback.</div>
+          </Link>
         </div>
       </div>
     </main>
