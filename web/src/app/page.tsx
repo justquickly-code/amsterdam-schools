@@ -328,7 +328,12 @@ export default function Home() {
   return (
     <main className="min-h-screen p-6 flex items-start justify-center">
       <div className="w-full max-w-3xl rounded-xl border p-6 space-y-6">
-        <div className="space-y-1">
+        <div className="space-y-2">
+          <img
+            src="/branding/mijnschoolkeuze_kit_v4/wordmark.png"
+            alt="Mijn Schoolkeuze"
+            className="h-10 w-auto"
+          />
           <h1 className="text-2xl font-semibold">{t(language, "dashboard.title")}</h1>
           {workspace?.child_name ? (
             <p className="text-sm text-muted-foreground">
