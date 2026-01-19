@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
 
@@ -50,6 +51,13 @@ export default function SetupGate({
     async function check() {
       if (bypass) {
         setLoading(false);
+        return;
+      }
+
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        setLoading(false);
+        router.replace("/login");
         return;
       }
 
