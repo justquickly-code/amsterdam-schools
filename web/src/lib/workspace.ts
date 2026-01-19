@@ -30,7 +30,8 @@ export async function fetchCurrentWorkspace<T>(select: string) {
 
   const list = (data ?? [])
     .map((row) => {
-      const r = row as WorkspaceMemberRow<T>;
+      if (!row || typeof row !== "object") return null;
+      const r = row as unknown as WorkspaceMemberRow<T>;
       const ws = Array.isArray(r.workspace) ? r.workspace[0] : r.workspace;
       if (!ws) return null;
       return { role: r.role, workspace: ws };
