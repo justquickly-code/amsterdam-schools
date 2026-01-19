@@ -103,54 +103,63 @@ export default function LoginPage() {
   }
 
   return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              {t(hydrated ? language : DEFAULT_LANGUAGE, "settings.language")}
-            </div>
-            <button
-              className="rounded-full border px-3 py-1 text-xs"
-              type="button"
-              onClick={toggleLanguage}
-            >
-              {language === "nl" ? "NL" : "EN"}
-            </button>
-          </div>
-          <h1 className="text-2xl font-semibold">{t(language, "login.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t(language, "login.subtitle")}</p>
-
-        {lastEmail && !email && (
-          <button className="text-sm underline" onClick={() => setEmail(lastEmail)} type="button">
-            {t(language, "login.use_last")}: {lastEmail}
-          </button>
-        )}
-
-        <form className="space-y-3" onSubmit={sendLink}>
-          <label className="block space-y-1">
-            <span className="text-sm">{t(language, "login.email")}</span>
-            <input
-              className="w-full rounded-md border px-3 py-2"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="family@example.com"
-              autoComplete="email"
+    <main className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-4">
+          <div className="flex items-center justify-center">
+            <img
+              src="/branding/mijnschoolkeuze_kit_v4/wordmark.png"
+              alt="Mijn Schoolkeuze"
+              className="h-10 w-auto"
             />
-          </label>
+          </div>
+          <div className="rounded-xl border p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                {t(hydrated ? language : DEFAULT_LANGUAGE, "settings.language")}
+              </div>
+              <button
+                className="rounded-full border px-3 py-1 text-xs"
+                type="button"
+                onClick={toggleLanguage}
+              >
+                {language === "nl" ? "NL" : "EN"}
+              </button>
+            </div>
+            <h1 className="text-2xl font-semibold">{t(language, "login.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t(language, "login.subtitle")}</p>
 
-          <button
-            className="w-full rounded-md border px-3 py-2"
-            type="submit"
-            disabled={status === "sending"}
-          >
-            {status === "sending" ? t(language, "login.sending") : t(language, "login.send_link")}
-          </button>
-        </form>
+          {lastEmail && !email && (
+            <button className="text-sm underline" onClick={() => setEmail(lastEmail)} type="button">
+              {t(language, "login.use_last")}: {lastEmail}
+            </button>
+          )}
 
-        {message && (
-          <p className={`text-sm ${status === "error" ? "text-red-600" : ""}`}>{message}</p>
-        )}
+          <form className="space-y-3" onSubmit={sendLink}>
+            <label className="block space-y-1">
+              <span className="text-sm">{t(language, "login.email")}</span>
+              <input
+                className="w-full rounded-md border px-3 py-2"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="family@example.com"
+                autoComplete="email"
+              />
+            </label>
+
+            <button
+              className="w-full rounded-md border px-3 py-2"
+              type="submit"
+              disabled={status === "sending"}
+            >
+              {status === "sending" ? t(language, "login.sending") : t(language, "login.send_link")}
+            </button>
+          </form>
+
+          {message && (
+            <p className={`text-sm ${status === "error" ? "text-red-600" : ""}`}>{message}</p>
+          )}
+        </div>
       </div>
     </main>
   );
