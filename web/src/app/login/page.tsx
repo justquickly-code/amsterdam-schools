@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
 
@@ -11,6 +12,8 @@ export default function LoginPage() {
   const [lastEmail, setLastEmail] = useState<string | null>(null);
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [hydrated, setHydrated] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const stored = window.localStorage.getItem("schools_language");
@@ -19,6 +22,21 @@ export default function LoginPage() {
     }
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      if (data.session) {
+        router.replace("/");
+      } else {
+        setCheckingSession(false);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -57,11 +75,12 @@ export default function LoginPage() {
 
       window.localStorage.setItem("last_login_email", trimmed);
 
+      const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
           // After clicking the email link, user returns to the app
-          emailRedirectTo: `http://localhost:3000/auth/callback?lang=${language}`,
+          emailRedirectTo: `${origin}/auth/callback?lang=${language}`,
         },
       });
 
@@ -73,6 +92,14 @@ export default function LoginPage() {
       setStatus("error");
       setMessage(errMsg(err) ?? "Something went wrong. Please try again.");
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6">
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </main>
+    );
   }
 
   return (
