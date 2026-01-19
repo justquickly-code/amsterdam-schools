@@ -96,6 +96,11 @@ Cursor must treat these files as authoritative:
 - The app supports the **central lottery/matching** system schools only.
 - Exclude: praktijkonderwijs, voortgezet speciaal onderwijs (VSO), kopklas, kleinschalig ondersteunend voortgezet onderwijs (kovo), and internationale schakelklassen.
 
+### 3.8 iOS Home Screen (PWA) note
+- For now, **do not recommend** “Add to Home Screen” on iOS.
+- The standalone web app does not reliably persist Supabase sessions (Safari vs standalone storage).
+- Users should use Safari directly until we implement an in‑app magic‑link/OTP flow.
+
 ---
 
 ## 4) Future ideas (not in scope yet)

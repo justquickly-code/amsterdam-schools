@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Docs: note iOS Home Screen (PWA) limitation and recommend Safari until in-app auth flow exists.
 - Tutorial: add /how-it-works page with Keuzegids timeline, next dates, and shortlist length guidance.
 - Setup: add optional tutorial step after invites; “finish setup” now routes through tutorial or dashboard.
 - Dashboard: add “next important dates” widget and recent-completed list in progress panel.
