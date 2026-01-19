@@ -39,6 +39,7 @@
 
 - /how-it-works
   - kid-friendly tutorial with key dates from Keuzegids (mainstream lottery path)
+  - clarify: this is the Amsterdam Year‑8 → Secondary 2026 process (not app UI training)
 
 - /settings
   - workspace name
@@ -63,6 +64,12 @@
 - Bottom nav (Dashboard, Schools, Open Days, Shortlist).
 - Top-right menu: Settings, Print/Export, Language toggle, Sign out, How it works.
 - Admin entry appears in top-right menu for allowlisted users.
+
+## Setup flow (first login)
+- Step 1: Profile details (mandatory). Explain why (advies filtering + commute times).
+- Step 2: Invite family (optional). Explain shared workspace + per‑member notes.
+- Step 3: How it works tutorial (optional). Emphasize it’s the Amsterdam 2025/26 process.
+- Invited users (new accounts) can start tutorial or skip to Dashboard.
 
 ## Routing note
 - /planner is the canonical route.

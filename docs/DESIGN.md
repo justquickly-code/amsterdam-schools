@@ -30,3 +30,8 @@ Style reference: iOS Settings / Apple Health (calm, list-first).
 ## Voice & tone
 - Calm and friendly for parents.
 - Informal and fun for kids where appropriate (tutorial content), while keeping dates/facts accurate.
+- Setup/tutorial copy should be light and encouraging, but explicit about what each step is for.
+
+## Progress bar (Dashboard)
+- Show completion % and a short “recently completed” list (e.g., Profile done, Invite sent, Tutorial completed).
+- Use the recent list to explain early % values so the progress feels grounded.
