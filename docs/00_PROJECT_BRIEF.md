@@ -92,6 +92,10 @@ Cursor must treat these files as authoritative:
 - A simple status is enough for now: **Planned** (no separate “Booked” yet).
 - There may be multiple open days per school; the UI should make it easy to spot schools with **no planned open day**.
 
+### 3.7 Scope: central lottery/matching only
+- The app supports the **central lottery/matching** system schools only.
+- Exclude: praktijkonderwijs, voortgezet speciaal onderwijs (VSO), kopklas, kleinschalig ondersteunend voortgezet onderwijs (kovo), and internationale schakelklassen.
+
 ---
 
 ## 4) Future ideas (not in scope yet)

@@ -12,6 +12,74 @@ type JsonApiResponse = {
   meta?: Record<string, unknown>;
 };
 
+type GeocodeFeature = {
+  center: [number, number]; // [lng, lat]
+};
+
+const SUPPLEMENTAL_SCHOOLS = [
+  {
+    name: "Fiducie College",
+    supported_levels: ["vmbo-tl", "havo"],
+    address: "Derkinderenstraat 44 1062 BJ Amsterdam",
+    website_url: "fiduciecollege.nl",
+  },
+  {
+    name: "Kairos College",
+    supported_levels: ["vmbo-tl", "havo", "vwo"],
+    address: "Meeuwenlaan 136 1022 AM Amsterdam",
+    website_url: "kairostienercollege.nl",
+  },
+  {
+    name: "Metropolis Lyceum",
+    supported_levels: ["vmbo-tl", "havo", "vwo"],
+    address: "Meeuwenlaan 132 1022 AM Amsterdam",
+    website_url: "metropolislyceum.nl",
+  },
+  {
+    name: "Montessori Lyceum Pax",
+    supported_levels: ["vmbo-tl", "havo", "vwo"],
+    address: "C. van Eesterenlaan 50 1019 JN Amsterdam",
+    website_url: "montessorilyceumpax.nl",
+  },
+  {
+    name: "OSB Amsterdam",
+    supported_levels: ["vmbo-bb", "vmbo-kb", "vmbo-tl", "havo", "vwo"],
+    address: "Gulden Kruis 5 1103 BE Amsterdam",
+    website_url: "osbijlmer.nl",
+  },
+  {
+    name: "TASC (Tech Amsterdam Scholen Collectief)",
+    supported_levels: ["vmbo-bb", "vmbo-kb", "vmbo-tl"],
+    address: "Darlingstraat 2 1102 MX Amsterdam",
+    website_url: "tasc.espritscholen.nl",
+  },
+];
+
+function normalizeNameForMatch(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function supplementalSourceId(name: string): string {
+  return `keuzegids-2026:${normalizeNameForMatch(name).replace(/\s+/g, "-")}`;
+}
+
+async function geocodeAddress(
+  address: string,
+  mapboxToken: string
+): Promise<{ lat: number; lng: number } | null> {
+  const query = encodeURIComponent(`${address}, Netherlands`);
+  const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?limit=1&access_token=${mapboxToken}`;
+  const res = await fetch(geocodeUrl);
+  if (!res.ok) return null;
+  const geoJson = (await res.json()) as { features?: GeocodeFeature[] };
+  const feature = geoJson.features?.[0];
+  if (!feature?.center) return null;
+  return { lng: feature.center[0], lat: feature.center[1] };
+}
+
 function normalizeLevelToken(raw: string): string | null {
   const s = raw.toLowerCase();
 
@@ -206,6 +274,7 @@ export async function POST(req: Request) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const mapboxToken = process.env.MAPBOX_ACCESS_TOKEN ?? "";
   if (!serviceKey) {
     return NextResponse.json(
       { ok: false, error: "Missing SUPABASE_SERVICE_ROLE_KEY in env" },
@@ -223,6 +292,8 @@ export async function POST(req: Request) {
   let page = 1;
   let totalFetched = 0;
   let totalUpserted = 0;
+  let supplementalUpserted = 0;
+  const fetchedNames = new Set<string>();
 
   while (true) {
     const endpoint = `${base}?${filter}&page[number]=${page}`;
@@ -250,11 +321,13 @@ export async function POST(req: Request) {
     const rows = data.map((item) => {
       const attrs = item.attributes ?? {};
       const { lat, lng } = extractLatLng(attrs);
+      const name = extractName(attrs);
+      if (name) fetchedNames.add(normalizeNameForMatch(name));
 
       return {
         source: "schoolwijzer",
         source_id: item.id,
-        name: extractName(attrs),
+        name,
         address: extractAddress(attrs),
         website_url: extractWebsite(attrs),
         supported_levels: extractSupportedLevels(attrs),
@@ -281,12 +354,61 @@ export async function POST(req: Request) {
     if (page > 50) break;
   }
 
+  const now = new Date().toISOString();
+  const supplementalMissing = SUPPLEMENTAL_SCHOOLS.filter(
+    (school) => !fetchedNames.has(normalizeNameForMatch(school.name))
+  );
+
+  if (supplementalMissing.length > 0) {
+    const rows = [];
+    for (const school of supplementalMissing) {
+      let lat: number | null = null;
+      let lng: number | null = null;
+      if (school.address && mapboxToken) {
+        const geo = await geocodeAddress(school.address, mapboxToken);
+        if (geo) {
+          lat = geo.lat;
+          lng = geo.lng;
+        }
+      }
+      rows.push({
+        source: "keuzegids_2026",
+        source_id: supplementalSourceId(school.name),
+        name: school.name,
+        address: school.address ?? null,
+        website_url: school.website_url ?? null,
+        supported_levels: school.supported_levels,
+        lat,
+        lng,
+        last_synced_at: now,
+      });
+    }
+
+    const { error } = await admin.from("schools").upsert(rows, {
+      onConflict: "source,source_id",
+    });
+
+    if (error) {
+      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    }
+
+    supplementalUpserted = rows.length;
+  }
+
+  const supplementalPresent = SUPPLEMENTAL_SCHOOLS.filter((school) =>
+    fetchedNames.has(normalizeNameForMatch(school.name))
+  );
+  if (supplementalPresent.length > 0) {
+    const ids = supplementalPresent.map((school) => supplementalSourceId(school.name));
+    await admin.from("schools").delete().eq("source", "keuzegids_2026").in("source_id", ids);
+  }
+
   // Record sync run
   const { error: runErr } = await admin.from("data_sync_runs").insert({
     source: "schoolwijzer_schools",
     school_year_label: label,
     status: "success",
-    notes: `Fetched ${totalFetched}, upserted ${totalUpserted}`,
+    notes: `Fetched ${totalFetched}, upserted ${totalUpserted}, supplemental ${supplementalUpserted}`,
   });
 
   if (runErr) {

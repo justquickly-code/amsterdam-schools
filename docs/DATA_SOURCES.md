@@ -4,6 +4,12 @@
 Source (preferred): Schoolwijzer Amsterdam (structured/API if available)
 Reference UI: https://schoolwijzer.amsterdam.nl/en/vo/list/
 
+Scope note: We only include schools that participate in the **central lottery/matching** system.
+We exclude praktijkonderwijs, voortgezet speciaal onderwijs (VSO), kopklas, kleinschalig ondersteunend voortgezet onderwijs (kovo), and internationale schakelklassen.
+
+Supplement: Some regular schools listed in the 2026 Keuzegids are not present in the Schoolwijzer API.
+We maintain a small manual supplement list in the admin sync to keep those schools in the dataset.
+
 We store:
 - name
 - address

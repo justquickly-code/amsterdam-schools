@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Docs: clarify scope to central lottery/matching schools and exclude praktijkonderwijs/VSO/kopklas/kovo/schakelklassen.
+- Admin sync: supplement Schoolwijzer with Keuzegids regular VO schools (including address/website) if missing from API.
+- Admin sync: geocode supplemental schools via Mapbox when available.
 - Admin: show feedback notification dot when new items arrive.
 - Feedback: add “new response” indicator in menu and per-item badge.
 - Feedback: add user feedback page, admin console, and response support.
