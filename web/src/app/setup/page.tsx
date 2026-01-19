@@ -35,7 +35,7 @@ export default function SetupPage() {
     const stored = window.localStorage.getItem("schools_language");
     return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
   });
-  const [step, setStep] = useState<"profile" | "invite">("profile");
+  const [step, setStep] = useState<"profile" | "invite" | "tutorial">("profile");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
@@ -316,7 +316,10 @@ export default function SetupPage() {
         </div>
         <h1 className="text-2xl font-semibold">{t(language, "setup.title")}</h1>
         {step === "profile" && (
-          <p className="text-sm text-muted-foreground">{t(language, "setup.intro")}</p>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>{t(language, "setup.intro")}</p>
+            <p>{t(language, "setup.profile_why")}</p>
+          </div>
         )}
 
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
@@ -352,16 +355,38 @@ export default function SetupPage() {
               <button
                 className="rounded-md border px-3 py-2 text-sm"
                 type="button"
-                onClick={() => router.replace("/?setup=done")}
+                onClick={() => setStep("tutorial")}
               >
                 {t(language, "setup.skip")}
               </button>
               <button
                 className="rounded-md border px-3 py-2 text-sm"
                 type="button"
-                onClick={() => router.replace("/?setup=done")}
+                onClick={() => setStep("tutorial")}
               >
                 {t(language, "setup.continue")}
+              </button>
+            </div>
+          </div>
+        ) : step === "tutorial" ? (
+          <div className="space-y-3">
+            <div className="text-sm text-muted-foreground">{t(language, "setup.tutorial_intro")}</div>
+            <div className="text-sm text-muted-foreground">{t(language, "setup.tutorial_body")}</div>
+            <div className="text-xs text-muted-foreground">{t(language, "setup.tutorial_later")}</div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="rounded-md border px-3 py-2 text-sm"
+                type="button"
+                onClick={() => router.replace("/how-it-works?from=setup&setup=done")}
+              >
+                {t(language, "setup.tutorial_start")}
+              </button>
+              <button
+                className="rounded-md border px-3 py-2 text-sm"
+                type="button"
+                onClick={() => router.replace("/?setup=done")}
+              >
+                {t(language, "setup.skip")}
               </button>
             </div>
           </div>

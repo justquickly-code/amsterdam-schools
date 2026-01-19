@@ -39,18 +39,33 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.tip_shortlist": "Voeg je eerste school toe aan de shortlist.",
     "dashboard.tip_note": "Voeg een eerste notitie toe aan een school.",
     "dashboard.tip_rating": "Geef een eerste beoordeling aan een school.",
+    "dashboard.tip_tutorial": "Bekijk kort hoe de Amsterdamse procedure werkt.",
     "dashboard.tip_attended": "Markeer een bezoek.",
     "dashboard.tip_done": "Alles staat op groen. Goed bezig!",
     "dashboard.tip_cta_settings": "Ga naar instellingen",
     "dashboard.tip_cta_schools": "Ga naar scholen",
     "dashboard.tip_cta_open_days": "Ga naar open dagen",
+    "dashboard.tip_cta_tutorial": "Bekijk de uitleg",
+    "dashboard.milestone_profile": "Profiel af",
+    "dashboard.milestone_invite": "Uitnodiging",
+    "dashboard.milestone_shortlist": "Eerste school",
+    "dashboard.milestone_note": "Eerste notitie",
+    "dashboard.milestone_rating": "Eerste beoordeling",
+    "dashboard.milestone_tutorial": "Uitleg bekeken",
+    "dashboard.milestone_attended": "Bezoek gemarkeerd",
+    "dashboard.recent_title": "Recent:",
+    "dashboard.recent_empty": "Nog niets afgerond.",
+    "dashboard.next_dates_title": "Volgende belangrijke data",
+    "dashboard.next_dates_none": "Geen data gevonden.",
     "dashboard.tip":
-      "Tip: na het inloggen kun je scholen bekijken, notities maken, een Top 12 ranglijst bouwen en open dagen zien.",
+      "Tip: na het inloggen kun je scholen bekijken, notities maken, een ranglijst maken en open dagen zien.",
     "dashboard.signin_body":
       "Log in met een e‑mail van een familielid. Je blijft ingelogd op dit apparaat.",
 
     "setup.title": "Welkom",
     "setup.intro": "Laten we het even instellen. Dit duurt ongeveer een minuut.",
+    "setup.profile_why":
+      "We gebruiken dit om scholen te filteren op advies en om reistijden te berekenen.",
     "setup.finish": "Setup afronden",
     "setup.next": "Volgende",
     "setup.saving": "Opslaan...",
@@ -74,6 +89,11 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.invite_later": "Je kunt later ook familie toevoegen via Instellingen.",
     "setup.skip": "Nu overslaan",
     "setup.continue": "Doorgaan",
+    "setup.tutorial_intro": "Wil je weten hoe de Amsterdamse procedure werkt?",
+    "setup.tutorial_body":
+      "Dit is geen app‑uitleg, maar een korte, kindvriendelijke uitleg van het proces in 2025/26.",
+    "setup.tutorial_start": "Start uitleg",
+    "setup.tutorial_later": "Je kunt dit later altijd terugvinden in het menu.",
 
     "settings.title": "Instellingen",
     "settings.edit": "Instellingen bewerken",
@@ -91,6 +111,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "settings.lang_en": "English",
 
     "menu.settings": "Instellingen",
+    "menu.how_it_works": "Hoe werkt het?",
     "menu.feedback": "Feedback",
     "menu.print": "Print / Export",
     "menu.admin": "Admin",
@@ -106,6 +127,12 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "schools.sort": "Sorteren",
     "schools.sort_name": "Naam",
     "schools.sort_bike": "Fietstijd",
+    "schools.shortlist_add": "Toevoegen",
+    "schools.shortlist_adding": "Toevoegen...",
+    "schools.shortlist_add_full": "Toevoegen aan shortlist",
+    "schools.shortlist_added_ranked": "Toegevoegd aan ranglijst op #{rank}.",
+    "schools.shortlist_added_unranked": "Toegevoegd aan shortlist (nog niet gerangschikt).",
+    "schools.shortlist_already": "Staat al in de shortlist.",
 
     "open_days.title": "Open dagen",
     "open_days.important": "Belangrijk",
@@ -119,15 +146,58 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "open_days.next7": "Volgende 7 dagen",
     "open_days.next14": "Volgende 14 dagen",
 
-    "shortlist.title": "Top 12",
-    "shortlist.subtitle": "Houd je lijst scherp: rangschik 1–12.",
+    "shortlist.title": "Ranglijst",
+    "shortlist.subtitle": "Je kunt meer scholen bewaren dan je ranglijst.",
     "shortlist.empty_slot": "Leeg",
-    "shortlist.empty_list": "Je hebt nog geen scholen in de Top 12.",
+    "shortlist.empty_list": "Je hebt nog geen scholen gerangschikt.",
     "shortlist.save": "Opslaan",
     "shortlist.saved": "Opgeslagen.",
     "shortlist.rank": "Rang",
     "shortlist.remove": "Verwijder",
     "shortlist.footer": "Volgende stap: voeg scholen toe via de scholenlijst of detailpagina.",
+    "shortlist.rank_cap": "Ranglimiet",
+    "shortlist.saved_title": "Bewaard (nog niet gerangschikt)",
+    "shortlist.rank_next": "Zet op volgende rang",
+
+    "how.title": "Hoe werkt het?",
+    "how.subtitle":
+      "Een korte, kindvriendelijke uitleg van de Amsterdamse stap‑voor‑stap procedure voor 2025/26.",
+    "how.next_title": "Eerstvolgende momenten",
+    "how.complete_cta": "Ik heb dit gelezen",
+    "how.completed": "Gelezen ✓",
+    "how.finish_setup": "Naar Dashboard",
+    "how.to_dashboard": "Naar Dashboard",
+    "how.list_title": "Hoe lang moet je lijst zijn?",
+    "how.list_intro": "De Keuzegids raadt minimaal aan:",
+    "how.list_4": "vmbo-b / vmbo-bk / vmbo-k / vmbo-kgl-tl: 4 scholen",
+    "how.list_6": "vmbo-gl-tl / vmbo-gl-tl-havo: 6 scholen",
+    "how.list_12": "havo / havo-vwo / vwo: 12 scholen",
+    "how.list_note":
+      "Kies je ook een profielklas bij dezelfde school? Dan kan je lijst langer moeten zijn.",
+    "how.title_provisional": "Voorlopig advies (januari)",
+    "how.body_provisional":
+      "Je krijgt een voorlopig advies van school. Dat is je startpunt voor het kiezen.",
+    "how.title_orientation": "Oriëntatie (nov–feb)",
+    "how.body_orientation":
+      "Bezoek open dagen en kijk rond. Gebruik je checklist om scholen te vergelijken.",
+    "how.title_doorstroom": "Doorstroomtoets (2–6 feb)",
+    "how.body_doorstroom":
+      "Alle groep‑8 leerlingen maken de toets in deze week.",
+    "how.title_definitive": "Definitief advies (24 maart)",
+    "how.body_definitive":
+      "Uiterlijk deze datum krijg je je definitieve advies.",
+    "how.title_apply": "Centrale aanmeldweek (25–31 maart)",
+    "how.body_apply":
+      "Je zet je voorkeuren in volgorde en meldt je online aan.",
+    "how.title_placement": "Uitslag loting/matching (9 april)",
+    "how.body_placement":
+      "Je hoort op welke school je bent geplaatst.",
+    "how.title_second_round": "Tweede ronde (9–14 april)",
+    "how.body_second_round":
+      "Alleen als je geen plaats hebt of wisselt van keuze.",
+    "how.title_meet": "Kennismaken (23/24 juni)",
+    "how.body_meet":
+      "Je gaat naar de kennismakingsmiddag van je nieuwe school.",
 
     "feedback.title": "Feedback",
     "feedback.subtitle": "Deel bugs, ideeën of vragen. We lezen alles.",
@@ -173,18 +243,32 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.tip_shortlist": "Add your first school to the shortlist.",
     "dashboard.tip_note": "Add your first note to a school.",
     "dashboard.tip_rating": "Add your first rating to a school.",
+    "dashboard.tip_tutorial": "See the quick Amsterdam process overview.",
     "dashboard.tip_attended": "Mark a visit.",
     "dashboard.tip_done": "You’re all set. Nice work!",
     "dashboard.tip_cta_settings": "Go to settings",
     "dashboard.tip_cta_schools": "Go to schools",
     "dashboard.tip_cta_open_days": "Go to open days",
+    "dashboard.tip_cta_tutorial": "View the overview",
+    "dashboard.milestone_profile": "Profile done",
+    "dashboard.milestone_invite": "Invite sent",
+    "dashboard.milestone_shortlist": "First school",
+    "dashboard.milestone_note": "First note",
+    "dashboard.milestone_rating": "First rating",
+    "dashboard.milestone_tutorial": "Overview done",
+    "dashboard.milestone_attended": "Visit marked",
+    "dashboard.recent_title": "Recently:",
+    "dashboard.recent_empty": "Nothing completed yet.",
+    "dashboard.next_dates_title": "Next important dates",
+    "dashboard.next_dates_none": "No dates found.",
     "dashboard.tip":
-      "Tip: once signed in, you’ll be able to browse schools, save visit notes, build a ranked Top 12, and see open days.",
+      "Tip: once signed in, you’ll be able to browse schools, save visit notes, build a ranked list, and see open days.",
     "dashboard.signin_body":
       "Sign in with a family member email. The app stays signed in on this device.",
 
     "setup.title": "Welcome",
     "setup.intro": "Let’s set things up. It takes about a minute.",
+    "setup.profile_why": "We use this to filter by advice and calculate commute times.",
     "setup.finish": "Finish setup",
     "setup.next": "Next",
     "setup.saving": "Saving...",
@@ -207,6 +291,11 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.invite_later": "You can add family later from Settings.",
     "setup.skip": "Skip for now",
     "setup.continue": "Continue",
+    "setup.tutorial_intro": "Want a quick overview of the Amsterdam process?",
+    "setup.tutorial_body":
+      "This is not app training — it’s the 2025/26 Year‑8 process explained simply.",
+    "setup.tutorial_start": "Start overview",
+    "setup.tutorial_later": "You can always find this later in the menu.",
 
     "settings.title": "Settings",
     "settings.edit": "Edit settings",
@@ -224,6 +313,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "settings.lang_en": "English",
 
     "menu.settings": "Settings",
+    "menu.how_it_works": "How it works",
     "menu.feedback": "Feedback",
     "menu.print": "Print / Export",
     "menu.admin": "Admin",
@@ -239,6 +329,12 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "schools.sort": "Sort",
     "schools.sort_name": "Name",
     "schools.sort_bike": "Bike time",
+    "schools.shortlist_add": "Add",
+    "schools.shortlist_adding": "Adding...",
+    "schools.shortlist_add_full": "Add to shortlist",
+    "schools.shortlist_added_ranked": "Added to ranked list at #{rank}.",
+    "schools.shortlist_added_unranked": "Added to shortlist (not ranked yet).",
+    "schools.shortlist_already": "Already in shortlist.",
 
     "open_days.title": "Open days",
     "open_days.important": "Important",
@@ -252,15 +348,58 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "open_days.next7": "Next 7 days",
     "open_days.next14": "Next 14 days",
 
-    "shortlist.title": "Top 12",
-    "shortlist.subtitle": "Keep your list sharp: rank 1–12.",
+    "shortlist.title": "Ranked list",
+    "shortlist.subtitle": "You can save more schools than you rank.",
     "shortlist.empty_slot": "Empty",
-    "shortlist.empty_list": "You don’t have any schools in your Top 12 yet.",
+    "shortlist.empty_list": "No ranked schools yet.",
     "shortlist.save": "Save",
     "shortlist.saved": "Saved.",
     "shortlist.rank": "Rank",
     "shortlist.remove": "Remove",
     "shortlist.footer": "Next: add schools from the Schools list or School detail.",
+    "shortlist.rank_cap": "Rank cap",
+    "shortlist.saved_title": "Saved (not ranked yet)",
+    "shortlist.rank_next": "Put on next rank",
+
+    "how.title": "How it works",
+    "how.subtitle":
+      "A quick, kid‑friendly overview of the Amsterdam step‑by‑step process for 2025/26.",
+    "how.next_title": "Next moments",
+    "how.complete_cta": "I’ve read this",
+    "how.completed": "Read ✓",
+    "how.finish_setup": "Go to Dashboard",
+    "how.to_dashboard": "Go to Dashboard",
+    "how.list_title": "How long should your list be?",
+    "how.list_intro": "Keuzegids recommends at least:",
+    "how.list_4": "vmbo-b / vmbo-bk / vmbo-k / vmbo-kgl-tl: 4 schools",
+    "how.list_6": "vmbo-gl-tl / vmbo-gl-tl-havo: 6 schools",
+    "how.list_12": "havo / havo-vwo / vwo: 12 schools",
+    "how.list_note":
+      "If you also choose a profile class at the same school, your list may need to be longer.",
+    "how.title_provisional": "Provisional advice (January)",
+    "how.body_provisional":
+      "You receive a provisional advice from school. It’s your starting point.",
+    "how.title_orientation": "Explore (Nov–Feb)",
+    "how.body_orientation":
+      "Visit open days and compare schools using your checklist.",
+    "how.title_doorstroom": "Doorstroomtoets (2–6 Feb)",
+    "how.body_doorstroom":
+      "All Year‑8 pupils take this test in this week.",
+    "how.title_definitive": "Definitive advice (24 March)",
+    "how.body_definitive":
+      "You receive your final advice by this date.",
+    "how.title_apply": "Central application week (25–31 March)",
+    "how.body_apply":
+      "Submit your ranked preference list online.",
+    "how.title_placement": "Placement result (9 April)",
+    "how.body_placement":
+      "You’ll hear which school you’re placed in.",
+    "how.title_second_round": "Second round (9–14 April)",
+    "how.body_second_round":
+      "Only if you didn’t get a place or change your mind.",
+    "how.title_meet": "Meet your school (23/24 June)",
+    "how.body_meet":
+      "You attend the kennismakingsmiddag at your new school.",
 
     "feedback.title": "Feedback",
     "feedback.subtitle": "Share bugs, ideas, or questions. We read everything.",

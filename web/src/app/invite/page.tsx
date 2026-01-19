@@ -73,10 +73,17 @@ export default function InviteStatusPage() {
         return;
       }
 
+      const userId = session.session?.user.id ?? "";
+      if (!userId) {
+        setStatus("error");
+        setReason("not_signed_in");
+        return;
+      }
+
       const { data: memberships } = await supabase
         .from("workspace_members")
         .select("workspace:workspaces(id,name)")
-        .eq("user_id", session.session.user.id);
+        .eq("user_id", userId);
 
       const list =
         (memberships ?? [])

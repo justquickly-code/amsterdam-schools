@@ -4,24 +4,23 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { shortlistRankCapForLevels } from "@/lib/levels";
 
-type Workspace = { id: string };
-
-type WorkspaceRow = { id: string; language?: Language | null };
+type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
 
 type ShortlistRow = { id: string; workspace_id: string };
 
-type ShortlistItemRow = { school_id: string; rank: number; school?: { id: string; name: string } | null };
+type ShortlistItemRow = { school_id: string; rank: number | null; school?: { id: string; name: string } | null };
 
 type ShortlistItemRowRaw = {
   school_id: string;
-  rank: number;
+  rank: number | null;
   school?: { id: string; name: string } | Array<{ id: string; name: string }> | null;
 };
 
 type ShortlistItem = {
   school_id: string;
-  rank: number;
+  rank: number | null;
   school?: { id: string; name: string } | null;
   rating_stars?: number | null;
   commute?: { duration_minutes: number | null; distance_km: number | null } | null;
@@ -30,10 +29,19 @@ type ShortlistItem = {
 type VisitRow = { school_id: string; rating_stars: number | null };
 type CommuteRow = { school_id: string; duration_minutes: number | null; distance_km: number | null };
 
+function sortItems(list: ShortlistItem[]) {
+  return [...list].sort((a, b) => {
+    const ar = typeof a.rank === "number" ? a.rank : 9999;
+    const br = typeof b.rank === "number" ? b.rank : 9999;
+    if (ar !== br) return ar - br;
+    return (a.school?.name ?? "").localeCompare(b.school?.name ?? "");
+  });
+}
+
 export default function ShortlistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [, setWorkspace] = useState<Workspace | null>(null);
+  const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [shortlistId, setShortlistId] = useState<string | null>(null);
   const [items, setItems] = useState<ShortlistItem[]>([]);
@@ -56,7 +64,9 @@ export default function ShortlistPage() {
         return;
       }
 
-      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id,language");
+      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+        "id,language,advies_levels"
+      );
 
       if (!mounted) return;
 
@@ -154,11 +164,13 @@ export default function ShortlistPage() {
       const commuteMap = new Map(commutes.map((c) => [c.school_id, c]));
 
       setItems(
-        normalized.map((item) => ({
-          ...item,
-          rating_stars: visitMap.get(item.school_id)?.rating_stars ?? null,
-          commute: commuteMap.get(item.school_id) ?? null,
-        }))
+        sortItems(
+          normalized.map((item) => ({
+            ...item,
+            rating_stars: visitMap.get(item.school_id)?.rating_stars ?? null,
+            commute: commuteMap.get(item.school_id) ?? null,
+          }))
+        )
       );
       setLoading(false);
     }
@@ -179,11 +191,41 @@ export default function ShortlistPage() {
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
 
+  const rankCap = useMemo(
+    () => shortlistRankCapForLevels(workspace?.advies_levels ?? []),
+    [workspace]
+  );
+
   const rankMap = useMemo(() => {
     const m = new Map<number, ShortlistItem>();
-    for (const it of items) m.set(it.rank, it);
+    for (const it of items) {
+      if (typeof it.rank === "number" && it.rank <= rankCap) m.set(it.rank, it);
+    }
     return m;
-  }, [items]);
+  }, [items, rankCap]);
+
+  const unranked = useMemo(
+    () =>
+      items
+        .filter((it) => typeof it.rank !== "number" || it.rank > rankCap)
+        .sort((a, b) => (a.school?.name ?? "").localeCompare(b.school?.name ?? "")),
+    [items, rankCap]
+  );
+
+  const takenRanks = useMemo(() => {
+    return new Set<number>(
+      items
+        .map((it) => it.rank)
+        .filter((r): r is number => typeof r === "number" && r <= rankCap)
+    );
+  }, [items, rankCap]);
+
+  function nextAvailableRank() {
+    for (let r = 1; r <= rankCap; r++) {
+      if (!takenRanks.has(r)) return r;
+    }
+    return null;
+  }
 
   async function removeRank(rank: number) {
     if (!shortlistId) return;
@@ -209,9 +251,31 @@ export default function ShortlistPage() {
     setSaving(false);
   }
 
+  async function removeSchool(schoolId: string) {
+    if (!shortlistId) return;
+    setSaving(true);
+    setError("");
+    setSavedMsg("");
+
+    const { error } = await supabase
+      .from("shortlist_items")
+      .delete()
+      .eq("shortlist_id", shortlistId)
+      .eq("school_id", schoolId);
+
+    if (error) setError(error.message);
+    else {
+      setItems((prev) => prev.filter((x) => x.school_id !== schoolId));
+      setSavedMsg(t(language, "shortlist.saved"));
+    }
+
+    setSaving(false);
+  }
+
   async function move(fromRank: number, toRank: number) {
     if (!shortlistId) return;
     if (fromRank === toRank) return;
+    if (toRank > rankCap) return;
 
     const a = rankMap.get(fromRank);
     const b = rankMap.get(toRank);
@@ -222,7 +286,6 @@ export default function ShortlistPage() {
     setSavedMsg("");
 
     // If target occupied, swap ranks via 2 updates.
-    // (Simple + safe; 12 items max.)
     if (b) {
       const { error: rpcErr } = await supabase.rpc("swap_shortlist_ranks", {
         p_shortlist_id: shortlistId,
@@ -238,15 +301,15 @@ export default function ShortlistPage() {
     
       // Update UI locally (swap ranks)
       setItems((prev) =>
-        prev
-          .map((x) =>
+        sortItems(
+          prev.map((x) =>
             x.school_id === a.school_id
               ? { ...x, rank: toRank }
               : x.school_id === b.school_id
               ? { ...x, rank: fromRank }
               : x
           )
-          .sort((x, y) => x.rank - y.rank)
+        )
       );
     
       setSavedMsg(t(language, "shortlist.saved"));
@@ -287,7 +350,7 @@ export default function ShortlistPage() {
         if (retryErr) setError(retryErr.message);
         else {
           setItems((prev) =>
-            prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)).sort((x, y) => x.rank - y.rank)
+            sortItems(prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)))
           );
           setSavedMsg(t(language, "shortlist.saved"));
         }
@@ -297,7 +360,56 @@ export default function ShortlistPage() {
     }
     else {
       setItems((prev) =>
-        prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)).sort((x, y) => x.rank - y.rank)
+        sortItems(prev.map((x) => (x.rank === fromRank ? { ...x, rank: toRank } : x)))
+      );
+      setSavedMsg(t(language, "shortlist.saved"));
+    }
+
+    setSaving(false);
+  }
+
+  async function promoteToNextRank(item: ShortlistItem) {
+    if (!shortlistId) return;
+    const nextRank = nextAvailableRank();
+    const targetRank = nextRank ?? rankCap;
+
+    setSaving(true);
+    setError("");
+    setSavedMsg("");
+
+    if (!nextRank) {
+      const bottom = rankMap.get(rankCap);
+      if (bottom) {
+        const { error: dropErr } = await supabase
+          .from("shortlist_items")
+          .update({ rank: null })
+          .eq("shortlist_id", shortlistId)
+          .eq("school_id", bottom.school_id);
+        if (dropErr) {
+          setError(dropErr.message);
+          setSaving(false);
+          return;
+        }
+      }
+    }
+
+    const { error } = await supabase
+      .from("shortlist_items")
+      .update({ rank: targetRank })
+      .eq("shortlist_id", shortlistId)
+      .eq("school_id", item.school_id);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setItems((prev) =>
+        sortItems(
+          prev.map((x) => {
+            if (x.school_id === item.school_id) return { ...x, rank: targetRank };
+            if (!nextRank && x.rank === rankCap) return { ...x, rank: null };
+            return x;
+          })
+        )
       );
       setSavedMsg(t(language, "shortlist.saved"));
     }
@@ -323,12 +435,13 @@ export default function ShortlistPage() {
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
         {savedMsg && <p className="text-sm text-green-700">{savedMsg}</p>}
 
-        <div className="text-sm text-muted-foreground">
-          {t(language, "shortlist.subtitle")}
+        <div className="text-sm text-muted-foreground">{t(language, "shortlist.subtitle")}</div>
+        <div className="text-xs text-muted-foreground">
+          {t(language, "shortlist.rank_cap")}: {rankCap}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {Array.from({ length: 12 }).map((_, i) => {
+          {Array.from({ length: rankCap }).map((_, i) => {
             const rank = i + 1;
             const it = rankMap.get(rank);
             return (
@@ -347,7 +460,7 @@ export default function ShortlistPage() {
                     </button>
                     <button
                       className="rounded-md border px-2 py-1 text-xs"
-                      disabled={saving || !it || rank === 12}
+                      disabled={saving || !it || rank === rankCap}
                       onClick={() => move(rank, rank + 1)}
                     >
                       ↓
@@ -389,6 +502,35 @@ export default function ShortlistPage() {
             );
           })}
         </div>
+
+        {unranked.length ? (
+          <div className="rounded-lg border p-4 space-y-3">
+            <div className="font-medium">{t(language, "shortlist.saved_title")}</div>
+            <ul className="space-y-2 text-sm">
+              {unranked.map((it) => (
+                <li key={it.school_id} className="flex items-center justify-between gap-3">
+                  <span className="truncate">{it.school?.name ?? it.school_id}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="rounded-md border px-2 py-1 text-xs"
+                      disabled={saving}
+                      onClick={() => promoteToNextRank(it)}
+                    >
+                      {t(language, "shortlist.rank_next")}
+                    </button>
+                    <button
+                      className="text-xs underline"
+                      onClick={() => removeSchool(it.school_id)}
+                      disabled={saving}
+                    >
+                      {t(language, "shortlist.remove")}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <p className="text-xs text-muted-foreground">
           {t(language, "shortlist.footer")}

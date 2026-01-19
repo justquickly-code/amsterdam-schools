@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { friendlyLevel } from "@/lib/levels";
+import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 
@@ -51,7 +51,7 @@ type ShortlistRow = {
 };
 
 type ShortlistItemRow = {
-    rank: number;
+    rank: number | null;
     school_id: string;
 };
 
@@ -358,24 +358,23 @@ export default function SchoolsPage() {
         const list = (items ?? []) as ShortlistItemRow[];
         const already = list.some((x) => x.school_id === schoolId);
         if (already) {
-            setShortlistMsg("Already in shortlist.");
+            setShortlistMsg(t(language, "schools.shortlist_already"));
             setShortlistBusyId("");
             return;
         }
 
-        const taken = new Set<number>(list.map((x) => x.rank));
+        const taken = new Set<number>(
+            list
+                .map((x) => x.rank)
+                .filter((r): r is number => typeof r === "number")
+        );
         let rank: number | null = null;
-        for (let r = 1; r <= 12; r++) {
+        const cap = shortlistRankCapForLevels(ws?.advies_levels ?? []);
+        for (let r = 1; r <= cap; r++) {
             if (!taken.has(r)) {
                 rank = r;
                 break;
             }
-        }
-
-        if (!rank) {
-            setError("Shortlist is full (max 12). Remove something first.");
-            setShortlistBusyId("");
-            return;
         }
 
         const { error: insErr } = await supabase.from("shortlist_items").insert({
@@ -385,7 +384,11 @@ export default function SchoolsPage() {
         });
 
         if (insErr) setError(insErr.message);
-        else setShortlistMsg(`Added to shortlist at #${rank}.`);
+        else if (rank) {
+            setShortlistMsg(
+                t(language, "schools.shortlist_added_ranked").replace("#{rank}", String(rank))
+            );
+        } else setShortlistMsg(t(language, "schools.shortlist_added_unranked"));
 
         setShortlistBusyId("");
     }
@@ -469,7 +472,9 @@ export default function SchoolsPage() {
                                                 onClick={() => addSchoolToShortlist(s.id)}
                                                 disabled={shortlistBusyId === s.id}
                                             >
-                                                {shortlistBusyId === s.id ? "Adding..." : "Add"}
+                                                {shortlistBusyId === s.id
+                                                    ? t(language, "schools.shortlist_adding")
+                                                    : t(language, "schools.shortlist_add")}
                                             </button>
                                         </div>
 

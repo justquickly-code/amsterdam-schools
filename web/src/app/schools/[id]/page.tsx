@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { shortlistRankCapForLevels } from "@/lib/levels";
 
-type Workspace = { id: string };
+type Workspace = { id: string; advies_levels?: string[] };
 
-type WorkspaceRow = { id: string; language?: Language | null };
+type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
 
 type School = {
     id: string;
@@ -61,7 +62,7 @@ type MemberRow = {
 
 type ShortlistRow = { id: string };
 
-type ShortlistItemRow = { rank: number; school_id: string };
+type ShortlistItemRow = { rank: number | null; school_id: string };
 
 type OpenDay = {
     id: string;
@@ -489,7 +490,7 @@ export default function SchoolDetailPage() {
             shortlistId = (created as ShortlistRow).id;
         }
 
-        // Find first empty rank 1..12
+        // Find first empty rank up to advice cap
         const { data: items, error: iErr } = await supabase
             .from("shortlist_items")
             .select("rank,school_id")
@@ -501,24 +502,24 @@ export default function SchoolDetailPage() {
         }
 
         const itemRows = (items ?? []) as ShortlistItemRow[];
-        const taken = new Set<number>(itemRows.map((x) => x.rank));
+        const taken = new Set<number>(
+            itemRows
+                .map((x) => x.rank)
+                .filter((r): r is number => typeof r === "number")
+        );
         const already = itemRows.some((x) => x.school_id === school.id);
         if (already) {
-            setShortlistMsg("Already in shortlist.");
+            setShortlistMsg(t(language, "schools.shortlist_already"));
             return;
         }
 
         let rank: number | null = null;
-        for (let r = 1; r <= 12; r++) {
+        const cap = shortlistRankCapForLevels(workspace?.advies_levels ?? []);
+        for (let r = 1; r <= cap; r++) {
             if (!taken.has(r)) {
                 rank = r;
                 break;
             }
-        }
-
-        if (!rank) {
-            setError("Shortlist is full (max 12). Remove something first.");
-            return;
         }
 
         const { error: upErr } = await supabase.from("shortlist_items").insert({
@@ -529,8 +530,12 @@ export default function SchoolDetailPage() {
 
         if (upErr) {
             setError(upErr.message);
+        } else if (rank) {
+            setShortlistMsg(
+                t(language, "schools.shortlist_added_ranked").replace("#{rank}", String(rank))
+            );
         } else {
-            setShortlistMsg(`Added to shortlist at #${rank}.`);
+            setShortlistMsg(t(language, "schools.shortlist_added_unranked"));
         }
     }
 
@@ -741,7 +746,7 @@ export default function SchoolDetailPage() {
                     </div>
                     <div className="flex items-center gap-3">
                         <button className="rounded-md border px-3 py-2" onClick={addToShortlist}>
-                            Add to shortlist
+                            {t(language, "schools.shortlist_add_full")}
                         </button>
                         {shortlistMsg && <span className="text-green-700">{shortlistMsg}</span>}
                     </div>

@@ -85,7 +85,7 @@ export default function SettingsPage() {
             if (!mounted) return;
 
             if (error) {
-                setError(error.message);
+                setError(error);
                 setWorkspace(null);
             } else {
                 const ws = (data ?? null) as WorkspaceRow | null;

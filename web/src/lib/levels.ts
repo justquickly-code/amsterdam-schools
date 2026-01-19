@@ -43,6 +43,24 @@ export function adviesOptionFromLevels(levels: string[]) {
   return match?.key ?? "";
 }
 
+const SHORTLIST_CAP_BY_OPTION: Record<string, number> = {
+  "vwo": 12,
+  "havo-vwo": 12,
+  "havo": 12,
+  "vmbo-tl-havo": 6,
+  "vmbo-tl": 6,
+  "vmbo-gl-tl": 6,
+  "vmbo-gl": 6,
+  "vmbo-kb-gl": 4,
+  "vmbo-kb": 4,
+  "vmbo-bb": 4,
+};
+
+export function shortlistRankCapForLevels(levels: string[]) {
+  const key = adviesOptionFromLevels(levels ?? []);
+  return SHORTLIST_CAP_BY_OPTION[key] ?? 12;
+}
+
 export function friendlyLevel(label: string) {
   const key = (label ?? "").toLowerCase().trim();
   return LEVEL_LABELS[key] ?? label;

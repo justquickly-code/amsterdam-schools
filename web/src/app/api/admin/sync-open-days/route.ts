@@ -452,25 +452,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: upErr.message }, { status: 500 });
     }
 
-    const { count: deactivatedCount, error: deactErr } = await admin
+    const { data: deactivatedRows, error: deactErr } = await admin
       .from("open_days")
       .update({ is_active: false, missing_since: nowIso })
       .eq("school_year_label", schoolYear)
       .eq("is_active", true)
       .lt("last_seen_at", nowIso)
-      .select("id", { count: "exact" });
+      .select("id");
 
     if (deactErr) {
       return NextResponse.json({ ok: false, error: deactErr.message }, { status: 500 });
     }
 
-    const { count: reactivatedCount, error: reactErr } = await admin
+    const { data: reactivatedRows, error: reactErr } = await admin
       .from("open_days")
       .update({ is_active: true, missing_since: null })
       .eq("school_year_label", schoolYear)
       .eq("last_seen_at", nowIso)
       .not("missing_since", "is", null)
-      .select("id", { count: "exact" });
+      .select("id");
 
     if (reactErr) {
       return NextResponse.json({ ok: false, error: reactErr.message }, { status: 500 });
@@ -485,8 +485,8 @@ export async function POST(req: Request) {
       school_year_label: schoolYear,
       parsed: unique.length,
       matched_school_ids: unique.filter((p) => p.school_id).length,
-      deactivated_count: deactivatedCount ?? 0,
-      reactivated_count: reactivatedCount ?? 0,
+      deactivated_count: deactivatedRows?.length ?? 0,
+      reactivated_count: reactivatedRows?.length ?? 0,
       sample_matched: sampleMatched,
       sample_unmatched: sampleUnmatched,
       note: "Always verify on the school website (source can change).",

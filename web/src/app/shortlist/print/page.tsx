@@ -4,14 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { shortlistRankCapForLevels } from "@/lib/levels";
 
-type WorkspaceRow = { id: string };
+type WorkspaceRow = { id: string; advies_levels?: string[] };
 
 type ShortlistRow = { id: string; workspace_id: string };
 
 type ShortlistItemRowRaw = {
   school_id: string;
-  rank: number;
+  rank: number | null;
   school?: { id: string; name: string } | Array<{ id: string; name: string }> | null;
 };
 
@@ -42,6 +43,7 @@ export default function ShortlistPrintPage() {
   const [items, setItems] = useState<ShortlistItem[]>([]);
   const [visits, setVisits] = useState<Map<string, VisitRow>>(new Map());
   const [commutes, setCommutes] = useState<Map<string, CommuteCacheRow>>(new Map());
+  const [adviesLevels, setAdviesLevels] = useState<string[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -57,7 +59,7 @@ export default function ShortlistPrintPage() {
         return;
       }
 
-      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id");
+      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>("id,advies_levels");
 
       if (!mounted) return;
 
@@ -67,6 +69,7 @@ export default function ShortlistPrintPage() {
         setLoading(false);
         return;
       }
+      setAdviesLevels(workspaceRow.advies_levels ?? []);
 
       const { data: shortlist, error: sErr } = await supabase
         .from("shortlists")
@@ -103,12 +106,14 @@ export default function ShortlistPrintPage() {
         return;
       }
 
-      const normalized = (rows ?? []).map((row) => {
+      const normalized = (rows ?? [])
+        .filter((row) => (row as ShortlistItemRowRaw).rank != null)
+        .map((row) => {
         const r = row as ShortlistItemRowRaw;
         const school = Array.isArray(r.school) ? r.school[0] ?? null : r.school ?? null;
         return {
           school_id: r.school_id,
-          rank: r.rank,
+          rank: r.rank as number,
           school_name: school?.name ?? r.school_id,
         } as ShortlistItem;
       });
@@ -171,7 +176,11 @@ export default function ShortlistPrintPage() {
     };
   }, []);
 
-  const ordered = useMemo(() => items.slice().sort((a, b) => a.rank - b.rank), [items]);
+  const rankCap = useMemo(() => shortlistRankCapForLevels(adviesLevels), [adviesLevels]);
+  const ordered = useMemo(
+    () => items.filter((item) => item.rank <= rankCap).slice().sort((a, b) => a.rank - b.rank),
+    [items, rankCap]
+  );
 
   if (loading) {
     return (
@@ -186,8 +195,10 @@ export default function ShortlistPrintPage() {
       <div className="w-full max-w-3xl space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Top 12 — Print</h1>
-            <div className="text-sm text-muted-foreground">Ranked shortlist with notes and ratings.</div>
+            <h1 className="text-2xl font-semibold">Ranked list — Print</h1>
+            <div className="text-sm text-muted-foreground">
+              Ranked shortlist with notes and ratings (cap {rankCap}).
+            </div>
           </div>
           <div className="flex gap-3">
             <button className="text-sm underline" onClick={() => window.print()}>
@@ -202,7 +213,7 @@ export default function ShortlistPrintPage() {
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
 
         {!error && ordered.length === 0 && (
-          <p className="text-sm text-muted-foreground">No schools in your Top 12 yet.</p>
+          <p className="text-sm text-muted-foreground">No ranked schools yet.</p>
         )}
 
         <div className="space-y-3">

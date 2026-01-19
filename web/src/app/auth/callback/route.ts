@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     const { data, error } = code
       ? await supabase.auth.exchangeCodeForSession(code)
       : await supabase.auth.verifyOtp({
-          token: token ?? "",
+          token_hash: token ?? "",
           type: (type ?? "magiclink") as "magiclink" | "invite" | "recovery" | "signup",
         });
     const session = data?.session ?? null;

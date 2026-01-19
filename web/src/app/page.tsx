@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { formatDateRange, getNextTimelineItems } from "@/lib/keuzegidsTimeline";
 import { useRouter } from "next/navigation";
 
 type WorkspaceRow = {
@@ -42,6 +43,7 @@ export default function Home() {
   const [hasNote, setHasNote] = useState(false);
   const [hasRating, setHasRating] = useState(false);
   const [hasAttended, setHasAttended] = useState(false);
+  const [hasTutorial, setHasTutorial] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -126,11 +128,14 @@ export default function Home() {
       if (workspaceId) {
         const inviteSent =
           typeof window !== "undefined" && window.localStorage.getItem(`invite_sent_${workspaceId}`) === "1";
+        const { data: session } = await supabase.auth.getSession();
+        const userId = session.session?.user?.id ?? "";
         const [
           { data: memberRows },
           { data: noteRows },
           { data: ratingRows },
           { data: attendedRows },
+          { data: tutorialRow },
         ] = await Promise.all([
           supabase
             .from("workspace_members")
@@ -154,6 +159,14 @@ export default function Home() {
             .eq("workspace_id", workspaceId)
             .eq("attended", true)
             .limit(1),
+          userId
+            ? supabase
+                .from("workspace_members")
+                .select("tutorial_completed_at")
+                .eq("workspace_id", workspaceId)
+                .eq("user_id", userId)
+                .maybeSingle()
+            : Promise.resolve({ data: null }),
         ]);
 
         if (!mounted) return;
@@ -162,6 +175,7 @@ export default function Home() {
         setHasNote((noteRows ?? []).length > 0);
         setHasRating((ratingRows ?? []).length > 0);
         setHasAttended((attendedRows ?? []).length > 0);
+        setHasTutorial(Boolean((tutorialRow as { tutorial_completed_at?: string | null } | null)?.tutorial_completed_at));
       }
 
       let query = supabase
@@ -213,6 +227,7 @@ export default function Home() {
         tipKey: "dashboard.tip_profile",
         href: "/settings",
         ctaKey: "dashboard.tip_cta_settings",
+        labelKey: "dashboard.milestone_profile",
       },
       {
         key: "invite",
@@ -220,6 +235,7 @@ export default function Home() {
         tipKey: "dashboard.tip_invite",
         href: "/settings",
         ctaKey: "dashboard.tip_cta_settings",
+        labelKey: "dashboard.milestone_invite",
       },
       {
         key: "shortlist",
@@ -227,6 +243,7 @@ export default function Home() {
         tipKey: "dashboard.tip_shortlist",
         href: "/schools",
         ctaKey: "dashboard.tip_cta_schools",
+        labelKey: "dashboard.milestone_shortlist",
       },
       {
         key: "note",
@@ -234,6 +251,7 @@ export default function Home() {
         tipKey: "dashboard.tip_note",
         href: "/schools",
         ctaKey: "dashboard.tip_cta_schools",
+        labelKey: "dashboard.milestone_note",
       },
       {
         key: "rating",
@@ -241,6 +259,15 @@ export default function Home() {
         tipKey: "dashboard.tip_rating",
         href: "/schools",
         ctaKey: "dashboard.tip_cta_schools",
+        labelKey: "dashboard.milestone_rating",
+      },
+      {
+        key: "tutorial",
+        done: hasTutorial,
+        tipKey: "dashboard.tip_tutorial",
+        href: "/how-it-works",
+        ctaKey: "dashboard.tip_cta_tutorial",
+        labelKey: "dashboard.milestone_tutorial",
       },
       {
         key: "attended",
@@ -248,14 +275,16 @@ export default function Home() {
         tipKey: "dashboard.tip_attended",
         href: "/planner",
         ctaKey: "dashboard.tip_cta_open_days",
+        labelKey: "dashboard.milestone_attended",
       },
     ];
     const completed = milestones.filter((m) => m.done).length;
     const total = milestones.length;
     const percent = Math.round((completed / total) * 100);
     const next = milestones.find((m) => !m.done);
-    return { completed, total, percent, next };
-  }, [setupNeeded, hasFamilyMember, shortlistIds, hasNote, hasRating, hasAttended]);
+    const recent = milestones.filter((m) => m.done).slice(-2);
+    return { completed, total, percent, next, recent };
+  }, [setupNeeded, hasFamilyMember, shortlistIds, hasNote, hasRating, hasTutorial, hasAttended]);
 
   useEffect(() => {
     function onLang(e: Event) {
@@ -278,6 +307,7 @@ export default function Home() {
   }, [loading, email, router]);
 
   const locale = getLocale(language);
+  const nextDates = useMemo(() => getNextTimelineItems(new Date(), 2), []);
 
   if (loading) {
     return (
@@ -344,6 +374,14 @@ export default function Home() {
               {t(language, progressState.next.ctaKey)}
             </Link>
           ) : null}
+          {progressState.recent.length ? (
+            <div className="text-xs text-muted-foreground">
+              {t(language, "dashboard.recent_title")}{" "}
+              {progressState.recent.map((m) => t(language, m.labelKey)).join(", ")}
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground">{t(language, "dashboard.recent_empty")}</div>
+          )}
         </div>
 
         {setupNeeded && (
@@ -357,6 +395,22 @@ export default function Home() {
             </Link>
           </div>
         )}
+
+        <div className="rounded-lg border p-4 space-y-2">
+          <div className="font-medium">{t(language, "dashboard.next_dates_title")}</div>
+          {nextDates.length === 0 ? (
+            <div className="text-sm text-muted-foreground">{t(language, "dashboard.next_dates_none")}</div>
+          ) : (
+            <ul className="text-sm text-muted-foreground space-y-1">
+              {nextDates.map((item) => (
+                <li key={item.id} className="flex items-center justify-between gap-3">
+                  <span>{t(language, item.titleKey)}</span>
+                  <span>{formatDateRange(item, locale)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         <div className="rounded-lg border p-4 space-y-2">
           <div className="font-medium">
