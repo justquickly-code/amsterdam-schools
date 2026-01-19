@@ -56,6 +56,7 @@ Top 5 risks if we proceed without fixes
 | CL-063 | P1 | UX | OPEN | Dashboard content + setup nudges | Dashboard needs real content and setup prompts. |
 | CL-064 | P1 | UX | DONE | First-run setup gating | Require home + advies setup early in flow. |
 | CL-032 | P2 | Security | DONE | Admin allowlist/is_admin check | Require admin session + allowlist in admin routes. |
+| CL-110 | P1 | Data | DONE | Scope schools to central lottery/matching | Exclude praktijkonderwijs, VSO, kopklas, kovo, schakelklassen. |
 
 ---
 

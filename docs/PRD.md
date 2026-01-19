@@ -14,6 +14,8 @@ Help a family plan Amsterdam secondary school open days, capture notes + a 1–5
 - Auth: Parent email login (Supabase). One family account used across devices. Sessions should stay logged in by default.
 - Save many schools; Top 12 is a ranked subset view capped at 12.
 - Scope: focus on schools in the **central lottery/matching** system. Exclude praktijkonderwijs, voortgezet speciaal onderwijs (VSO), kopklas, kleinschalig ondersteunend voortgezet onderwijs (kovo), and internationale schakelklassen.
+- Tutorial: an optional, kid-friendly “How it works” walkthrough based on Keuzegids dates. Accessible from setup and from the top-right menu.
+- Dashboard: show the next important date(s) from the lottery timeline.
 
 ## Data sources (high level)
 - Schools: Schoolwijzer Amsterdam (prefer API/structured source)

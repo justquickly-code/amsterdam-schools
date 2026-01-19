@@ -26,3 +26,7 @@ Style reference: iOS Settings / Apple Health (calm, list-first).
 ## Color
 - One accent color for active state + links
 - Warning color only for “Verify/outdated” messaging
+
+## Voice & tone
+- Calm and friendly for parents.
+- Informal and fun for kids where appropriate (tutorial content), while keeping dates/facts accurate.

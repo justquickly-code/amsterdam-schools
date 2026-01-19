@@ -239,6 +239,44 @@ Legend:
 - Language can be switched and persists.
 - Dutch is the default for new users.
 
+## Phase 5 — Keuzegids tutorial + timeline (Planned)
+
+### 5.1 “How it works” tutorial (mainstream lottery path)
+**Work**
+- Create a kid-friendly tutorial based on Keuzegids dates (facts accurate).
+- Keep tone informal and fun while preserving accuracy.
+
+**Done when**
+- Tutorial is readable and complete for the mainstream lottery path.
+
+### 5.2 Setup flow (optional)
+**Work**
+- Add optional tutorial step after family invite in setup (skip allowed).
+
+**Done when**
+- Users can start or skip the tutorial during setup without blocking progress.
+
+### 5.3 Top-right menu entry
+**Work**
+- Add a “How it works” entry so it’s always accessible.
+
+**Done when**
+- Tutorial is reachable from any main screen via the menu.
+
+### 5.4 Dashboard next dates
+**Work**
+- Show the next important date(s) from the timeline on the Dashboard.
+
+**Done when**
+- Dashboard highlights the upcoming key date(s) clearly.
+
+### 5.5 Progress milestone
+**Work**
+- Add a progress milestone for completing the tutorial.
+
+**Done when**
+- Progress reflects tutorial completion.
+
 ## Suggested execution order (fastest risk reduction)
 1) Phase 0.1 commute scoping
 2) Phase 0.2 ICS service-role removal

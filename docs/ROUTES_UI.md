@@ -37,6 +37,9 @@
   - submit feedback (bug/idea/question/other)
   - list your feedback + admin responses
 
+- /how-it-works
+  - kid-friendly tutorial with key dates from Keuzegids (mainstream lottery path)
+
 - /settings
   - workspace name
   - home location: postcode + house number
@@ -58,7 +61,7 @@
 
 ## Global UI
 - Bottom nav (Dashboard, Schools, Open Days, Shortlist).
-- Top-right menu: Settings, Print/Export, Language toggle, Sign out.
+- Top-right menu: Settings, Print/Export, Language toggle, Sign out, How it works.
 - Admin entry appears in top-right menu for allowlisted users.
 
 ## Routing note
