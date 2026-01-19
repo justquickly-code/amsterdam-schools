@@ -5,6 +5,8 @@
 - Admin sync: supplement Schoolwijzer with Keuzegids regular VO schools (including address/website) if missing from API.
 - Admin sync: geocode supplemental schools via Mapbox when available.
 - Docs: plan Keuzegids tutorial, menu entry, and dashboard next-date widget (Phase 5).
+- Docs: clarify setup flow sequencing, tutorial intent, and progress bar “recently completed” list.
+- Docs: add Keuzegids guidance on recommended shortlist length by advice (4/6/12 + profile-class caveat).
 - Admin: show feedback notification dot when new items arrive.
 - Feedback: add “new response” indicator in menu and per-item badge.
 - Feedback: add user feedback page, admin console, and response support.

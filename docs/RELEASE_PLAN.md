@@ -245,6 +245,7 @@ Legend:
 **Work**
 - Create a kid-friendly tutorial based on Keuzegids dates (facts accurate).
 - Keep tone informal and fun while preserving accuracy.
+- Include the Keuzegids guidance on minimum list length by advice (4/6/12) with the profile‑class caveat.
 
 **Done when**
 - Tutorial is readable and complete for the mainstream lottery path.
@@ -252,9 +253,12 @@ Legend:
 ### 5.2 Setup flow (optional)
 **Work**
 - Add optional tutorial step after family invite in setup (skip allowed).
+- Explain why profile data is needed (advies filtering + commute times).
+- Explain shared workspace + per‑member notes on invite step.
 
 **Done when**
 - Users can start or skip the tutorial during setup without blocking progress.
+- Copy makes clear the tutorial is the Amsterdam 2025/26 process (not app UI training).
 
 ### 5.3 Top-right menu entry
 **Work**
@@ -273,9 +277,11 @@ Legend:
 ### 5.5 Progress milestone
 **Work**
 - Add a progress milestone for completing the tutorial.
+- Show “recently completed” items so early % completion feels grounded.
 
 **Done when**
 - Progress reflects tutorial completion.
+- Recently completed list is visible on Dashboard.
 
 ## Suggested execution order (fastest risk reduction)
 1) Phase 0.1 commute scoping
