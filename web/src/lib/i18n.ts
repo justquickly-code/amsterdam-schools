@@ -113,6 +113,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "settings.lang_en": "English",
 
     "menu.settings": "Instellingen",
+    "menu.about": "Over de app",
     "menu.how_it_works": "Hoe werkt het?",
     "menu.feedback": "Feedback",
     "menu.print": "Print / Export",
@@ -217,6 +218,28 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "feedback.response": "Reactie",
     "feedback.new_response": "Nieuwe reactie",
     "feedback.thanks": "Bedankt! We kijken ernaar.",
+    "about.title": "Over de app",
+    "about.back": "Terug",
+    "about.intro":
+      "Mijn Schoolkeuze helpt ouders en kinderen stap voor stap door het proces van schoolkeuze in Amsterdam.",
+    "about.step_setup_title": "1) Start met je profiel",
+    "about.step_setup_body":
+      "Vul het advies en het adres in. Daarmee filteren we scholen en tonen we reistijden.",
+    "about.step_schools_title": "2) Verken scholen",
+    "about.step_schools_body":
+      "Bekijk scholen die passen bij het advies. Bewaar scholen die interessant zijn.",
+    "about.step_open_days_title": "3) Plan open dagen",
+    "about.step_open_days_body":
+      "Bekijk open dagen en markeer welke je wil bezoeken.",
+    "about.step_shortlist_title": "4) Bouw je ranglijst",
+    "about.step_shortlist_body":
+      "Bewaar meer scholen dan je ranglijst, maar rangschik alleen je top (afhankelijk van het advies).",
+    "about.step_notes_title": "5) Notities en beoordelingen",
+    "about.step_notes_body":
+      "Schrijf notities en geef sterren na bezoeken. Familieleden kunnen elkaars notities zien.",
+    "about.step_print_title": "6) Print of exporteer",
+    "about.step_print_body":
+      "Gebruik de print/export om je ranglijst te delen of mee te nemen.",
   },
   en: {
     "login.title": "Sign in",
@@ -317,6 +340,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "settings.lang_en": "English",
 
     "menu.settings": "Settings",
+    "menu.about": "About",
     "menu.how_it_works": "How it works",
     "menu.feedback": "Feedback",
     "menu.print": "Print / Export",
@@ -421,6 +445,28 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "feedback.response": "Response",
     "feedback.new_response": "New response",
     "feedback.thanks": "Thanks! We’ll take a look.",
+    "about.title": "About the app",
+    "about.back": "Back",
+    "about.intro":
+      "Mijn Schoolkeuze guides parents and children step by step through Amsterdam’s school selection process.",
+    "about.step_setup_title": "1) Start with your profile",
+    "about.step_setup_body":
+      "Enter advice and address so we can filter schools and show commute times.",
+    "about.step_schools_title": "2) Explore schools",
+    "about.step_schools_body":
+      "Browse schools that match the advice and save the ones you like.",
+    "about.step_open_days_title": "3) Plan open days",
+    "about.step_open_days_body":
+      "Review open days and mark the ones you plan to visit.",
+    "about.step_shortlist_title": "4) Build your ranked list",
+    "about.step_shortlist_body":
+      "You can save more schools than you rank, but only rank your top (depending on advice).",
+    "about.step_notes_title": "5) Notes and ratings",
+    "about.step_notes_body":
+      "Add notes and ratings after visits. Family members can see each other’s notes.",
+    "about.step_print_title": "6) Print or export",
+    "about.step_print_body":
+      "Use print/export to share or take your ranked list with you.",
   },
 };
 

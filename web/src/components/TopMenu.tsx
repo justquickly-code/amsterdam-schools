@@ -194,6 +194,13 @@ export default function TopMenu() {
             </Link>
             <Link
               className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+              href="/about"
+              onClick={() => setOpen(false)}
+            >
+              {t(language, "menu.about")}
+            </Link>
+            <Link
+              className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
               href="/how-it-works"
               onClick={() => setOpen(false)}
             >

@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- UI: add About page with a simple flow walkthrough and link in top menu.
 - Shortlist: link each school card to its school detail page; back returns to shortlist.
 - Admin: feedback dots now appear on admin menu + admin home; clear after viewing feedback list.
 - Invite: reduce confusion for first-time members by skipping workspace-choice screen when only one workspace.
@@ -116,3 +117,4 @@
 - Visits: notes are per member; shared rating/attended remain.
 - UI: language toggle in top menu (Dutch default, English optional), live updates without refresh.
 - Docs: updated PRD-status + AGENTS with completed Phase 4 items and current state summary.
+
