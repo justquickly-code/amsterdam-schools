@@ -283,6 +283,47 @@ Legend:
 - Progress reflects tutorial completion.
 - Recently completed list is visible on Dashboard.
 
+## Phase 6 — Production readiness + UX polish (Planned)
+
+### 6.1 Production hardening (P0/P1)
+**Work**
+- Verify Supabase email templates are updated (Magic Link + Invite).
+- Confirm admin sync jobs/cron for open days (if used).
+- Validate production env vars (SUPABASE keys, ADMIN_SYNC_TOKEN, MAPBOX token).
+
+**Done when**
+- Production login/invites work with updated templates.
+- Admin sync runs without errors.
+- All required env vars are set and documented.
+
+### 6.2 iOS Home Screen login (P1)
+**Work**
+- Decide whether to support PWA login.
+- If yes: add in-app OTP or paste-link flow so session is created inside standalone context.
+
+**Done when**
+- Standalone iOS app stays logged in after first login.
+- Documented in OPERATIONS or PROJECT_BRIEF.
+
+### 6.3 UX polish (P2)
+**Work**
+- Tighten copy on setup/tutorial/about.
+- Improve shortlist ergonomics (rank guidance, labels, ordering).
+- Open days filter defaults and badges (if agreed).
+
+**Done when**
+- Copy is consistent and user-tested.
+- Shortlist and open days feel clear and low-friction.
+
+### 6.4 Lightweight analytics (P2)
+**Work**
+- Track setup completion, shortlist creation, tutorial completion, and feedback usage.
+- Add a simple admin view or logging for adoption metrics.
+
+**Done when**
+- Key funnel events are tracked.
+- Basic admin visibility into adoption.
+
 ## Suggested execution order (fastest risk reduction)
 1) Phase 0.1 commute scoping
 2) Phase 0.2 ICS service-role removal
