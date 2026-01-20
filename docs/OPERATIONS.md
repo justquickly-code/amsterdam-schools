@@ -46,3 +46,15 @@ IMPORTANT:
 - Purpose: compute a limited batch of missing commutes for the signed-in user.
 - Requires Authorization header (session JWT) and `workspace_id` + `school_ids`.
 - Uses RLS-safe writes to `commute_cache` and Mapbox server token.
+
+## Supabase email templates (production)
+
+Update templates in **Supabase → Authentication → Email Templates**.
+
+**Magic Link**
+- Subject: **Log in bij Mijn Schoolkeuze / Sign in to Mijn Schoolkeuze**
+- Body: bilingual HTML (NL + EN)
+
+**Invite User**
+- Subject: **Uitnodiging voor Mijn Schoolkeuze / Invitation to Mijn Schoolkeuze**
+- Body: bilingual HTML (NL + EN)
