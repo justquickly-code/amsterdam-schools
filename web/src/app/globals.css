@@ -4,13 +4,40 @@
 :root {
   color-scheme: light;
   --background: #faf8f5;
-  --card: #ffffff;
-  --border: #e5e1db;
-  --primary: #dc4545;
-  --accent: #14b8a6;
-  --progress: #fbbf24;
   --foreground: #1f2937;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --popover: #ffffff;
+  --popover-foreground: #1f2937;
+
+  --primary: #dc4545;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f3f0eb;
+  --secondary-foreground: #1f2937;
+
+  --muted: #f3f0eb;
   --muted-foreground: #6b7280;
+
+  --accent: #14b8a6;
+  --accent-foreground: #ffffff;
+
+  --info: #14b8a6;
+  --info-foreground: #ffffff;
+  --info-muted: #ccfbf1;
+
+  --progress: #fbbf24;
+  --progress-foreground: #1f2937;
+  --progress-muted: #fef3c7;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #e5e1db;
+  --input: #e5e1db;
+  --ring: #dc4545;
+
+  --radius: 0.75rem;
 }
 
 html,
@@ -20,8 +47,47 @@ body {
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-muted: var(--info-muted);
+  --color-progress: var(--progress);
+  --color-progress-foreground: var(--progress-foreground);
+  --color-progress-muted: var(--progress-muted);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 *,

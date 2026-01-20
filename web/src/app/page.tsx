@@ -7,6 +7,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { formatDateRange, getNextTimelineItems } from "@/lib/keuzegidsTimeline";
 import { useRouter } from "next/navigation";
+import { InfoCard, ListGroup, ListRow, ProgressCard } from "@/components/schoolkeuze";
 
 type WorkspaceRow = {
   id: string;
@@ -325,9 +326,13 @@ export default function Home() {
     );
   }
 
+  const recentText = progressState.recent.length
+    ? progressState.recent.map((m) => t(language, m.labelKey)).join(", ")
+    : "";
+
   return (
     <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-3xl rounded-xl border p-6 space-y-6">
+      <div className="w-full max-w-3xl space-y-6">
         <div className="space-y-2">
           <img
             src="/branding/mijnschoolkeuze_kit_v4/wordmark.png"
@@ -343,108 +348,77 @@ export default function Home() {
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
 
-        <div className="rounded-lg border p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="font-medium">{t(language, "dashboard.progress_title")}</div>
-            <div className="text-sm text-muted-foreground">
-              {progressState.percent}% {t(language, "dashboard.progress_complete")}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-lg leading-none">
-              {Array.from({ length: progressState.total }).map((_, idx) => {
-                const filled = idx < progressState.completed;
-                return (
-                  <span key={`milestone-${idx}`} aria-hidden="true">
-                    {filled ? "⭐️" : "⚪️"}
-                  </span>
-                );
-              })}
-            </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-foreground"
-                style={{ width: `${progressState.percent}%` }}
-              />
-            </div>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {progressState.next
+        <ProgressCard
+          title={t(language, "dashboard.progress_title")}
+          progress={progressState.percent}
+          totalSteps={progressState.total}
+          completedSteps={progressState.completed}
+          message={
+            progressState.next
               ? t(language, progressState.next.tipKey)
-              : t(language, "dashboard.tip_done")}
-          </div>
-          {progressState.next ? (
-            <Link className="text-sm underline" href={progressState.next.href}>
-              {t(language, progressState.next.ctaKey)}
-            </Link>
-          ) : null}
-          {progressState.recent.length ? (
-            <div className="text-xs text-muted-foreground">
-              {t(language, "dashboard.recent_title")}{" "}
-              {progressState.recent.map((m) => t(language, m.labelKey)).join(", ")}
-            </div>
-          ) : (
-            <div className="text-xs text-muted-foreground">{t(language, "dashboard.recent_empty")}</div>
-          )}
-        </div>
+              : t(language, "dashboard.tip_done")
+          }
+          recentActivity={
+            progressState.recent.length ? `${t(language, "dashboard.recent_title")} ${recentText}` : undefined
+          }
+        />
+        {progressState.next ? (
+          <Link className="text-sm underline" href={progressState.next.href}>
+            {t(language, progressState.next.ctaKey)}
+          </Link>
+        ) : (
+          <div className="text-xs text-muted-foreground">{t(language, "dashboard.recent_empty")}</div>
+        )}
 
         {setupNeeded && (
-          <div className="rounded-lg border p-4 space-y-2">
-            <div className="font-medium">{t(language, "dashboard.finish_setup")}</div>
+          <InfoCard title={t(language, "dashboard.finish_setup")}>
             <div className="text-sm text-muted-foreground">
               {t(language, "dashboard.finish_setup_body")}
             </div>
             <Link className="inline-block rounded-md border px-3 py-2 text-sm" href="/settings">
               {t(language, "dashboard.finish_setup_cta")}
             </Link>
-          </div>
+          </InfoCard>
         )}
 
-        <div className="rounded-lg border p-4 space-y-2">
-          <div className="font-medium">{t(language, "dashboard.next_dates_title")}</div>
+        <InfoCard title={t(language, "dashboard.next_dates_title")}>
           {nextDates.length === 0 ? (
             <div className="text-sm text-muted-foreground">{t(language, "dashboard.next_dates_none")}</div>
           ) : (
-            <ul className="text-sm text-muted-foreground space-y-1">
+            <ListGroup>
               {nextDates.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-3">
-                  <span>{t(language, item.titleKey)}</span>
-                  <span>{formatDateRange(item, locale)}</span>
-                </li>
+                <ListRow
+                  key={item.id}
+                  title={t(language, item.titleKey)}
+                  value={formatDateRange(item, locale)}
+                />
               ))}
-            </ul>
+            </ListGroup>
           )}
-        </div>
+        </InfoCard>
 
-        <div className="rounded-lg border p-4 space-y-2">
-          <div className="font-medium">
-            {t(language, "dashboard.upcoming")}
-            {shortlistIds.length ? " • Shortlist" : ""}
-          </div>
-          {upcoming.length === 0 ? (
-            <div className="text-sm text-muted-foreground">{t(language, "dashboard.no_upcoming")}</div>
-          ) : (
-            <ul className="space-y-2 text-sm">
-              {upcoming.map((r) => {
-                const name = r.school?.[0]?.name ?? r.school_name ?? "School";
-                const date = r.starts_at ? new Date(r.starts_at).toLocaleDateString(locale) : "—";
-                return (
-                  <li key={r.id} className="flex items-center justify-between gap-3">
-                    <span className="truncate">{name}</span>
-                    <span className="text-muted-foreground">{date}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          <div className="pt-2">
+        <InfoCard
+          title={`${t(language, "dashboard.upcoming")}${shortlistIds.length ? " • Shortlist" : ""}`}
+          action={
             <Link className="text-sm underline" href="/planner">
               {t(language, "dashboard.view_all")}
             </Link>
-          </div>
-        </div>
+          }
+        >
+          {upcoming.length === 0 ? (
+            <div className="text-sm text-muted-foreground">{t(language, "dashboard.no_upcoming")}</div>
+          ) : (
+            <ListGroup>
+              {upcoming.map((r) => {
+                const name = r.school?.[0]?.name ?? r.school_name ?? "School";
+                const date = r.starts_at ? new Date(r.starts_at).toLocaleDateString(locale) : "—";
+                return <ListRow key={r.id} title={name} value={date} />;
+              })}
+            </ListGroup>
+          )}
+        </InfoCard>
 
-        <div className="pt-2 border-t text-xs text-muted-foreground">
+        <div className="pt-2 text-xs text-muted-foreground">
           Tip: Open day details can change — always verify on the school website.
         </div>
       </div>
