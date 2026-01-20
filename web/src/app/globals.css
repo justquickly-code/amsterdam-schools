@@ -3,6 +3,14 @@
 /* App-wide defaults */
 :root {
   color-scheme: light;
+  --background: #faf8f5;
+  --card: #ffffff;
+  --border: #e5e1db;
+  --primary: #dc4545;
+  --accent: #14b8a6;
+  --progress: #fbbf24;
+  --foreground: #1f2937;
+  --muted-foreground: #6b7280;
 }
 
 html,
@@ -12,6 +20,8 @@ body {
 
 body {
   margin: 0;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 *,

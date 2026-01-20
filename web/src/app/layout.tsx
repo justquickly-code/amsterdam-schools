@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 import ClientShell from "@/components/ClientShell";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "Amsterdam Schools",
@@ -36,7 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-white text-slate-900 antialiased">
+      <body className={`${nunito.className} min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased`}>
         <ClientShell>{children}</ClientShell>
       </body>
     </html>

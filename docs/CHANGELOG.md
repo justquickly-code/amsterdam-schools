@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- UI kit: move kit source to docs/ui-kit and keep public assets in web/public/branding/ui-kit.
+- Theme: apply UI kit color tokens and Nunito font as base styling.
 - Docs: add Phase 6 plan for production readiness, iOS PWA login, UX polish, and analytics.
 - UI: add About page with a simple flow walkthrough (includes feedback step + good-luck note) and link in top menu.
 - Shortlist: link each school card to its school detail page; back returns to shortlist.
