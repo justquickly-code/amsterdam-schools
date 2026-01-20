@@ -156,9 +156,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {message && (
-            <p className={`text-sm ${status === "error" ? "text-red-600" : ""}`}>{message}</p>
-          )}
+        {message && (
+          <p className={`text-sm ${status === "error" ? "text-red-600" : ""}`}>{message}</p>
+        )}
+        {status === "sent" && (
+          <p className="text-xs text-muted-foreground">{t(language, "login.spam_hint")}</p>
+        )}
         </div>
       </div>
     </main>

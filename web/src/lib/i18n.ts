@@ -20,11 +20,13 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "login.send_link": "Stuur inloglink",
     "login.sending": "Verzenden...",
     "login.sent": "Check je e‑mail voor de link.",
+    "login.spam_hint": "Geen mail? Check je spam of ongewenste e-mail.",
     "login.invalid_email": "Vul een geldig e‑mailadres in.",
     "login.sign_in": "Ga naar inloggen",
 
     "dashboard.title": "Dashboard",
     "dashboard.welcome": "Welkom",
+    "dashboard.title_named": "Dashboard van {name}",
     "dashboard.finish_setup": "Maak de setup af",
     "dashboard.finish_setup_body":
       "Vul de naam van het kind, het adres en het advies in om filters en reistijd te personaliseren.",
@@ -224,11 +226,13 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "login.send_link": "Send sign-in link",
     "login.sending": "Sending...",
     "login.sent": "Check your email for the sign-in link.",
+    "login.spam_hint": "No email? Check your spam or junk folder.",
     "login.invalid_email": "Please enter a valid email address.",
     "login.sign_in": "Go to sign in",
 
     "dashboard.title": "Dashboard",
     "dashboard.welcome": "Welcome",
+    "dashboard.title_named": "{name}'s Dashboard",
     "dashboard.finish_setup": "Finish setup",
     "dashboard.finish_setup_body":
       "Add the child’s name, home address, and advies level to personalize filters and commute times.",

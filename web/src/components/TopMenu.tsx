@@ -197,7 +197,7 @@ export default function TopMenu() {
             >
               <span className="flex items-center justify-between">
                 {t(language, "menu.feedback")}
-                {hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
+                {!isAdmin && hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
               </span>
             </Link>
             <Link
@@ -214,7 +214,10 @@ export default function TopMenu() {
                 href="/admin"
                 onClick={() => setOpen(false)}
               >
-                {t(language, "menu.admin")}
+                <span className="flex items-center justify-between">
+                  {t(language, "menu.admin")}
+                  {hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
+                </span>
               </Link>
             )}
             <button

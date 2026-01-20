@@ -99,6 +99,11 @@ export default function InviteStatusPage() {
         return;
       }
 
+      if (list.length === 1 && list[0]?.id === workspaceId) {
+        setStatus("ok");
+        return;
+      }
+
       setExistingWorkspaces(list);
       setReadyToChoose(true);
     })().catch((err: unknown) => {

@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
     const { data: workspace, error: wErr } = await userClient
       .from("workspaces")
-      .select("id,created_by")
+      .select("id,created_by,child_name")
       .eq("id", workspaceId)
       .maybeSingle();
 
@@ -66,6 +66,10 @@ export async function POST(req: Request) {
   const redirectBase = origin.includes("127.0.0.1") ? origin.replace("127.0.0.1", "localhost") : origin;
   const { error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${redirectBase}/invite?workspace_id=${workspaceId}`,
+    data: {
+      child_name: workspace.child_name ?? "",
+      inviter_email: userData.user.email ?? "",
+    },
   });
 
   if (inviteErr) {

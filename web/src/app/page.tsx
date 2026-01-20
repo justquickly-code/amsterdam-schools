@@ -334,12 +334,11 @@ export default function Home() {
             alt="Mijn Schoolkeuze"
             className="h-10 w-auto"
           />
-          <h1 className="text-2xl font-semibold">{t(language, "dashboard.title")}</h1>
-          {workspace?.child_name ? (
-            <p className="text-sm text-muted-foreground">
-              {t(language, "dashboard.welcome")}, {workspace.child_name}
-            </p>
-          ) : null}
+          <h1 className="text-2xl font-semibold">
+            {workspace?.child_name
+              ? t(language, "dashboard.title_named").replace("{name}", workspace.child_name)
+              : t(language, "dashboard.title")}
+          </h1>
         </div>
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
