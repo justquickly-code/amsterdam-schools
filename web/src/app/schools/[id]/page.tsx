@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type Workspace = { id: string; advies_levels?: string[] };
 
@@ -136,7 +137,7 @@ function pillClass() {
 }
 
 function actionClass() {
-    return "text-xs rounded-md border px-2 py-1 hover:bg-muted/30";
+    return "text-xs rounded-full border px-3 py-1 hover:bg-secondary/60";
 }
 
 function StarRating({
@@ -155,7 +156,7 @@ function StarRating({
                     <button
                         key={n}
                         type="button"
-                        className={`text-xl ${n <= current ? "" : "opacity-30"}`}
+                        className={`text-xl ${n <= current ? "text-primary" : "text-muted-foreground/50"}`}
                         onClick={() => onChange(n)}
                         aria-label={`${n} stars`}
                     >
@@ -595,8 +596,10 @@ export default function SchoolDetailPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen flex items-center justify-center p-6">
-                <p className="text-sm">Loading…</p>
+            <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+                <div className="mx-auto flex min-h-[60vh] w-full max-w-4xl items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Loading…</p>
+                </div>
             </main>
         );
     }
@@ -604,54 +607,58 @@ export default function SchoolDetailPage() {
     const backHref = searchParams.get("from") === "shortlist" ? "/shortlist" : "/schools";
 
     return (
-        <main className="min-h-screen p-6 flex items-start justify-center">
-            <div className="w-full max-w-2xl rounded-xl border p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                    <Link className="text-sm underline" href={backHref} aria-label="Back">
+        <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+            <div className="mx-auto w-full max-w-4xl space-y-6">
+                <header className="flex flex-col gap-2">
+                    <Link
+                        className="text-sm font-semibold text-primary hover:underline"
+                        href={backHref}
+                        aria-label="Back"
+                    >
                         ← Back
                     </Link>
-                    <h1 className="text-2xl font-semibold">{school?.name ?? "School"}</h1>
-                </div>
+                    <h1 className="text-3xl font-semibold text-foreground">{school?.name ?? "School"}</h1>
+                </header>
 
-                {error && <p className="text-sm text-red-600">Error: {error}</p>}
-
-                {school && (
-                    <div className="text-sm text-muted-foreground space-y-1">
-                        <div>{(school.supported_levels ?? []).join(", ")}</div>
-                        {school.address && <div>{school.address}</div>}
-                        {school.website_url && (
-                            <a className="underline" href={school.website_url} target="_blank" rel="noreferrer">
-                                Website
-                            </a>
-                        )}
+                {error && (
+                    <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                        Error: {error}
                     </div>
                 )}
 
-                <hr />
-
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold">Open days</h2>
-                        <div className="text-xs text-muted-foreground">
-                            Verify details on the school website.
+                {school && (
+                    <InfoCard title="Overview">
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                            <div>{(school.supported_levels ?? []).join(", ")}</div>
+                            {school.address && <div>{school.address}</div>}
+                            {school.website_url && (
+                                <a className="text-sm text-primary underline" href={school.website_url} target="_blank" rel="noreferrer">
+                                    Website
+                                </a>
+                            )}
                         </div>
-                    </div>
+                    </InfoCard>
+                )}
 
+                <InfoCard
+                    title="Open days"
+                    action={<span className="text-xs text-muted-foreground">Verify details on the school website.</span>}
+                >
                     {openDays.length === 0 ? (
                         <div className="text-sm text-muted-foreground">No open days available yet.</div>
                     ) : (
-                        <ul className="divide-y rounded-lg border">
+                        <ul className="divide-y rounded-2xl border bg-card">
                             {openDays.map((r) => {
                                 const label = eventTypeLabel(r.event_type);
                                 const location = stripAnyUrlLabel(r.location_text);
                                 const planned = plannedOpenDayIds.has(r.id);
                                 const dateLabel = r.starts_at ? fmtDate(r.starts_at, locale) : "Unknown date";
                                 return (
-                                    <li key={r.id} className="p-3">
-                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                    <li key={r.id} className="p-4">
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                             <div className="min-w-0 space-y-1">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <div className="font-medium">{dateLabel}</div>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <div className="font-medium text-foreground">{dateLabel}</div>
                                                     {label && <span className={pillClass()}>{label}</span>}
                                                     {planned && <span className={pillClass()}>Planned</span>}
                                                 </div>
@@ -692,68 +699,70 @@ export default function SchoolDetailPage() {
                             })}
                         </ul>
                     )}
-                </div>
+                </InfoCard>
 
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                checked={attended}
-                                onChange={(e) => setAttended(e.target.checked)}
+                <InfoCard title="Your visit notes">
+                    <div className="space-y-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                <input
+                                    type="checkbox"
+                                    checked={attended}
+                                    onChange={(e) => setAttended(e.target.checked)}
+                                />
+                                <span>Visited</span>
+                            </label>
+                            <StarRating value={rating} onChange={setRating} />
+                        </div>
+
+                        <label className="space-y-2 block">
+                            <div className="text-sm font-medium text-foreground">Your notes</div>
+                            <textarea
+                                className="w-full rounded-2xl border bg-background px-4 py-3 min-h-28 text-sm"
+                                value={noteText}
+                                onChange={(e) => setNoteText(e.target.value)}
+                                placeholder="What stood out? Atmosphere, teachers, vibe…"
                             />
-                            <span>Visited</span>
                         </label>
 
-                        <StarRating value={rating} onChange={setRating} />
-                    </div>
-
-                    <label className="space-y-1 block">
-                        <div className="text-sm font-medium">Your notes</div>
-                        <textarea
-                            className="w-full rounded-md border px-3 py-2 min-h-28"
-                            value={noteText}
-                            onChange={(e) => setNoteText(e.target.value)}
-                            placeholder="What stood out? Atmosphere, teachers, vibe…"
-                        />
-                    </label>
-
-                    {otherNotes.length > 0 && (
-                        <div className="space-y-2">
-                            <div className="text-sm font-medium">Notes from others</div>
-                            <ul className="divide-y rounded-lg border">
-                                {otherNotes.map((n) => (
-                                    <li key={n.user_id} className="p-3">
-                                        <div className="text-xs text-muted-foreground">{n.email}</div>
-                                        <div className="text-sm whitespace-pre-wrap">{n.notes}</div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    <div className="flex items-center gap-3">
-                        <button
-                            className="rounded-md border px-3 py-2"
-                            onClick={save}
-                            disabled={!canSave || saving}
-                        >
-                            {saving ? "Saving..." : "Save"}
-                        </button>
-                        {savedMsg && <span className="text-green-700">{savedMsg}</span>}
-                        {visit && (
-                            <span className="text-xs text-muted-foreground">
-                                Visit record exists
-                            </span>
+                        {otherNotes.length > 0 && (
+                            <div className="space-y-2">
+                                <div className="text-sm font-medium text-foreground">Notes from others</div>
+                                <ul className="divide-y rounded-2xl border bg-card">
+                                    {otherNotes.map((n) => (
+                                        <li key={n.user_id} className="p-4">
+                                            <div className="text-xs text-muted-foreground">{n.email}</div>
+                                            <div className="text-sm whitespace-pre-wrap text-foreground">{n.notes}</div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         )}
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button
+                                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                                onClick={save}
+                                disabled={!canSave || saving}
+                            >
+                                {saving ? "Saving..." : "Save"}
+                            </button>
+                            {savedMsg && <span className="text-sm text-foreground">{savedMsg}</span>}
+                            {visit && (
+                                <span className="text-xs text-muted-foreground">Visit record exists</span>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button
+                                className="rounded-full border px-4 py-2 text-xs font-semibold"
+                                onClick={addToShortlist}
+                            >
+                                {t(language, "schools.shortlist_add_full")}
+                            </button>
+                            {shortlistMsg && <span className="text-sm text-foreground">{shortlistMsg}</span>}
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <button className="rounded-md border px-3 py-2" onClick={addToShortlist}>
-                            {t(language, "schools.shortlist_add_full")}
-                        </button>
-                        {shortlistMsg && <span className="text-green-700">{shortlistMsg}</span>}
-                    </div>
-                </div>
+                </InfoCard>
             </div>
         </main>
     );
