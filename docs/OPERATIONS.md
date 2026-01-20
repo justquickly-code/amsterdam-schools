@@ -58,3 +58,5 @@ Update templates in **Supabase → Authentication → Email Templates**.
 **Invite User**
 - Subject: **Uitnodiging voor Mijn Schoolkeuze / Invitation to Mijn Schoolkeuze**
 - Body: bilingual HTML (NL + EN)
+
+Full HTML templates: `docs/EMAIL_TEMPLATES.md`
