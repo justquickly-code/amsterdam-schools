@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { InfoCard, SchoolCard } from "@/components/schoolkeuze";
 
 type Workspace = {
     id: string;
@@ -394,139 +395,159 @@ export default function SchoolsPage() {
     }
 
     return (
-        <main className="min-h-screen p-6 flex items-start justify-center">
-            <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">
+        <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+            <div className="mx-auto w-full max-w-5xl space-y-6">
+                <header className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                         {t(language, "schools.title")}
-                    </h1>
-                </div>
+                    </p>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <h1 className="text-3xl font-semibold text-foreground">
+                            {t(language, "schools.title")}
+                        </h1>
+                        <span className="text-sm text-muted-foreground">
+                            {t(language, "schools.count").replace("#{count}", String(sorted.length))}
+                        </span>
+                    </div>
+                </header>
 
-                {loading && <p className="text-sm">Loading…</p>}
+                {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
                 {!loading && error && <p className="text-sm text-red-600">Error: {error}</p>}
 
                 {!loading && !error && (
-                    <div className="space-y-3">
-                        <div className="text-sm text-muted-foreground">
-                            Filtered by advies:{" "}
-                            {(ws?.advies_levels ?? []).length
-                                ? (ws?.advies_levels ?? []).join(" / ")
-                                : "— (not set)"}{" "}
-                            {(ws?.advies_levels?.length ?? 0) === 2 && (
-                                <span>(match: {ws?.advies_match_mode})</span>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <label className="text-sm text-muted-foreground">
-                                {t(language, "schools.sort")}
-                            </label>
-                            <select
-                                className="rounded-md border px-2 py-1 text-sm"
-                                value={sortMode}
-                                onChange={(e) => setSortMode(e.target.value as SortMode)}
-                            >
-                                <option value="name">
-                                    {t(language, "schools.sort_name")}
-                                </option>
-                                <option value="bike">
-                                    {t(language, "schools.sort_bike")}
-                                </option>
-                            </select>
-                            {sortMode === "bike" ? (
-                                <span className="text-xs text-muted-foreground">
-                                    {!ws?.home_postcode || !ws?.home_house_number
-                                        ? "Add home address to see bike times."
-                                        : hasMissingCommutes
-                                        ? "Some schools are missing bike times."
-                                        : null}
+                    <div className="space-y-5">
+                        <InfoCard
+                            title={t(language, "schools.filters_title")}
+                            action={
+                                <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                                    {t(language, "schools.filters_advies")}{" "}
+                                    {(ws?.advies_levels ?? []).length
+                                        ? (ws?.advies_levels ?? []).join(" / ")
+                                        : "—"}
+                                    {(ws?.advies_levels?.length ?? 0) === 2 && (
+                                        <span className="text-[11px] text-muted-foreground">
+                                            ({ws?.advies_match_mode})
+                                        </span>
+                                    )}
                                 </span>
-                            ) : null}
-                        </div>
+                            }
+                        >
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                        {t(language, "schools.sort")}
+                                    </label>
+                                    <select
+                                        className="rounded-full border bg-background px-3 py-1 text-sm"
+                                        value={sortMode}
+                                        onChange={(e) => setSortMode(e.target.value as SortMode)}
+                                    >
+                                        <option value="name">{t(language, "schools.sort_name")}</option>
+                                        <option value="bike">{t(language, "schools.sort_bike")}</option>
+                                    </select>
+                                    {sortMode === "bike" ? (
+                                        <span className="text-xs text-muted-foreground">
+                                            {!ws?.home_postcode || !ws?.home_house_number
+                                                ? t(language, "schools.bike_missing_address")
+                                                : hasMissingCommutes
+                                                ? t(language, "schools.bike_missing_some")
+                                                : null}
+                                        </span>
+                                    ) : null}
+                                </div>
 
-                        <input
-                            className="w-full rounded-md border px-3 py-2"
-                            placeholder={t(language, "schools.search")}
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                        />
+                                <input
+                                    className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                                    placeholder={t(language, "schools.search")}
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                />
+                            </div>
+                        </InfoCard>
 
                         {shortlistMsg && (
-                            <p className="text-sm text-green-700">{shortlistMsg}</p>
+                            <div className="rounded-2xl border border-info-muted bg-info-muted px-4 py-3 text-sm text-foreground">
+                                {shortlistMsg}
+                            </div>
                         )}
 
                         {sorted.length === 0 ? (
-                            <p className="text-sm">No schools match your filters yet.</p>
+                            <InfoCard title={t(language, "schools.no_matches_title")}>
+                                <p className="text-sm text-muted-foreground">
+                                    {t(language, "schools.no_matches_body")}
+                                </p>
+                            </InfoCard>
                         ) : (
-                            <ul className="divide-y">
-                                {sorted.map((s) => (
-                                    <li key={s.id} className="py-3">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <Link className="font-medium underline" href={`/schools/${s.id}`}>
-                                                {s.name}
-                                            </Link>
-
-                                            <button
-                                                className="rounded-md border px-2 py-1 text-xs"
-                                                onClick={() => addSchoolToShortlist(s.id)}
-                                                disabled={shortlistBusyId === s.id}
-                                            >
-                                                {shortlistBusyId === s.id
-                                                    ? t(language, "schools.shortlist_adding")
-                                                    : t(language, "schools.shortlist_add")}
-                                            </button>
-                                        </div>
-
-                                        {(s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended) && (
-                                            <div className="text-sm text-muted-foreground">
-                                                {s.visits?.[0]?.rating_stars ? `★ ${s.visits?.[0]?.rating_stars}/5` : ""}
+                            <div className="grid gap-4">
+                                {sorted.map((s) => {
+                                    const levelLabel =
+                                        (s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
+                                        t(language, "schools.levels_empty");
+                                    return (
+                                        <SchoolCard
+                                            key={s.id}
+                                            title={s.name}
+                                            subtitle={levelLabel}
+                                            className="gap-4"
+                                        >
+                                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                                {s.visits?.[0]?.rating_stars ? (
+                                                    <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold">
+                                                        ★ {s.visits?.[0]?.rating_stars}/5
+                                                    </span>
+                                                ) : null}
                                                 {s.visits?.[0]?.attended ? (
-                                                    <span className="ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
-                                                        visited
+                                                    <span className="rounded-full border px-2 py-0.5 text-xs">
+                                                        {t(language, "schools.visited")}
+                                                    </span>
+                                                ) : null}
+                                                {s.has_open_day && !s.has_planned_open_day && !s.visits?.[0]?.attended ? (
+                                                    <span className="rounded-full bg-progress-muted px-2 py-0.5 text-xs text-progress-foreground">
+                                                        {t(language, "schools.open_day_missing")}
                                                     </span>
                                                 ) : null}
                                             </div>
-                                        )}
 
-                                        {s.has_open_day && !s.has_planned_open_day && !s.visits?.[0]?.attended && (
-                                            <div className="text-xs text-amber-700">
-                                                No planned open day yet
+                                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                                {s.commute ? (
+                                                    <span>🚲 {s.commute.duration_minutes} min • {s.commute.distance_km} km</span>
+                                                ) : null}
+                                                {s.address ? <span>{s.address}</span> : null}
                                             </div>
-                                        )}
 
-                                        <div className="text-sm text-muted-foreground">
-                                            {(s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
-                                                "levels: —"}
-                                        </div>
-
-                                        {s.commute && (
-                                            <div className="text-sm text-muted-foreground">
-                                                🚲 {s.commute.duration_minutes} min • {s.commute.distance_km} km
+                                            <div className="flex flex-wrap items-center gap-4">
+                                                <Link
+                                                    className="text-sm font-semibold text-primary hover:underline"
+                                                    href={`/schools/${s.id}`}
+                                                >
+                                                    {t(language, "schools.view_details")}
+                                                </Link>
+                                                {s.website_url ? (
+                                                    <a
+                                                        className="text-sm text-muted-foreground underline"
+                                                        href={s.website_url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                    >
+                                                        {t(language, "schools.website")}
+                                                    </a>
+                                                ) : null}
+                                                <button
+                                                    className="ml-auto rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                                                    onClick={() => addSchoolToShortlist(s.id)}
+                                                    disabled={shortlistBusyId === s.id}
+                                                >
+                                                    {shortlistBusyId === s.id
+                                                        ? t(language, "schools.shortlist_adding")
+                                                        : t(language, "schools.shortlist_add")}
+                                                </button>
                                             </div>
-                                        )}
-
-                                        {s.address && (
-                                            <div className="text-sm text-muted-foreground">{s.address}</div>
-                                        )}
-                                        {s.website_url && (
-                                            <a
-                                                className="text-sm underline"
-                                                href={s.website_url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                Website
-                                            </a>
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
+                                        </SchoolCard>
+                                    );
+                                })}
+                            </div>
                         )}
-
-                        <p className="text-xs text-muted-foreground">
-                            Next: we’ll import the real school list and add cycling time/distance.
-                        </p>
                     </div>
                 )}
             </div>
