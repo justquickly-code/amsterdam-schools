@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
@@ -178,6 +178,7 @@ function StarRating({
 
 export default function SchoolDetailPage() {
     const params = useParams<{ id: string }>();
+    const searchParams = useSearchParams();
     const schoolId = params?.id;
 
     const [loading, setLoading] = useState(true);
@@ -600,11 +601,13 @@ export default function SchoolDetailPage() {
         );
     }
 
+    const backHref = searchParams.get("from") === "shortlist" ? "/shortlist" : "/schools";
+
     return (
         <main className="min-h-screen p-6 flex items-start justify-center">
             <div className="w-full max-w-2xl rounded-xl border p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                    <Link className="text-sm underline" href="/schools" aria-label="Back to Schools">
+                    <Link className="text-sm underline" href={backHref} aria-label="Back">
                         ← Back
                     </Link>
                     <h1 className="text-2xl font-semibold">{school?.name ?? "School"}</h1>

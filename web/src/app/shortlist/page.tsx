@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
@@ -471,7 +472,12 @@ export default function ShortlistPage() {
                 <div className="min-h-10">
                   {it ? (
                     <div className="space-y-1">
-                      <div>{it.school?.name ?? it.school_id}</div>
+                      <Link
+                        className="underline"
+                        href={`/schools/${it.school_id}?from=shortlist`}
+                      >
+                        {it.school?.name ?? it.school_id}
+                      </Link>
                       {(it.rating_stars || it.commute?.distance_km != null) && (
                         <div className="text-xs text-muted-foreground">
                           {it.rating_stars ? `★ ${it.rating_stars}/5` : ""}
@@ -509,7 +515,12 @@ export default function ShortlistPage() {
             <ul className="space-y-2 text-sm">
               {unranked.map((it) => (
                 <li key={it.school_id} className="flex items-center justify-between gap-3">
-                  <span className="truncate">{it.school?.name ?? it.school_id}</span>
+                  <Link
+                    className="truncate underline"
+                    href={`/schools/${it.school_id}?from=shortlist`}
+                  >
+                    {it.school?.name ?? it.school_id}
+                  </Link>
                   <div className="flex items-center gap-2">
                     <button
                       className="rounded-md border px-2 py-1 text-xs"

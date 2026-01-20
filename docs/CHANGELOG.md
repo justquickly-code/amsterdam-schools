@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Shortlist: link each school card to its school detail page; back returns to shortlist.
 - Admin: feedback dots now appear on admin menu + admin home; clear after viewing feedback list.
 - Invite: reduce confusion for first-time members by skipping workspace-choice screen when only one workspace.
 - Dashboard: use “{child}'s Dashboard” title instead of “Welcome”.
