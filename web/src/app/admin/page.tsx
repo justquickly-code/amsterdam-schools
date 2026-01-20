@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function AdminHomePage() {
   const [forbidden, setForbidden] = useState(false);
+  const [hasNewFeedback, setHasNewFeedback] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -19,7 +20,24 @@ export default function AdminHomePage() {
       const res = await fetch("/api/admin/check", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      if (!res.ok) setForbidden(true);
+      if (!res.ok) {
+        setForbidden(true);
+        return;
+      }
+
+      const listRes = await fetch("/api/admin/feedback", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (listRes.ok) {
+        const json = await listRes.json().catch(() => null);
+        const latest = (json?.items ?? [])[0];
+        const latestTs = latest?.created_at ? new Date(latest.created_at).getTime() : 0;
+        const lastSeen =
+          typeof window !== "undefined"
+            ? new Date(window.localStorage.getItem("admin_feedback_last_seen") ?? 0).getTime()
+            : 0;
+        setHasNewFeedback(latestTs > lastSeen);
+      }
     })().catch(() => setForbidden(true));
   }, []);
 
@@ -55,7 +73,10 @@ export default function AdminHomePage() {
             <div className="text-sm text-muted-foreground">Batch bike time + distance cache.</div>
           </Link>
           <Link className="rounded-lg border p-4 hover:bg-muted/30" href="/admin/feedback">
-            <div className="font-medium">Feedback</div>
+            <div className="flex items-center justify-between">
+              <div className="font-medium">Feedback</div>
+              {hasNewFeedback && <span className="h-2.5 w-2.5 rounded-full bg-red-500" />}
+            </div>
             <div className="text-sm text-muted-foreground">Review and respond to user feedback.</div>
           </Link>
         </div>

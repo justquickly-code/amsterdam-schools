@@ -25,6 +25,7 @@ export default function AdminFeedbackPage() {
   const [response, setResponse] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [lastSeenMs, setLastSeenMs] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -43,6 +44,12 @@ export default function AdminFeedbackPage() {
         return;
       }
 
+      const storedLastSeen =
+        typeof window !== "undefined"
+          ? new Date(window.localStorage.getItem("admin_feedback_last_seen") ?? 0).getTime()
+          : 0;
+      setLastSeenMs(Number.isFinite(storedLastSeen) ? storedLastSeen : 0);
+
       const listRes = await fetch("/api/admin/feedback", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -53,8 +60,10 @@ export default function AdminFeedbackPage() {
       const json = await listRes.json().catch(() => null);
       const list = (json?.items ?? []) as FeedbackRow[];
       setItems(list);
-      if (typeof window !== "undefined" && list.length > 0) {
-        window.localStorage.setItem("admin_feedback_last_seen", list[0].created_at);
+      if (typeof window !== "undefined") {
+        const latest = list[0]?.created_at ?? new Date().toISOString();
+        window.localStorage.setItem("admin_feedback_last_seen", latest);
+        window.dispatchEvent(new Event("admin-feedback-seen"));
       }
     })().catch(() => setForbidden(true));
   }, []);
@@ -141,20 +150,27 @@ export default function AdminFeedbackPage() {
               <p className="text-sm text-muted-foreground">No feedback yet.</p>
             ) : (
               <ul className="divide-y rounded-lg border">
-                {items.map((item) => (
-                  <li
-                    key={item.id}
-                    className={`p-3 cursor-pointer ${selected?.id === item.id ? "bg-muted/30" : ""}`}
-                    onClick={() => setSelected(item)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs uppercase text-muted-foreground">{item.category}</div>
-                      <div className="text-xs text-muted-foreground">{item.status}</div>
-                    </div>
-                    <div className="font-medium">{item.title ?? "Feedback"}</div>
-                    <div className="text-sm text-muted-foreground line-clamp-2">{item.body}</div>
-                  </li>
-                ))}
+                {items.map((item) => {
+                  const itemIsNew =
+                    lastSeenMs > 0 ? new Date(item.created_at).getTime() > lastSeenMs : true;
+                  return (
+                    <li
+                      key={item.id}
+                      className={`p-3 cursor-pointer ${selected?.id === item.id ? "bg-muted/30" : ""}`}
+                      onClick={() => setSelected(item)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs uppercase text-muted-foreground">{item.category}</div>
+                          {itemIsNew && <span className="h-2 w-2 rounded-full bg-red-500" />}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{item.status}</div>
+                      </div>
+                      <div className="font-medium">{item.title ?? "Feedback"}</div>
+                      <div className="text-sm text-muted-foreground line-clamp-2">{item.body}</div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>

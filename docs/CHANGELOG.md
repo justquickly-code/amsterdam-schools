@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Admin: feedback dots now appear on admin menu + admin home; clear after viewing feedback list.
+- Invite: reduce confusion for first-time members by skipping workspace-choice screen when only one workspace.
+- Dashboard: use “{child}'s Dashboard” title instead of “Welcome”.
+- Login: add spam/junk hint after sending magic link.
+- Invites: attach child_name + inviter_email metadata for richer email templates.
 - Docs: note iOS Home Screen (PWA) limitation and recommend Safari until in-app auth flow exists.
 - Tutorial: add /how-it-works page with Keuzegids timeline, next dates, and shortlist length guidance.
 - Setup: add optional tutorial step after invites; “finish setup” now routes through tutorial or dashboard.

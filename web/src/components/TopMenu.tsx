@@ -14,6 +14,7 @@ export default function TopMenu() {
   const [workspaceId, setWorkspaceId] = useState<string>("");
   const [role, setRole] = useState<WorkspaceRole | null>(null);
   const [hasNewFeedback, setHasNewFeedback] = useState(false);
+  const adminFeedbackSeenEvent = "admin-feedback-seen";
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -105,6 +106,14 @@ export default function TopMenu() {
       setHasNewFeedback(latestTs > lastSeen);
     })().catch(() => null);
   }, [workspaceId, isAdmin]);
+
+  useEffect(() => {
+    function onAdminFeedbackSeen() {
+      setHasNewFeedback(false);
+    }
+    window.addEventListener(adminFeedbackSeenEvent, onAdminFeedbackSeen);
+    return () => window.removeEventListener(adminFeedbackSeenEvent, onAdminFeedbackSeen);
+  }, []);
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
