@@ -227,7 +227,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
       "Vul het advies en het adres in. Daarmee filteren we scholen en tonen we reistijden.",
     "about.step_schools_title": "2) Verken scholen",
     "about.step_schools_body":
-      "Bekijk scholen die passen bij het advies. Bewaar scholen die interessant zijn.",
+      "Bekijk scholen die passen bij het advies. Voeg de scholen die je leuk vindt toe aan je shortlist.",
     "about.step_open_days_title": "3) Plan open dagen",
     "about.step_open_days_body":
       "Bekijk open dagen en markeer welke je wil bezoeken.",
@@ -240,6 +240,10 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "about.step_print_title": "6) Print of exporteer",
     "about.step_print_body":
       "Gebruik de print/export om je ranglijst te delen of mee te nemen.",
+    "about.step_feedback_title": "7) Geef feedback",
+    "about.step_feedback_body":
+      "Laat ons weten wat beter kan via Feedback in het menu.",
+    "about.good_luck": "Succes met de schoolkeuze!",
   },
   en: {
     "login.title": "Sign in",
@@ -454,7 +458,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
       "Enter advice and address so we can filter schools and show commute times.",
     "about.step_schools_title": "2) Explore schools",
     "about.step_schools_body":
-      "Browse schools that match the advice and save the ones you like.",
+      "Browse schools that match the advice and add the ones you like to your shortlist.",
     "about.step_open_days_title": "3) Plan open days",
     "about.step_open_days_body":
       "Review open days and mark the ones you plan to visit.",
@@ -467,6 +471,10 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "about.step_print_title": "6) Print or export",
     "about.step_print_body":
       "Use print/export to share or take your ranked list with you.",
+    "about.step_feedback_title": "7) Give feedback",
+    "about.step_feedback_body":
+      "Let us know what could be better via Feedback in the menu.",
+    "about.good_luck": "Good luck with the school choice!",
   },
 };
 

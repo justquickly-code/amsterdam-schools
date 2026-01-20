@@ -6,3 +6,4 @@ alter table public.open_days
 create index if not exists open_days_is_active_idx on public.open_days (is_active);
 create index if not exists open_days_missing_since_idx on public.open_days (missing_since);
 
+

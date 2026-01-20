@@ -54,7 +54,13 @@ export default function AboutPage() {
             <div className="font-medium">{t(language, "about.step_print_title")}</div>
             <div className="text-muted-foreground">{t(language, "about.step_print_body")}</div>
           </div>
+          <div>
+            <div className="font-medium">{t(language, "about.step_feedback_title")}</div>
+            <div className="text-muted-foreground">{t(language, "about.step_feedback_body")}</div>
+          </div>
         </div>
+
+        <div className="text-sm text-muted-foreground">{t(language, "about.good_luck")}</div>
       </div>
     </main>
   );

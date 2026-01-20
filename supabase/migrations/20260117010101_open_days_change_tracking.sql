@@ -60,3 +60,4 @@ create index if not exists open_days_missing_since_idx
 
 commit;
 
+
