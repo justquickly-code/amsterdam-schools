@@ -1,6 +1,12 @@
 # Changelog
 
 ## Unreleased
+- Dashboard: align header layout and unify planner list (timeline + planned open days) with clickable items.
+- Planner: normalize open-day school join shape to keep advies filtering working reliably.
+- Shortlist: show rating + commute time/distance for ranked and unranked items.
+- UI: Wordmark now uses object-contain to avoid stretching across headers.
+- Admin: add user stats page (rolling 7 days, UTC) sourced from Supabase Auth users.
+- Build: normalize planned open-days join shape on dashboard to prevent TS build failure.
 - UI kit: move kit source to docs/ui-kit and keep public assets in web/public/branding/ui-kit.
 - Theme: apply UI kit color tokens and Nunito font as base styling.
 - Docs: add Phase 6 plan for production readiness, iOS PWA login, UX polish, and analytics.

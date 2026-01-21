@@ -29,3 +29,10 @@ Use Supabase Cron (seasonal):
 - RLS verified for workspace-owned tables
 - No secrets committed
 - Basic error handling on core screens
+- Vercel build passes (`pnpm -C web build`)
+- Supabase Auth redirect URLs set for production domain
+- Admin allowlist configured (`ADMIN_ALLOWLIST_EMAILS`)
+- Run admin sync: schools + open days
+- Mapbox key set (geocoding + commutes)
+- Feedback + admin feedback console tested
+- Planner shows open days with advice filter applied
