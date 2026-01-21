@@ -493,7 +493,7 @@ export default function ShortlistPage() {
                     {it ? (
                       <div className="space-y-2">
                         <Link
-                          className="text-sm font-semibold text-primary hover:underline"
+                          className="text-base font-semibold text-primary hover:underline"
                           href={`/schools/${it.school_id}?from=shortlist`}
                         >
                           {it.school?.name ?? it.school_id}
@@ -535,7 +535,7 @@ export default function ShortlistPage() {
               {unranked.map((it) => (
                 <li key={it.school_id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <Link
-                    className="truncate text-sm font-semibold text-primary hover:underline"
+                    className="truncate text-base font-semibold text-primary hover:underline"
                     href={`/schools/${it.school_id}?from=shortlist`}
                   >
                     {it.school?.name ?? it.school_id}

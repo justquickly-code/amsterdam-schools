@@ -488,6 +488,7 @@ export default function SchoolsPage() {
                                         <SchoolCard
                                             key={s.id}
                                             title={s.name}
+                                            titleHref={`/schools/${s.id}`}
                                             subtitle={levelLabel}
                                             className="gap-4"
                                         >
@@ -518,7 +519,7 @@ export default function SchoolsPage() {
 
                                             <div className="flex flex-wrap items-center gap-4">
                                                 <Link
-                                                    className="text-sm font-semibold text-primary hover:underline"
+                                                    className="text-sm text-muted-foreground underline"
                                                     href={`/schools/${s.id}`}
                                                 >
                                                     {t(language, "schools.view_details")}

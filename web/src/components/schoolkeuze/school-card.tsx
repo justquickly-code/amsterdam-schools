@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface SchoolCardProps {
   title: string;
   subtitle?: string;
   description?: string;
+  titleHref?: string;
   children?: React.ReactNode;
   onClick?: () => void;
   className?: string;
@@ -16,6 +18,7 @@ function SchoolCard({
   title,
   subtitle,
   description,
+  titleHref,
   children,
   onClick,
   className,
@@ -33,7 +36,15 @@ function SchoolCard({
       )}
     >
       <div className="flex flex-col gap-1">
-        <h3 className="font-semibold text-card-foreground">{title}</h3>
+        <h3 className="text-base font-semibold text-card-foreground">
+          {titleHref ? (
+            <Link className="text-primary hover:underline" href={titleHref}>
+              {title}
+            </Link>
+          ) : (
+            title
+          )}
+        </h3>
         {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
       {description && <p className="text-sm text-muted-foreground">{description}</p>}
