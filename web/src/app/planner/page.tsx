@@ -36,7 +36,10 @@ type OpenDayRow = {
   event_type: string | null;
   is_active?: boolean;
   missing_since?: string | null;
-  school?: Array<{ id: string; name: string; supported_levels?: string[] } | null> | null;
+  school?:
+    | Array<{ id: string; name: string; supported_levels?: string[] } | null>
+    | { id: string; name: string; supported_levels?: string[] }
+    | null;
 };
 
 type WorkspaceRow = {
@@ -266,6 +269,7 @@ export default function OpenDaysPage() {
 
       const list = (data ?? []).map((row) => {
         const r = row as OpenDayRow;
+        const school = Array.isArray(r.school) ? r.school[0] ?? null : r.school ?? null;
         return {
           id: r.id,
           school_id: r.school_id ?? null,
@@ -279,7 +283,7 @@ export default function OpenDaysPage() {
           event_type: r.event_type ?? null,
           is_active: r.is_active,
           missing_since: r.missing_since ?? null,
-          school: r.school?.[0] ?? null,
+          school,
         } as OpenDay;
       });
       setRows(list);
