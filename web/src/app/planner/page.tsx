@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type OpenDay = {
   id: string;
@@ -110,7 +111,7 @@ function pillClass() {
 }
 
 function actionClass() {
-  return "text-xs rounded-md border px-2 py-1 hover:bg-muted/30";
+  return "text-xs rounded-full border px-3 py-1 hover:bg-secondary/60";
 }
 
 export default function OpenDaysPage() {
@@ -458,136 +459,138 @@ export default function OpenDaysPage() {
   }, [visibleRows, language]);
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{t(language, "open_days.title")}</h1>
-        </div>
-
-        <div className="rounded-lg border p-4 text-sm space-y-3">
-          <div>
-            <div className="font-medium">
-              {t(language, "open_days.important")}
-            </div>
-            <div className="text-muted-foreground">
-              {t(language, "open_days.important_body")}
-            </div>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
+        <header className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {t(language, "open_days.title")}
+          </p>
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-semibold text-foreground">
+              {t(language, "open_days.title")}
+            </h1>
+            <span className="text-sm text-muted-foreground">
+              {t(language, "open_days.count").replace("#{count}", String(visibleRows.length))}
+            </span>
           </div>
+        </header>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-muted-foreground">
-              {year ? (
-                <>
-                  Data: <span className="font-medium">{year}</span>
-                  {syncedAt ? (
-                    <>
-                      {" "}
-                      • Synced{" "}
-                      {new Date(syncedAt).toLocaleString(getLocale(language))}
-                    </>
-                  ) : null}
-                </>
-              ) : null}
-              {workspaceId ? null : null}
+        <InfoCard title={t(language, "open_days.important")}>
+          <p className="text-sm text-muted-foreground">{t(language, "open_days.important_body")}</p>
+        </InfoCard>
+
+        <InfoCard title={t(language, "open_days.filters_title")}>
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-muted-foreground">
+                {year ? (
+                  <>
+                    {t(language, "open_days.data_label")}{" "}
+                    <span className="font-semibold text-foreground">{year}</span>
+                    {syncedAt ? (
+                      <>
+                        {" "}
+                        • {t(language, "open_days.synced_label")}{" "}
+                        {new Date(syncedAt).toLocaleString(getLocale(language))}
+                      </>
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                {yearOptions.length > 1 && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">{t(language, "open_days.year_label")}</span>
+                    <select
+                      className="rounded-full border bg-background px-3 py-1 text-sm"
+                      value={year}
+                      onChange={(e) => setYear(e.target.value)}
+                    >
+                      {yearOptions.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                <label className="flex items-center gap-2 select-none text-sm">
+                  <input
+                    type="checkbox"
+                    checked={shortlistOnly}
+                    onChange={(e) => setShortlistOnly(e.target.checked)}
+                  />
+                  <span>{t(language, "open_days.shortlist_only")}</span>
+                </label>
+              </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              {yearOptions.length > 1 && (
-                <label className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Year</span>
-                  <select
-                    className="rounded-md border px-2 py-1 text-sm"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                  >
-                    {yearOptions.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              <label className="flex items-center gap-2 select-none">
-                <input
-                  type="checkbox"
-                  checked={shortlistOnly}
-                  onChange={(e) => setShortlistOnly(e.target.checked)}
-                />
-                <span className="text-sm">{t(language, "open_days.shortlist_only")}</span>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="text-sm">
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t(language, "open_days.event_type")}
+                </div>
+                <select
+                  className="w-full rounded-2xl border bg-background px-3 py-2 text-sm"
+                  value={eventTypeFilter}
+                  onChange={(e) => setEventTypeFilter(e.target.value)}
+                >
+                  <option value="all">All</option>
+                  <option value="open_dag">Open dag</option>
+                  <option value="open_avond">Open avond</option>
+                  <option value="informatieavond">Info-avond</option>
+                  <option value="proefles">Proefles</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+
+              <label className="text-sm">
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t(language, "open_days.when")}
+                </div>
+                <select
+                  className="w-full rounded-2xl border bg-background px-3 py-2 text-sm"
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value as DateRangeFilter)}
+                >
+                  <option value="all">{t(language, "open_days.all_dates")}</option>
+                  <option value="7">{t(language, "open_days.next7")}</option>
+                  <option value="14">{t(language, "open_days.next14")}</option>
+                </select>
               </label>
             </div>
           </div>
+        </InfoCard>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label className="text-sm">
-              <div className="text-xs text-muted-foreground mb-1">
-                {t(language, "open_days.event_type")}
-              </div>
-              <select
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={eventTypeFilter}
-                onChange={(e) => setEventTypeFilter(e.target.value)}
-              >
-                <option value="all">All</option>
-                <option value="open_dag">Open dag</option>
-                <option value="open_avond">Open avond</option>
-                <option value="informatieavond">Info-avond</option>
-                <option value="proefles">Proefles</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-
-            <label className="text-sm">
-              <div className="text-xs text-muted-foreground mb-1">
-                {t(language, "open_days.when")}
-              </div>
-              <select
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value as DateRangeFilter)}
-              >
-                <option value="all">
-                  {t(language, "open_days.all_dates")}
-                </option>
-                <option value="7">
-                  {t(language, "open_days.next7")}
-                </option>
-                <option value="14">
-                  {t(language, "open_days.next14")}
-                </option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        {loading && <p className="text-sm">Loading…</p>}
+        {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
         {!loading && error && <p className="text-sm text-red-600">Error: {error}</p>}
 
         {!loading && !error && rows.length === 0 && (
-          <div className="text-sm">
-            No open days loaded yet. Run the admin sync at{" "}
-            <Link className="underline" href="/admin/sync-open-days">
-              /admin/sync-open-days
-            </Link>
-            .
-          </div>
+          <InfoCard title={t(language, "open_days.none_loaded_title")}>
+            <p className="text-sm text-muted-foreground">
+              {t(language, "open_days.none_loaded_body")}{" "}
+              <Link className="underline" href="/admin/sync-open-days">
+                /admin/sync-open-days
+              </Link>
+              .
+            </p>
+          </InfoCard>
         )}
 
         {!loading && !error && rows.length > 0 && visibleRows.length === 0 && (
-          <div className="text-sm">
-            No open days match your current filters (try widening date range, event type, or turning off{" "}
-            <span className="font-medium">Shortlist only</span>).
-          </div>
+          <InfoCard title={t(language, "open_days.none_match_title")}>
+            <p className="text-sm text-muted-foreground">
+              {t(language, "open_days.none_match_body")}
+            </p>
+          </InfoCard>
         )}
 
         {!loading && !error && visibleRows.length > 0 && (
           <div className="space-y-6">
             {grouped.map(([dateLabel, items]) => (
-              <div key={dateLabel} className="space-y-2">
-                <h2 className="text-lg font-semibold">{dateLabel}</h2>
-
-                <ul className="divide-y rounded-lg border">
+              <InfoCard key={dateLabel} title={dateLabel}>
+                <ul className="divide-y rounded-2xl border bg-card">
                   {items.map((r) => {
                     const label = eventTypeLabel(r.event_type);
                     const displayName = r.school?.name ?? stripTrailingUrlLabel(r.school_name);
@@ -595,18 +598,17 @@ export default function OpenDaysPage() {
                     const locale = getLocale(language);
                     const planned = plannedIds.has(r.id);
                     return (
-                      <li key={r.id} className="p-3">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <div className="font-medium truncate">{displayName}</div>
+                      <li key={r.id} className="p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className="font-semibold text-foreground truncate">{displayName}</div>
 
                               {label && <span className={pillClass()}>{label}</span>}
 
-                              {planned && <span className={pillClass()}>Planned</span>}
+                              {planned && <span className={pillClass()}>{t(language, "open_days.planned")}</span>}
 
-                              {r.is_active === false && <span className={pillClass()}>Verify</span>}
-
+                              {r.is_active === false && <span className={pillClass()}>{t(language, "open_days.verify")}</span>}
                             </div>
 
                             <div className="text-sm text-muted-foreground">
@@ -617,15 +619,15 @@ export default function OpenDaysPage() {
 
                             {r.missing_since ? (
                               <div className="text-xs text-muted-foreground">
-                                Missing since: {r.missing_since}
+                                {t(language, "open_days.missing_since")} {r.missing_since}
                               </div>
                             ) : null}
                           </div>
 
-                          <div className="flex gap-2 sm:shrink-0 sm:justify-end">
+                          <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
                             {r.school?.id && (
                               <Link className={actionClass()} href={`/schools/${r.school.id}`}>
-                                Notes
+                                {t(language, "open_days.notes")}
                               </Link>
                             )}
 
@@ -636,7 +638,11 @@ export default function OpenDaysPage() {
                               disabled={planningId === r.id}
                               title="Mark as planned"
                             >
-                              {planningId === r.id ? "Saving..." : planned ? "Planned" : "Plan"}
+                              {planningId === r.id
+                                ? t(language, "open_days.saving")
+                                : planned
+                                ? t(language, "open_days.planned")
+                                : t(language, "open_days.plan")}
                             </button>
 
                             <button
@@ -646,7 +652,9 @@ export default function OpenDaysPage() {
                               disabled={downloadingId === r.id}
                               title="Download calendar invite (.ics)"
                             >
-                              {downloadingId === r.id ? "Downloading..." : "Calendar"}
+                              {downloadingId === r.id
+                                ? t(language, "open_days.downloading")
+                                : t(language, "open_days.calendar")}
                             </button>
 
                             {r.info_url && (
@@ -657,7 +665,7 @@ export default function OpenDaysPage() {
                                 rel="noreferrer"
                                 title="Open source page"
                               >
-                                Source
+                                {t(language, "open_days.source")}
                               </a>
                             )}
                           </div>
@@ -666,7 +674,7 @@ export default function OpenDaysPage() {
                     );
                   })}
                 </ul>
-              </div>
+              </InfoCard>
             ))}
           </div>
         )}
