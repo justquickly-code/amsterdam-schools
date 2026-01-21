@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type WorkspaceRow = {
   id: string;
@@ -267,8 +268,10 @@ export default function SetupPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm">Loading…</p>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center">
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        </div>
       </main>
     );
   }
@@ -280,30 +283,33 @@ export default function SetupPage() {
 
   if (role && role !== "owner") {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-xl border p-6 space-y-3 text-sm">
-          <h1 className="text-2xl font-semibold">{t(language, "setup.required_title")}</h1>
-          <p className="text-muted-foreground">{t(language, "setup.required_body")}</p>
-          <div className="flex flex-wrap gap-2">
-            <Link className="inline-block rounded-md border px-3 py-2" href="/">
-              {t(language, "setup.go_dashboard")}
-            </Link>
-            <button
-              className="rounded-md border px-3 py-2 text-sm"
-              type="button"
-              onClick={handleSignOut}
-            >
-              {t(language, "setup.signout")}
-            </button>
-          </div>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-2xl">
+          <InfoCard title={t(language, "setup.required_title")}>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>{t(language, "setup.required_body")}</p>
+              <div className="flex flex-wrap gap-2">
+                <Link className="rounded-full border px-4 py-2 text-xs font-semibold" href="/">
+                  {t(language, "setup.go_dashboard")}
+                </Link>
+                <button
+                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  type="button"
+                  onClick={handleSignOut}
+                >
+                  {t(language, "setup.signout")}
+                </button>
+              </div>
+            </div>
+          </InfoCard>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-xl border p-6 space-y-4">
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">{t(language, "settings.language")}</div>
           <button
@@ -314,150 +320,160 @@ export default function SetupPage() {
             {language === "nl" ? "NL" : "EN"}
           </button>
         </div>
-        <h1 className="text-2xl font-semibold">{t(language, "setup.title")}</h1>
-        {step === "profile" && (
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>{t(language, "setup.intro")}</p>
-            <p>{t(language, "setup.profile_why")}</p>
-          </div>
-        )}
 
-        {error && <p className="text-sm text-red-600">Error: {error}</p>}
-
-        {step === "invite" ? (
-          <div className="space-y-3">
-            <div className="text-sm text-muted-foreground">{t(language, "setup.invite_intro")}</div>
-            <div className="text-sm text-muted-foreground">{t(language, "setup.invite_shared")}</div>
-
-            <div className="space-y-2">
-              <label className="space-y-1">
-                <div className="text-sm font-medium">{t(language, "setup.invite_label")}</div>
-                <input
-                  className="w-full rounded-md border px-3 py-2"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="parent@example.com"
-                />
-              </label>
-              <button
-                className="w-full rounded-md border px-3 py-2"
-                onClick={inviteMember}
-                disabled={inviteBusy || !inviteEmail.trim()}
-              >
-                {inviteBusy ? t(language, "setup.invite_sending") : t(language, "setup.invite_send")}
-              </button>
-              {inviteMsg && <div className="text-sm text-muted-foreground">{inviteMsg}</div>}
+        <InfoCard title={t(language, "setup.title")}>
+          {step === "profile" && (
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>{t(language, "setup.intro")}</p>
+              <p>{t(language, "setup.profile_why")}</p>
             </div>
+          )}
 
-            <div className="text-xs text-muted-foreground">{t(language, "setup.invite_later")}</div>
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
-                type="button"
-                onClick={() => setStep("tutorial")}
-              >
-                {t(language, "setup.skip")}
-              </button>
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
-                type="button"
-                onClick={() => setStep("tutorial")}
-              >
-                {t(language, "setup.continue")}
-              </button>
+          {error && (
+            <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              Error: {error}
             </div>
-          </div>
-        ) : step === "tutorial" ? (
-          <div className="space-y-3">
-            <div className="text-sm text-muted-foreground">{t(language, "setup.tutorial_intro")}</div>
-            <div className="text-sm text-muted-foreground">{t(language, "setup.tutorial_body")}</div>
-            <div className="text-xs text-muted-foreground">{t(language, "setup.tutorial_later")}</div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
-                type="button"
-                onClick={() => router.replace("/how-it-works?from=setup&setup=done")}
-              >
-                {t(language, "setup.tutorial_start")}
-              </button>
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
-                type="button"
-                onClick={() => router.replace("/?setup=done")}
-              >
-                {t(language, "setup.skip")}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <label className="block space-y-1">
-              <span className="text-sm font-medium">{t(language, "settings.child_name")}</span>
-              <input
-                className="w-full rounded-md border px-3 py-2"
-                value={childName}
-                onChange={(e) => setChildName(e.target.value)}
-                placeholder="Sam"
-              />
-            </label>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="space-y-1">
-                <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
-                <input
-                  className="w-full rounded-md border px-3 py-2"
-                  value={homePostcode}
-                  onChange={(e) => setHomePostcode(e.target.value)}
-                  placeholder="1234 AB"
-                />
-              </label>
+          {step === "invite" ? (
+            <div className="space-y-4 text-sm">
+              <div className="space-y-2 text-muted-foreground">
+                <p>{t(language, "setup.invite_intro")}</p>
+                <p>{t(language, "setup.invite_shared")}</p>
+              </div>
 
-              <label className="space-y-1">
-                <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
-                <input
-                  className="w-full rounded-md border px-3 py-2"
-                  value={homeHouseNumber}
-                  onChange={(e) => setHomeHouseNumber(e.target.value)}
-                  placeholder="10"
-                />
-              </label>
-            </div>
-
-            <div className="space-y-2">
-              <label className="space-y-1">
-                <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
-                <select
-                  className="w-full rounded-md border px-3 py-2"
-                  value={adviesOption}
-                  onChange={(e) => setAdviesOption(e.target.value)}
+              <div className="space-y-2">
+                <label className="space-y-1">
+                  <div className="text-sm font-medium">{t(language, "setup.invite_label")}</div>
+                  <input
+                    className="w-full rounded-2xl border bg-background px-4 py-2"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="parent@example.com"
+                  />
+                </label>
+                <button
+                  className="w-full rounded-full border px-4 py-2 text-xs font-semibold"
+                  onClick={inviteMember}
+                  disabled={inviteBusy || !inviteEmail.trim()}
                 >
-                  <option value="">{t(language, "settings.advies_select")}</option>
-                  {ADVIES_OPTIONS.map((opt) => (
-                    <option key={opt.key} value={opt.key}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+                  {inviteBusy ? t(language, "setup.invite_sending") : t(language, "setup.invite_send")}
+                </button>
+                {inviteMsg && <div className="text-sm text-muted-foreground">{inviteMsg}</div>}
+              </div>
 
-            <button
-              className="w-full rounded-md border px-3 py-2"
-              onClick={saveSetup}
-              disabled={saving}
-            >
-              {saving ? t(language, "setup.saving") : t(language, "setup.next")}
-            </button>
-            <button
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              type="button"
-              onClick={handleSignOut}
-            >
-              {t(language, "setup.signout")}
-            </button>
-          </div>
-        )}
+              <div className="text-xs text-muted-foreground">{t(language, "setup.invite_later")}</div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  type="button"
+                  onClick={() => setStep("tutorial")}
+                >
+                  {t(language, "setup.skip")}
+                </button>
+                <button
+                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                  type="button"
+                  onClick={() => setStep("tutorial")}
+                >
+                  {t(language, "setup.continue")}
+                </button>
+              </div>
+            </div>
+          ) : step === "tutorial" ? (
+            <div className="space-y-4 text-sm">
+              <div className="space-y-2 text-muted-foreground">
+                <p>{t(language, "setup.tutorial_intro")}</p>
+                <p>{t(language, "setup.tutorial_body")}</p>
+              </div>
+              <div className="text-xs text-muted-foreground">{t(language, "setup.tutorial_later")}</div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                  type="button"
+                  onClick={() => router.replace("/how-it-works?from=setup&setup=done")}
+                >
+                  {t(language, "setup.tutorial_start")}
+                </button>
+                <button
+                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  type="button"
+                  onClick={() => router.replace("/?setup=done")}
+                >
+                  {t(language, "setup.skip")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 text-sm">
+              <label className="block space-y-1">
+                <span className="text-sm font-medium">{t(language, "settings.child_name")}</span>
+                <input
+                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  value={childName}
+                  onChange={(e) => setChildName(e.target.value)}
+                  placeholder="Sam"
+                />
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="space-y-1">
+                  <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
+                  <input
+                    className="w-full rounded-2xl border bg-background px-4 py-2"
+                    value={homePostcode}
+                    onChange={(e) => setHomePostcode(e.target.value)}
+                    placeholder="1234 AB"
+                  />
+                </label>
+
+                <label className="space-y-1">
+                  <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
+                  <input
+                    className="w-full rounded-2xl border bg-background px-4 py-2"
+                    value={homeHouseNumber}
+                    onChange={(e) => setHomeHouseNumber(e.target.value)}
+                    placeholder="10"
+                  />
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <label className="space-y-1">
+                  <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
+                  <select
+                    className="w-full rounded-2xl border bg-background px-4 py-2"
+                    value={adviesOption}
+                    onChange={(e) => setAdviesOption(e.target.value)}
+                  >
+                    <option value="">{t(language, "settings.advies_select")}</option>
+                    {ADVIES_OPTIONS.map((opt) => (
+                      <option key={opt.key} value={opt.key}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <button
+                className="w-full rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                onClick={saveSetup}
+                disabled={saving}
+              >
+                {saving ? t(language, "setup.saving") : t(language, "setup.next")}
+              </button>
+              <button
+                className="w-full rounded-full border px-4 py-2 text-xs font-semibold"
+                type="button"
+                onClick={handleSignOut}
+              >
+                {t(language, "setup.signout")}
+              </button>
+            </div>
+          )}
+        </InfoCard>
       </div>
     </main>
   );
