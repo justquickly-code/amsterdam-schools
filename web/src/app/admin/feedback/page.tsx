@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type FeedbackRow = {
   id: string;
@@ -128,35 +129,40 @@ export default function AdminFeedbackPage() {
 
   if (forbidden) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm text-red-600">Forbidden: admin access required.</p>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-4xl items-center justify-center">
+          <p className="text-sm text-red-600">Forbidden: admin access required.</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-5xl rounded-xl border p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Feedback</h1>
-          <Link className="text-sm underline" href="/admin">
-            Admin home
-          </Link>
-        </div>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
+        <header className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Admin</p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-semibold text-foreground">Feedback</h1>
+            <Link className="text-sm font-semibold text-primary hover:underline" href="/admin">
+              Admin home
+            </Link>
+          </div>
+        </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-4">
-          <div className="space-y-3">
+          <InfoCard title="Inbox">
             {items.length === 0 ? (
               <p className="text-sm text-muted-foreground">No feedback yet.</p>
             ) : (
-              <ul className="divide-y rounded-lg border">
+              <ul className="divide-y rounded-2xl border bg-card">
                 {items.map((item) => {
                   const itemIsNew =
                     lastSeenMs > 0 ? new Date(item.created_at).getTime() > lastSeenMs : true;
                   return (
                     <li
                       key={item.id}
-                      className={`p-3 cursor-pointer ${selected?.id === item.id ? "bg-muted/30" : ""}`}
+                      className={`p-4 cursor-pointer ${selected?.id === item.id ? "bg-secondary/40" : ""}`}
                       onClick={() => setSelected(item)}
                     >
                       <div className="flex items-center justify-between">
@@ -166,28 +172,30 @@ export default function AdminFeedbackPage() {
                         </div>
                         <div className="text-xs text-muted-foreground">{item.status}</div>
                       </div>
-                      <div className="font-medium">{item.title ?? "Feedback"}</div>
+                      <div className="font-semibold text-foreground">{item.title ?? "Feedback"}</div>
                       <div className="text-sm text-muted-foreground line-clamp-2">{item.body}</div>
                     </li>
                   );
                 })}
               </ul>
             )}
-          </div>
+          </InfoCard>
 
-          <div className="rounded-lg border p-4 space-y-3">
+          <InfoCard title="Response">
             {!selected ? (
               <p className="text-sm text-muted-foreground">Select feedback to respond.</p>
             ) : (
-              <>
-                <div className="text-xs text-muted-foreground">{selected.category}</div>
-                <div className="font-medium">{selected.title ?? "Feedback"}</div>
-                <div className="text-sm whitespace-pre-wrap text-muted-foreground">{selected.body}</div>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <div className="text-xs uppercase text-muted-foreground">{selected.category}</div>
+                  <div className="font-semibold text-foreground">{selected.title ?? "Feedback"}</div>
+                  <div className="text-sm whitespace-pre-wrap text-muted-foreground">{selected.body}</div>
+                </div>
 
                 <label className="space-y-1">
                   <div className="text-sm text-muted-foreground">Status</div>
                   <select
-                    className="w-full rounded-md border px-3 py-2 text-sm"
+                    className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
                     value={status}
                     onChange={(e) => setStatus(e.target.value as FeedbackRow["status"])}
                   >
@@ -200,20 +208,24 @@ export default function AdminFeedbackPage() {
                 <label className="space-y-1">
                   <div className="text-sm text-muted-foreground">Response</div>
                   <textarea
-                    className="w-full rounded-md border px-3 py-2 text-sm min-h-28"
+                    className="w-full rounded-2xl border bg-background px-4 py-3 text-sm min-h-28"
                     value={response}
                     onChange={(e) => setResponse(e.target.value)}
                     placeholder="Write a response..."
                   />
                 </label>
 
-                <button className="rounded-md border px-3 py-2 text-sm" onClick={save} disabled={saving}>
+                <button
+                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                  onClick={save}
+                  disabled={saving}
+                >
                   {saving ? "Saving..." : "Save response"}
                 </button>
                 {message && <div className="text-xs text-muted-foreground">{message}</div>}
-              </>
+              </div>
             )}
-          </div>
+          </InfoCard>
         </div>
       </div>
     </main>

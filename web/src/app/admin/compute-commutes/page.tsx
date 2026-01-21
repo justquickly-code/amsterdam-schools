@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type Json = Record<string, unknown> | unknown[] | null;
 
@@ -97,80 +98,93 @@ export default function AdminComputeCommutesPage() {
 
   if (forbidden) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm text-red-600">Forbidden: admin access required.</p>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-4xl items-center justify-center">
+          <p className="text-sm text-red-600">Forbidden: admin access required.</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-2xl rounded-xl border p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Admin: Compute commutes</h1>
-          <div className="flex gap-3">
-            <Link className="text-sm underline" href="/admin">
-              Back to Admin
-            </Link>
-            <Link className="text-sm underline" href="/">
-              Dashboard
-            </Link>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <header className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Admin</p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-semibold text-foreground">Compute commutes</h1>
+            <div className="flex gap-3 text-sm">
+              <Link className="font-semibold text-primary hover:underline" href="/admin">
+                Back to Admin
+              </Link>
+              <Link className="font-semibold text-muted-foreground hover:underline" href="/">
+                Dashboard
+              </Link>
+            </div>
           </div>
-        </div>
+        </header>
 
-        <p className="text-sm text-muted-foreground">
-          Computes bike time + distance from your workspace home address to a batch of schools and caches results.
-          Make sure Settings has postcode + house number set.
-        </p>
+        <InfoCard title="What this does">
+          <p className="text-sm text-muted-foreground">
+            Computes bike time + distance from your workspace home address to a batch of schools and caches results.
+            Make sure Settings has postcode + house number set.
+          </p>
+        </InfoCard>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label className="space-y-1">
-            <div className="text-sm font-medium">Admin token</div>
-            <input
-              className="w-full rounded-md border px-3 py-2"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="(ADMIN_SYNC_TOKEN)"
-            />
-          </label>
+        <InfoCard title="Run compute">
+          <div className="space-y-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="space-y-1">
+                <div className="text-sm font-medium">Admin token</div>
+                <input
+                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="(ADMIN_SYNC_TOKEN)"
+                />
+              </label>
 
-          <label className="space-y-1">
-            <div className="text-sm font-medium">Workspace ID</div>
-            <input
-              className="w-full rounded-md border px-3 py-2"
-              value={workspaceId}
-              onChange={(e) => setWorkspaceId(e.target.value)}
-              placeholder="(auto-filled from session)"
-            />
-          </label>
+              <label className="space-y-1">
+                <div className="text-sm font-medium">Workspace ID</div>
+                <input
+                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  value={workspaceId}
+                  onChange={(e) => setWorkspaceId(e.target.value)}
+                  placeholder="(auto-filled from session)"
+                />
+              </label>
 
-          <label className="space-y-1">
-            <div className="text-sm font-medium">Batch size</div>
-            <input
-              className="w-full rounded-md border px-3 py-2"
-              type="number"
-              min={1}
-              max={200}
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-            />
-          </label>
-        </div>
+              <label className="space-y-1">
+                <div className="text-sm font-medium">Batch size</div>
+                <input
+                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={limit}
+                  onChange={(e) => setLimit(Number(e.target.value))}
+                />
+              </label>
+            </div>
 
-        <button
-          className="rounded-md border px-3 py-2"
-          onClick={runCompute}
-          disabled={running || !token.trim()}
-        >
-          {running ? "Computing..." : "Compute commutes now"}
-        </button>
+            <button
+              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+              onClick={runCompute}
+              disabled={running || !token.trim()}
+            >
+              {running ? "Computing..." : "Compute commutes now"}
+            </button>
 
-        {error && <p className="text-sm text-red-600">Error: {error}</p>}
+            {error && <p className="text-sm text-red-600">Error: {error}</p>}
+          </div>
+        </InfoCard>
 
         {result && (
-          <pre className="text-xs rounded-md border p-3 overflow-auto">
-            {JSON.stringify(result, null, 2)}
-          </pre>
+          <InfoCard title="Result">
+            <pre className="text-xs rounded-md border p-3 overflow-auto bg-background">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </InfoCard>
         )}
       </div>
     </main>

@@ -43,38 +43,43 @@ export default function AdminHomePage() {
 
   if (forbidden) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm text-red-600">Forbidden: admin access required.</p>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-4xl items-center justify-center">
+          <p className="text-sm text-red-600">Forbidden: admin access required.</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-3xl rounded-xl border p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Admin</h1>
-          <Link className="text-sm underline" href="/">
-            Dashboard
-          </Link>
-        </div>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
+        <header className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Admin</p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-semibold text-foreground">Admin</h1>
+            <Link className="text-sm font-semibold text-primary hover:underline" href="/">
+              Dashboard
+            </Link>
+          </div>
+        </header>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link className="rounded-lg border p-4 hover:bg-muted/30" href="/admin/sync-schools">
-            <div className="font-medium">Sync schools</div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link className="rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md" href="/admin/sync-schools">
+            <div className="font-semibold text-foreground">Sync schools</div>
             <div className="text-sm text-muted-foreground">Fetch school list + locations.</div>
           </Link>
-          <Link className="rounded-lg border p-4 hover:bg-muted/30" href="/admin/sync-open-days">
-            <div className="font-medium">Sync open days</div>
+          <Link className="rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md" href="/admin/sync-open-days">
+            <div className="font-semibold text-foreground">Sync open days</div>
             <div className="text-sm text-muted-foreground">Import open day listings.</div>
           </Link>
-          <Link className="rounded-lg border p-4 hover:bg-muted/30" href="/admin/compute-commutes">
-            <div className="font-medium">Compute commutes</div>
+          <Link className="rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md" href="/admin/compute-commutes">
+            <div className="font-semibold text-foreground">Compute commutes</div>
             <div className="text-sm text-muted-foreground">Batch bike time + distance cache.</div>
           </Link>
-          <Link className="rounded-lg border p-4 hover:bg-muted/30" href="/admin/feedback">
+          <Link className="rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md" href="/admin/feedback">
             <div className="flex items-center justify-between">
-              <div className="font-medium">Feedback</div>
+              <div className="font-semibold text-foreground">Feedback</div>
               {hasNewFeedback && <span className="h-2.5 w-2.5 rounded-full bg-red-500" />}
             </div>
             <div className="text-sm text-muted-foreground">Review and respond to user feedback.</div>

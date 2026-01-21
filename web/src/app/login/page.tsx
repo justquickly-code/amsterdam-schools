@@ -96,15 +96,17 @@ export default function LoginPage() {
 
   if (checkingSession) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">Loading…</p>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-xl items-center justify-center">
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md space-y-4">
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-md space-y-4">
           <div className="flex items-center justify-center">
             <img
               src="/branding/mijnschoolkeuze_kit_v4/wordmark.png"
@@ -112,7 +114,7 @@ export default function LoginPage() {
               className="h-10 w-auto"
             />
           </div>
-          <div className="rounded-xl border p-6 space-y-4">
+          <div className="rounded-2xl border bg-card p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
                 {t(hydrated ? language : DEFAULT_LANGUAGE, "settings.language")}
@@ -138,7 +140,7 @@ export default function LoginPage() {
             <label className="block space-y-1">
               <span className="text-sm">{t(language, "login.email")}</span>
               <input
-                className="w-full rounded-md border px-3 py-2"
+                className="w-full rounded-2xl border bg-background px-4 py-2"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -148,7 +150,7 @@ export default function LoginPage() {
             </label>
 
             <button
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
               type="submit"
               disabled={status === "sending"}
             >
