@@ -28,6 +28,24 @@ type PlannedOpenDayRow = {
     school?: Array<{ id: string; name: string } | null> | null;
   } | null;
 };
+type PlannedOpenDayRowRaw = {
+  open_day?:
+    | {
+        id: string;
+        starts_at: string | null;
+        school_id: string | null;
+        school_name: string | null;
+        school?: Array<{ id: string; name: string } | null> | null;
+      }
+    | Array<{
+        id: string;
+        starts_at: string | null;
+        school_id: string | null;
+        school_name: string | null;
+        school?: Array<{ id: string; name: string } | null> | null;
+      }>
+    | null;
+};
 type ShortlistRow = { id: string; workspace_id: string };
 type ShortlistItemRow = { school_id: string; rank: number | null };
 
@@ -197,7 +215,12 @@ export default function Home() {
           return;
         }
 
-        setPlannedOpenDays((plannedRows ?? []) as PlannedOpenDayRow[]);
+        const normalized = (plannedRows ?? []).map((row) => {
+          const r = row as PlannedOpenDayRowRaw;
+          const openDay = Array.isArray(r.open_day) ? r.open_day[0] ?? null : r.open_day ?? null;
+          return { open_day: openDay } as PlannedOpenDayRow;
+        });
+        setPlannedOpenDays(normalized);
       }
     }
 
