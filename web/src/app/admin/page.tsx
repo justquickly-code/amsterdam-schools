@@ -85,6 +85,10 @@ export default function AdminHomePage() {
             </div>
             <div className="text-sm text-muted-foreground">Review and respond to user feedback.</div>
           </Link>
+          <Link className="rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md" href="/admin/user-stats">
+            <div className="font-semibold text-foreground">User stats</div>
+            <div className="text-sm text-muted-foreground">Rolling 7-day user totals (UTC).</div>
+          </Link>
         </div>
       </div>
     </main>
