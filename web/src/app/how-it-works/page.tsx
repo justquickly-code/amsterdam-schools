@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { formatDateRange, getNextTimelineItems, KEUZEGIDS_TIMELINE_2025_26 } from "@/lib/keuzegidsTimeline";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type WorkspaceRow = { id: string; language?: Language | null };
 
@@ -86,16 +87,18 @@ export default function HowItWorksPage() {
   }
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-3xl rounded-xl border p-6 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">{t(language, "how.title")}</h1>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <header className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {t(language, "how.title")}
+          </p>
+          <h1 className="text-3xl font-semibold text-foreground">{t(language, "how.title")}</h1>
           <p className="text-sm text-muted-foreground">{t(language, "how.subtitle")}</p>
-        </div>
+        </header>
 
         {nextDates.length ? (
-          <div className="rounded-lg border p-4 space-y-2">
-            <div className="text-sm font-medium">{t(language, "how.next_title")}</div>
+          <InfoCard title={t(language, "how.next_title")}>
             <ul className="text-sm text-muted-foreground space-y-1">
               {nextDates.map((item) => (
                 <li key={item.id} className="flex items-center justify-between gap-3">
@@ -104,37 +107,37 @@ export default function HowItWorksPage() {
                 </li>
               ))}
             </ul>
-          </div>
+          </InfoCard>
         ) : null}
 
         <div className="space-y-3">
           {KEUZEGIDS_TIMELINE_2025_26.map((item) => (
-            <div key={item.id} className="rounded-lg border p-4 space-y-2">
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-medium">{t(language, item.titleKey)}</div>
-                <div className="text-sm text-muted-foreground">{formatDateRange(item, locale)}</div>
+            <InfoCard key={item.id} title={t(language, item.titleKey)}>
+              <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
+                <span>{formatDateRange(item, locale)}</span>
               </div>
-              <div className="text-sm text-muted-foreground">{t(language, item.bodyKey)}</div>
-            </div>
+              <p className="text-sm text-muted-foreground">{t(language, item.bodyKey)}</p>
+            </InfoCard>
           ))}
         </div>
 
-        <div className="rounded-lg border p-4 space-y-2">
-          <div className="font-medium">{t(language, "how.list_title")}</div>
-          <div className="text-sm text-muted-foreground">{t(language, "how.list_intro")}</div>
-          <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
-            <li>{t(language, "how.list_4")}</li>
-            <li>{t(language, "how.list_6")}</li>
-            <li>{t(language, "how.list_12")}</li>
-          </ul>
-          <div className="text-xs text-muted-foreground">{t(language, "how.list_note")}</div>
-        </div>
+        <InfoCard title={t(language, "how.list_title")}>
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">{t(language, "how.list_intro")}</div>
+            <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+              <li>{t(language, "how.list_4")}</li>
+              <li>{t(language, "how.list_6")}</li>
+              <li>{t(language, "how.list_12")}</li>
+            </ul>
+            <div className="text-xs text-muted-foreground">{t(language, "how.list_note")}</div>
+          </div>
+        </InfoCard>
 
         {error ? <div className="text-sm text-red-600">Error: {error}</div> : null}
 
         <div className="flex flex-wrap gap-3">
           <button
-            className="rounded-md border px-3 py-2 text-sm"
+            className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
             type="button"
             onClick={markComplete}
             disabled={saving}
@@ -143,14 +146,14 @@ export default function HowItWorksPage() {
           </button>
           {fromSetup ? (
             <button
-              className="rounded-md border px-3 py-2 text-sm"
+              className="rounded-full border px-4 py-2 text-xs font-semibold"
               type="button"
               onClick={() => router.replace("/?setup=done")}
             >
               {t(language, "how.finish_setup")}
             </button>
           ) : (
-            <Link className="rounded-md border px-3 py-2 text-sm" href="/">
+            <Link className="rounded-full border px-4 py-2 text-xs font-semibold" href="/">
               {t(language, "how.to_dashboard")}
             </Link>
           )}

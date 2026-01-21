@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { InfoCard } from "@/components/schoolkeuze";
 
 export default function InviteStatusPage() {
   const params = useSearchParams();
@@ -116,72 +117,73 @@ export default function InviteStatusPage() {
   const ok = status === "ok";
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-xl border p-6 space-y-4 text-sm">
-        <h1 className="text-2xl font-semibold">
-          {status === "idle" ? "Joining workspace..." : ok ? "Workspace joined" : "Invite issue"}
-        </h1>
-        {readyToChoose ? (
-          <div className="space-y-3 text-muted-foreground">
-            <p>You already have a workspace.</p>
-            <p>
-              Joining this family workspace will switch your active workspace. Your existing workspace stays intact.
-            </p>
-            <div className="text-xs">
-              Current workspace: {existingWorkspaces[0]?.name ?? "Workspace"}
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-xl space-y-6">
+        <InfoCard
+          title={status === "idle" ? "Joining workspace..." : ok ? "Workspace joined" : "Invite issue"}
+        >
+          {readyToChoose ? (
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>You already have a workspace.</p>
+              <p>
+                Joining this family workspace will switch your active workspace. Your existing workspace stays intact.
+              </p>
+              <div className="text-xs">
+                Current workspace: {existingWorkspaces[0]?.name ?? "Workspace"}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                  type="button"
+                  onClick={() => acceptInvite("switch")}
+                  disabled={joining}
+                >
+                  {joining ? "Joining..." : "Join and switch"}
+                </button>
+                <button
+                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  type="button"
+                  onClick={() => acceptInvite("keep")}
+                  disabled={joining}
+                >
+                  Keep my current workspace
+                </button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
-                type="button"
-                onClick={() => acceptInvite("switch")}
-                disabled={joining}
-              >
-                {joining ? "Joining..." : "Join and switch"}
-              </button>
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
-                type="button"
-                onClick={() => acceptInvite("keep")}
-                disabled={joining}
-              >
-                Keep my current workspace
-              </button>
+          ) : status === "idle" ? (
+            <p className="text-sm text-muted-foreground">Finalizing your invite…</p>
+          ) : ok ? (
+            <p className="text-sm text-muted-foreground">
+              You’re now part of the shared workspace. You can go to the dashboard.
+            </p>
+          ) : (
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                We couldn’t finish joining the workspace from the invite link.
+              </p>
+              {reason ? <p className="text-xs">Reason: {reason}</p> : null}
+              <p>
+                Ask the workspace owner to resend the invite after they restart the app.
+              </p>
             </div>
-          </div>
-        ) : status === "idle" ? (
-          <p className="text-muted-foreground">Finalizing your invite…</p>
-        ) : ok ? (
-          <p className="text-muted-foreground">
-            You’re now part of the shared workspace. You can go to the dashboard.
-          </p>
-        ) : (
-          <div className="space-y-2 text-muted-foreground">
-            <p>
-              We couldn’t finish joining the workspace from the invite link.
-            </p>
-            {reason ? <p className="text-xs">Reason: {reason}</p> : null}
-            <p>
-              Ask the workspace owner to resend the invite after they restart the app.
-            </p>
-          </div>
-        )}
+          )}
 
-        <div className="flex flex-wrap gap-2">
-          <Link className="inline-block rounded-md border px-3 py-2" href="/">
-            Go to Dashboard
-          </Link>
-          <button
-            className="rounded-md border px-3 py-2 text-sm"
-            type="button"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.replace("/login");
-            }}
-          >
-            Sign out
-          </button>
-        </div>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Link className="rounded-full border px-4 py-2 text-xs font-semibold" href="/">
+              Go to Dashboard
+            </Link>
+            <button
+              className="rounded-full border px-4 py-2 text-xs font-semibold"
+              type="button"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                router.replace("/login");
+              }}
+            >
+              Sign out
+            </button>
+          </div>
+        </InfoCard>
       </div>
     </main>
   );

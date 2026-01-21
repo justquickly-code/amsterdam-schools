@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type WorkspaceRow = { id: string; language?: Language | null };
 
@@ -173,73 +174,91 @@ export default function FeedbackPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm">Loading…</p>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-4xl items-center justify-center">
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-3xl rounded-xl border p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold">{t(language, "feedback.title")}</h1>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <header className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {t(language, "feedback.title")}
+          </p>
+          <h1 className="text-3xl font-semibold text-foreground">{t(language, "feedback.title")}</h1>
           <p className="text-sm text-muted-foreground">{t(language, "feedback.subtitle")}</p>
-        </div>
+        </header>
 
-        {error && <p className="text-sm text-red-600">Error: {error}</p>}
-        {message && <p className="text-sm text-green-700">{message}</p>}
+        {error && (
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            Error: {error}
+          </div>
+        )}
+        {message && (
+          <div className="rounded-2xl border border-info-muted bg-info-muted px-4 py-3 text-sm text-foreground">
+            {message}
+          </div>
+        )}
 
-        <div className="rounded-lg border p-4 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <label className="space-y-1">
-              <div className="text-sm text-muted-foreground">{t(language, "feedback.category")}</div>
-              <select
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={category}
-                onChange={(e) => setCategory(e.target.value as FeedbackRow["category"])}
-              >
-                {CATEGORY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {t(language, opt.labelKey)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-1 sm:col-span-2">
-              <div className="text-sm text-muted-foreground">{t(language, "feedback.title_label")}</div>
-              <input
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Short summary"
+        <InfoCard title={t(language, "feedback.title")}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <label className="space-y-1">
+                <div className="text-xs text-muted-foreground">{t(language, "feedback.category")}</div>
+                <select
+                  className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as FeedbackRow["category"])}
+                >
+                  {CATEGORY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {t(language, opt.labelKey)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1 sm:col-span-2">
+                <div className="text-xs text-muted-foreground">{t(language, "feedback.title_label")}</div>
+                <input
+                  className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Short summary"
+                />
+              </label>
+            </div>
+
+            <label className="space-y-1 text-sm">
+              <div className="text-xs text-muted-foreground">{t(language, "feedback.message_label")}</div>
+              <textarea
+                className="w-full rounded-2xl border bg-background px-4 py-3 text-sm min-h-28"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="Describe the issue or idea…"
               />
             </label>
+
+            <button
+              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+              onClick={submit}
+              disabled={sending}
+            >
+              {sending ? t(language, "feedback.sending") : t(language, "feedback.send")}
+            </button>
           </div>
+        </InfoCard>
 
-          <label className="space-y-1">
-            <div className="text-sm text-muted-foreground">{t(language, "feedback.message_label")}</div>
-            <textarea
-              className="w-full rounded-md border px-3 py-2 text-sm min-h-28"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Describe the issue or idea…"
-            />
-          </label>
-
-          <button className="rounded-md border px-3 py-2 text-sm" onClick={submit} disabled={sending}>
-            {sending ? t(language, "feedback.sending") : t(language, "feedback.send")}
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          <h2 className="text-base font-semibold">{t(language, "feedback.your")}</h2>
+        <InfoCard title={t(language, "feedback.your")}>
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t(language, "feedback.empty")}</p>
           ) : (
             <ul className="space-y-3">
               {items.map((item) => (
-                <li key={item.id} className="rounded-lg border p-4 space-y-2">
+                <li key={item.id} className="rounded-2xl border bg-card p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="text-xs uppercase text-muted-foreground">
                       {t(language, `feedback.category_${item.category}`)}
@@ -248,13 +267,13 @@ export default function FeedbackPage() {
                       {new Date(item.created_at).toLocaleDateString("en-GB")}
                     </div>
                   </div>
-                  {item.title ? <div className="font-medium">{item.title}</div> : null}
+                  {item.title ? <div className="font-semibold text-foreground">{item.title}</div> : null}
                   <div className="text-sm text-muted-foreground whitespace-pre-wrap">{item.body}</div>
 
                   {item.admin_response ? (
-                    <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-1">
+                    <div className="rounded-2xl border bg-secondary/40 p-3 text-sm space-y-1">
                       <div className="text-xs text-muted-foreground">{t(language, "feedback.response")}</div>
-                      <div>{item.admin_response}</div>
+                      <div className="text-foreground">{item.admin_response}</div>
                       {(item.admin_responded_at &&
                         (!lastSeenAt ||
                           new Date(item.admin_responded_at).getTime() >
@@ -269,7 +288,7 @@ export default function FeedbackPage() {
               ))}
             </ul>
           )}
-        </div>
+        </InfoCard>
       </div>
     </main>
   );

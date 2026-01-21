@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { InfoCard } from "@/components/schoolkeuze";
 
 export default function AboutPage() {
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
@@ -18,47 +19,45 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-3xl rounded-xl border p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{t(language, "about.title")}</h1>
-          <Link className="text-sm underline" href="/">
-            {t(language, "about.back")}
-          </Link>
-        </div>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <header className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {t(language, "about.title")}
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-semibold text-foreground">{t(language, "about.title")}</h1>
+            <Link className="text-sm font-semibold text-primary hover:underline" href="/">
+              {t(language, "about.back")}
+            </Link>
+          </div>
+        </header>
 
-        <p className="text-sm text-muted-foreground">{t(language, "about.intro")}</p>
+        <InfoCard title={t(language, "about.title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.intro")}</p>
+        </InfoCard>
 
-        <div className="space-y-3 text-sm">
-          <div>
-            <div className="font-medium">{t(language, "about.step_setup_title")}</div>
-            <div className="text-muted-foreground">{t(language, "about.step_setup_body")}</div>
-          </div>
-          <div>
-            <div className="font-medium">{t(language, "about.step_schools_title")}</div>
-            <div className="text-muted-foreground">{t(language, "about.step_schools_body")}</div>
-          </div>
-          <div>
-            <div className="font-medium">{t(language, "about.step_open_days_title")}</div>
-            <div className="text-muted-foreground">{t(language, "about.step_open_days_body")}</div>
-          </div>
-          <div>
-            <div className="font-medium">{t(language, "about.step_shortlist_title")}</div>
-            <div className="text-muted-foreground">{t(language, "about.step_shortlist_body")}</div>
-          </div>
-          <div>
-            <div className="font-medium">{t(language, "about.step_notes_title")}</div>
-            <div className="text-muted-foreground">{t(language, "about.step_notes_body")}</div>
-          </div>
-          <div>
-            <div className="font-medium">{t(language, "about.step_print_title")}</div>
-            <div className="text-muted-foreground">{t(language, "about.step_print_body")}</div>
-          </div>
-          <div>
-            <div className="font-medium">{t(language, "about.step_feedback_title")}</div>
-            <div className="text-muted-foreground">{t(language, "about.step_feedback_body")}</div>
-          </div>
-        </div>
+        <InfoCard title={t(language, "about.step_setup_title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.step_setup_body")}</p>
+        </InfoCard>
+        <InfoCard title={t(language, "about.step_schools_title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.step_schools_body")}</p>
+        </InfoCard>
+        <InfoCard title={t(language, "about.step_open_days_title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.step_open_days_body")}</p>
+        </InfoCard>
+        <InfoCard title={t(language, "about.step_shortlist_title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.step_shortlist_body")}</p>
+        </InfoCard>
+        <InfoCard title={t(language, "about.step_notes_title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.step_notes_body")}</p>
+        </InfoCard>
+        <InfoCard title={t(language, "about.step_print_title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.step_print_body")}</p>
+        </InfoCard>
+        <InfoCard title={t(language, "about.step_feedback_title")}>
+          <p className="text-sm text-muted-foreground">{t(language, "about.step_feedback_body")}</p>
+        </InfoCard>
 
         <div className="text-sm text-muted-foreground">{t(language, "about.good_luck")}</div>
       </div>
