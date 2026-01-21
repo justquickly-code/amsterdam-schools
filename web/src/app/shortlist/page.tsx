@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
 
@@ -38,6 +38,14 @@ function sortItems(list: ShortlistItem[]) {
     if (ar !== br) return ar - br;
     return (a.school?.name ?? "").localeCompare(b.school?.name ?? "");
   });
+}
+
+function commuteLabel(commute: ShortlistItem["commute"]) {
+  if (!commute) return null;
+  const parts: string[] = [];
+  if (commute.duration_minutes != null) parts.push(`${commute.duration_minutes} min`);
+  if (commute.distance_km != null) parts.push(`${commute.distance_km} km`);
+  return parts.length ? `🚲 ${parts.join(" • ")}` : null;
 }
 
 export default function ShortlistPage() {
@@ -433,9 +441,7 @@ export default function ShortlistPage() {
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            {t(language, "shortlist.title")}
-          </p>
+          <Wordmark />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="text-3xl font-semibold text-foreground">
@@ -498,12 +504,14 @@ export default function ShortlistPage() {
                         >
                           {it.school?.name ?? it.school_id}
                         </Link>
-                        {(it.rating_stars || it.commute?.distance_km != null) && (
-                          <div className="text-xs text-muted-foreground">
-                            {it.rating_stars ? `★ ${it.rating_stars}/5` : ""}
-                            {it.commute?.distance_km != null
-                              ? `${it.rating_stars ? " • " : ""}🚲 ${it.commute.distance_km} km`
-                              : ""}
+                        {(it.rating_stars || commuteLabel(it.commute)) && (
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            {it.rating_stars ? (
+                              <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+                                ★ {it.rating_stars}/5
+                              </span>
+                            ) : null}
+                            {commuteLabel(it.commute) ? <span>{commuteLabel(it.commute)}</span> : null}
                           </div>
                         )}
                       </div>
@@ -533,13 +541,25 @@ export default function ShortlistPage() {
           <InfoCard title={t(language, "shortlist.saved_title")}>
             <ul className="divide-y divide-border">
               {unranked.map((it) => (
-                <li key={it.school_id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <Link
-                    className="truncate text-base font-semibold text-primary hover:underline"
-                    href={`/schools/${it.school_id}?from=shortlist`}
-                  >
-                    {it.school?.name ?? it.school_id}
-                  </Link>
+                <li key={it.school_id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <Link
+                      className="truncate text-base font-semibold text-primary hover:underline"
+                      href={`/schools/${it.school_id}?from=shortlist`}
+                    >
+                      {it.school?.name ?? it.school_id}
+                    </Link>
+                    {(it.rating_stars || commuteLabel(it.commute)) && (
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        {it.rating_stars ? (
+                          <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+                            ★ {it.rating_stars}/5
+                          </span>
+                        ) : null}
+                        {commuteLabel(it.commute) ? <span>{commuteLabel(it.commute)}</span> : null}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       className="rounded-full border px-3 py-1 text-xs"
@@ -562,7 +582,6 @@ export default function ShortlistPage() {
           </InfoCard>
         ) : null}
 
-        <p className="text-xs text-muted-foreground">{t(language, "shortlist.footer")}</p>
       </div>
     </main>
   );

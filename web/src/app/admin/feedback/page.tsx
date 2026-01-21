@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type FeedbackRow = {
   id: string;
@@ -141,7 +141,7 @@ export default function AdminFeedbackPage() {
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Admin</p>
+          <Wordmark />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-3xl font-semibold text-foreground">Feedback</h1>
             <Link className="text-sm font-semibold text-primary hover:underline" href="/admin">

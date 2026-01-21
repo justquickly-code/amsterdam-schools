@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
+import { Wordmark } from "@/components/schoolkeuze";
 import { InfoCard } from "@/components/schoolkeuze";
 
 type Workspace = { id: string; advies_levels?: string[] };
@@ -137,7 +138,7 @@ function pillClass() {
 }
 
 function actionClass() {
-    return "text-xs rounded-full border px-3 py-1 hover:bg-secondary/60";
+    return "text-xs font-semibold rounded-full border bg-secondary/60 px-3 py-1 text-foreground hover:bg-secondary shadow-sm";
 }
 
 function StarRating({
@@ -610,6 +611,7 @@ export default function SchoolDetailPage() {
         <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
             <div className="mx-auto w-full max-w-4xl space-y-6">
                 <header className="flex flex-col gap-2">
+                    <Wordmark />
                     <Link
                         className="text-sm font-semibold text-primary hover:underline"
                         href={backHref}
@@ -660,7 +662,7 @@ export default function SchoolDetailPage() {
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <div className="font-medium text-foreground">{dateLabel}</div>
                                                     {label && <span className={pillClass()}>{label}</span>}
-                                                    {planned && <span className={pillClass()}>Planned</span>}
+                                                    {planned && <span className={pillClass()}>{t(language, "open_days.planned")}</span>}
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
                                                     {r.starts_at ? fmtTime(r.starts_at, locale) : "—"}
@@ -674,13 +676,17 @@ export default function SchoolDetailPage() {
                                                     type="button"
                                                     onClick={() => togglePlanned(r.id)}
                                                     disabled={planningId === r.id}
-                                                    title="Mark as planned"
+                                                    title={
+                                                        planned
+                                                            ? t(language, "open_days.planned")
+                                                            : t(language, "open_days.plan")
+                                                    }
                                                 >
                                                     {planningId === r.id
-                                                        ? "Saving..."
+                                                        ? t(language, "open_days.saving")
                                                         : planned
-                                                        ? "Planned"
-                                                        : "Plan"}
+                                                        ? t(language, "open_days.planned")
+                                                        : t(language, "open_days.plan")}
                                                 </button>
                                                 {r.info_url && (
                                                     <a
@@ -688,8 +694,9 @@ export default function SchoolDetailPage() {
                                                         href={r.info_url}
                                                         target="_blank"
                                                         rel="noreferrer"
+                                                        title={t(language, "open_days.source")}
                                                     >
-                                                        Source
+                                                        {t(language, "open_days.source")}
                                                     </a>
                                                 )}
                                             </div>

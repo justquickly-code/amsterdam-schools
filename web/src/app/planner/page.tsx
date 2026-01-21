@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type OpenDay = {
   id: string;
@@ -20,7 +20,7 @@ type OpenDay = {
   event_type: string | null;
   is_active?: boolean;
   missing_since?: string | null;
-  school?: { id: string; name: string } | null;
+  school?: { id: string; name: string; supported_levels?: string[] } | null;
 };
 
 type OpenDayRow = {
@@ -36,13 +36,15 @@ type OpenDayRow = {
   event_type: string | null;
   is_active?: boolean;
   missing_since?: string | null;
-  school?: Array<{ id: string; name: string } | null> | null;
+  school?: Array<{ id: string; name: string; supported_levels?: string[] } | null> | null;
 };
 
 type WorkspaceRow = {
   id: string;
   home_postcode?: string | null;
   home_house_number?: string | null;
+  advies_levels?: string[];
+  advies_match_mode?: "either" | "both";
   language?: Language | null;
 };
 
@@ -111,7 +113,19 @@ function pillClass() {
 }
 
 function actionClass() {
-  return "text-xs rounded-full border px-3 py-1 hover:bg-secondary/60";
+  return "text-xs font-semibold rounded-full border bg-secondary/60 px-3 py-1 text-foreground hover:bg-secondary shadow-sm";
+}
+
+function matchesAdvies(
+  schoolLevels: string[],
+  adviesLevels: string[],
+  matchMode: "either" | "both"
+) {
+  const a = (adviesLevels || []).filter(Boolean);
+  if (a.length === 0) return true;
+  if (a.length === 1) return schoolLevels.includes(a[0]);
+  if (matchMode === "both") return a.every((lvl) => schoolLevels.includes(lvl));
+  return a.some((lvl) => schoolLevels.includes(lvl));
 }
 
 export default function OpenDaysPage() {
@@ -151,7 +165,7 @@ export default function OpenDaysPage() {
 
       // Workspace (MVP assumes 1 per user)
       const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-        "id,home_postcode,home_house_number,language"
+        "id,home_postcode,home_house_number,advies_levels,advies_match_mode,language"
       );
 
       if (!mounted) return;
@@ -235,7 +249,7 @@ export default function OpenDaysPage() {
       let query = supabase
         .from("open_days")
         .select(
-          "id,school_id,school_name,starts_at,ends_at,location_text,info_url,school_year_label,last_synced_at,event_type,is_active,missing_since,school:schools(id,name)"
+          "id,school_id,school_name,starts_at,ends_at,location_text,info_url,school_year_label,last_synced_at,event_type,is_active,missing_since,school:schools(id,name,supported_levels)"
         );
 
       query = query.eq("is_active", true);
@@ -420,6 +434,14 @@ export default function OpenDaysPage() {
 
   const visibleRows = useMemo(() => {
     let list = rowsForYear;
+    const adviesLevels = workspace?.advies_levels ?? [];
+    const matchMode = workspace?.advies_match_mode ?? "either";
+
+    if (adviesLevels.length) {
+      list = list.filter((r) =>
+        matchesAdvies(r.school?.supported_levels ?? [], adviesLevels, matchMode)
+      );
+    }
 
     if (shortlistOnly) {
       const set = new Set(shortlistSchoolIds);
@@ -458,13 +480,17 @@ export default function OpenDaysPage() {
     return Array.from(g.entries());
   }, [visibleRows, language]);
 
+  const adviesLabel = useMemo(() => {
+    const levels = workspace?.advies_levels ?? [];
+    if (!levels.length) return null;
+    return levels.join(" / ");
+  }, [workspace]);
+
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            {t(language, "open_days.title")}
-          </p>
+          <Wordmark />
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-3xl font-semibold text-foreground">
               {t(language, "open_days.title")}
@@ -481,6 +507,11 @@ export default function OpenDaysPage() {
 
         <InfoCard title={t(language, "open_days.filters_title")}>
           <div className="space-y-4">
+            {adviesLabel ? (
+              <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                {t(language, "open_days.filters_advies")} {adviesLabel}
+              </div>
+            ) : null}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-muted-foreground">
                 {year ? (
@@ -636,7 +667,11 @@ export default function OpenDaysPage() {
                               type="button"
                               onClick={() => togglePlanned(r.id)}
                               disabled={planningId === r.id}
-                              title="Mark as planned"
+                              title={
+                                planned
+                                  ? t(language, "open_days.planned")
+                                  : t(language, "open_days.plan")
+                              }
                             >
                               {planningId === r.id
                                 ? t(language, "open_days.saving")
@@ -650,7 +685,7 @@ export default function OpenDaysPage() {
                               type="button"
                               onClick={() => downloadIcs(r.id)}
                               disabled={downloadingId === r.id}
-                              title="Download calendar invite (.ics)"
+                              title={t(language, "open_days.calendar")}
                             >
                               {downloadingId === r.id
                                 ? t(language, "open_days.downloading")
@@ -663,7 +698,7 @@ export default function OpenDaysPage() {
                                 href={r.info_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                title="Open source page"
+                                title={t(language, "open_days.source")}
                               >
                                 {t(language, "open_days.source")}
                               </a>

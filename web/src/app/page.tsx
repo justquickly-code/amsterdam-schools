@@ -6,8 +6,9 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { formatDateRange, getNextTimelineItems } from "@/lib/keuzegidsTimeline";
+import { shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
-import { InfoCard, ListGroup, ListRow, ProgressCard } from "@/components/schoolkeuze";
+import { InfoCard, ListGroup, ListRow, ProgressCard, Wordmark } from "@/components/schoolkeuze";
 
 type WorkspaceRow = {
   id: string;
@@ -18,21 +19,24 @@ type WorkspaceRow = {
   language?: Language | null;
 };
 
-type OpenDayRow = {
-  id: string;
-  starts_at: string | null;
-  school_name: string | null;
-  school?: Array<{ name: string | null } | null> | null;
+type PlannedOpenDayRow = {
+  open_day?: {
+    id: string;
+    starts_at: string | null;
+    school_id: string | null;
+    school_name: string | null;
+    school?: Array<{ id: string; name: string } | null> | null;
+  } | null;
 };
 type ShortlistRow = { id: string; workspace_id: string };
-type ShortlistItemRow = { school_id: string };
+type ShortlistItemRow = { school_id: string; rank: number | null };
 
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
-  const [upcoming, setUpcoming] = useState<OpenDayRow[]>([]);
+  const [plannedOpenDays, setPlannedOpenDays] = useState<PlannedOpenDayRow[]>([]);
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [dashError, setDashError] = useState<string>("");
   const [language, setLanguage] = useState<Language>(() => {
@@ -45,6 +49,7 @@ export default function Home() {
   const [hasRating, setHasRating] = useState(false);
   const [hasAttended, setHasAttended] = useState(false);
   const [hasTutorial, setHasTutorial] = useState(false);
+  const [hasCompleteShortlist, setHasCompleteShortlist] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -87,9 +92,7 @@ export default function Home() {
       setWorkspace(wsRow);
       setLanguage((wsRow?.language as Language) ?? readStoredLanguage());
       const workspaceId = wsRow?.id ?? "";
-
-      const now = new Date();
-      const end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const rankCap = shortlistRankCapForLevels(wsRow?.advies_levels ?? []);
 
       // Shortlist ids (optional filter)
       const { data: shortlist, error: sErr } = await supabase
@@ -107,10 +110,11 @@ export default function Home() {
 
       const shortlistRow = (shortlist ?? null) as ShortlistRow | null;
       let shortlistSchoolIds: string[] = [];
+      let rankedCount = 0;
       if (shortlistRow?.id) {
         const { data: items, error: iErr } = await supabase
           .from("shortlist_items")
-          .select("school_id")
+          .select("school_id,rank")
           .eq("shortlist_id", shortlistRow.id);
 
         if (!mounted) return;
@@ -120,11 +124,12 @@ export default function Home() {
           return;
         }
 
-        shortlistSchoolIds = ((items ?? []) as ShortlistItemRow[])
-          .map((x) => x.school_id)
-          .filter(Boolean);
+        const list = (items ?? []) as ShortlistItemRow[];
+        shortlistSchoolIds = list.map((x) => x.school_id).filter(Boolean);
+        rankedCount = list.filter((x) => typeof x.rank === "number" && (x.rank as number) <= rankCap).length;
       }
       setShortlistIds(shortlistSchoolIds);
+      setHasCompleteShortlist(rankCap > 0 && rankedCount >= rankCap);
 
       if (workspaceId) {
         const inviteSent =
@@ -179,29 +184,21 @@ export default function Home() {
         setHasTutorial(Boolean((tutorialRow as { tutorial_completed_at?: string | null } | null)?.tutorial_completed_at));
       }
 
-      let query = supabase
-        .from("open_days")
-        .select("id,starts_at,school_name,school:schools(name),school_id")
-        .eq("is_active", true)
-        .gte("starts_at", now.toISOString())
-        .lte("starts_at", end.toISOString())
-        .order("starts_at", { ascending: true })
-        .limit(5);
+      if (workspaceId) {
+        const { data: plannedRows, error: pErr } = await supabase
+          .from("planned_open_days")
+          .select("open_day:open_days(id,starts_at,school_id,school_name,school:schools(id,name))")
+          .eq("workspace_id", workspaceId);
 
-      if (shortlistSchoolIds.length) {
-        query = query.in("school_id", shortlistSchoolIds);
+        if (!mounted) return;
+
+        if (pErr) {
+          setDashError(pErr.message);
+          return;
+        }
+
+        setPlannedOpenDays((plannedRows ?? []) as PlannedOpenDayRow[]);
       }
-
-      const { data: rows, error: oErr } = await query;
-
-      if (!mounted) return;
-
-      if (oErr) {
-        setDashError(oErr.message);
-        return;
-      }
-
-      setUpcoming((rows ?? []) as OpenDayRow[]);
     }
 
     loadDashboard();
@@ -247,6 +244,14 @@ export default function Home() {
         labelKey: "dashboard.milestone_shortlist",
       },
       {
+        key: "shortlist_complete",
+        done: hasCompleteShortlist,
+        tipKey: "dashboard.tip_shortlist_complete",
+        href: "/shortlist",
+        ctaKey: "dashboard.tip_cta_shortlist",
+        labelKey: "dashboard.milestone_shortlist_complete",
+      },
+      {
         key: "note",
         done: hasNote,
         tipKey: "dashboard.tip_note",
@@ -285,7 +290,7 @@ export default function Home() {
     const next = milestones.find((m) => !m.done);
     const recent = milestones.filter((m) => m.done).slice(-2);
     return { completed, total, percent, next, recent };
-  }, [setupNeeded, hasFamilyMember, shortlistIds, hasNote, hasRating, hasTutorial, hasAttended]);
+  }, [setupNeeded, hasFamilyMember, shortlistIds, hasCompleteShortlist, hasNote, hasRating, hasTutorial, hasAttended]);
 
   useEffect(() => {
     function onLang(e: Event) {
@@ -307,8 +312,57 @@ export default function Home() {
     }
   }, [loading, email, router]);
 
-  const locale = getLocale(language);
-  const nextDates = useMemo(() => getNextTimelineItems(new Date(), 2), []);
+  const nextDates = useMemo(() => getNextTimelineItems(new Date(), 6), []);
+
+  const plannerItems = useMemo(() => {
+    const now = new Date();
+    const locale = getLocale(language);
+    const items: Array<{
+      id: string;
+      title: string;
+      value: string;
+      href: string;
+      sortTs: number;
+      isToday: boolean;
+    }> = [];
+
+    for (const item of nextDates) {
+      const start = new Date(`${item.start}T00:00:00`);
+      items.push({
+        id: `timeline-${item.id}`,
+        title: t(language, item.titleKey),
+        value: formatDateRange(item, locale),
+        href: "/how-it-works",
+        sortTs: start.getTime(),
+        isToday: false,
+      });
+    }
+
+    for (const row of plannedOpenDays) {
+      const openDay = row.open_day ?? null;
+      if (!openDay) continue;
+      const start = openDay.starts_at ? new Date(openDay.starts_at) : null;
+      const isToday = start ? start.toDateString() === now.toDateString() : false;
+      const name = openDay.school?.[0]?.name ?? openDay.school_name ?? "School";
+      const value = start
+        ? `${start.toLocaleDateString(locale, { day: "numeric", month: "short" })} · ${start.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`
+        : "—";
+      items.push({
+        id: `planned-${openDay.id}`,
+        title: name,
+        value,
+        href: openDay.school_id ? `/schools/${openDay.school_id}` : "/planner",
+        sortTs: start ? start.getTime() : Number.POSITIVE_INFINITY,
+        isToday,
+      });
+    }
+
+    const plannedToday = items.filter((i) => i.isToday);
+    const sorted = [...items].sort((a, b) => a.sortTs - b.sortTs);
+    const remainingCap = Math.max(0, 6 - plannedToday.length);
+    const withoutToday = sorted.filter((i) => !i.isToday).slice(0, remainingCap);
+    return [...plannedToday, ...withoutToday];
+  }, [language, nextDates, plannedOpenDays]);
 
   if (loading) {
     return (
@@ -334,11 +388,7 @@ export default function Home() {
     <main className="min-h-screen p-6 flex items-start justify-center">
       <div className="w-full max-w-3xl space-y-6">
         <div className="space-y-2">
-          <img
-            src="/branding/mijnschoolkeuze_kit_v4/wordmark.png"
-            alt="Mijn Schoolkeuze"
-            className="h-10 w-auto"
-          />
+          <Wordmark />
           <h1 className="text-2xl font-semibold">
             {workspace?.child_name
               ? t(language, "dashboard.title_named").replace("{name}", workspace.child_name)
@@ -381,46 +431,23 @@ export default function Home() {
           </InfoCard>
         )}
 
-        <InfoCard title={t(language, "dashboard.next_dates_title")}>
-          {nextDates.length === 0 ? (
-            <div className="text-sm text-muted-foreground">{t(language, "dashboard.next_dates_none")}</div>
+        <InfoCard title={t(language, "dashboard.planner_title")}>
+          {plannerItems.length === 0 ? (
+            <div className="text-sm text-muted-foreground">{t(language, "dashboard.planner_empty")}</div>
           ) : (
             <ListGroup>
-              {nextDates.map((item) => (
+              {plannerItems.map((item) => (
                 <ListRow
                   key={item.id}
-                  title={t(language, item.titleKey)}
-                  value={formatDateRange(item, locale)}
+                  title={item.title}
+                  value={item.value}
+                  showArrow
+                  onClick={() => router.push(item.href)}
                 />
               ))}
             </ListGroup>
           )}
         </InfoCard>
-
-        <InfoCard
-          title={`${t(language, "dashboard.upcoming")}${shortlistIds.length ? " • Shortlist" : ""}`}
-          action={
-            <Link className="text-sm underline" href="/planner">
-              {t(language, "dashboard.view_all")}
-            </Link>
-          }
-        >
-          {upcoming.length === 0 ? (
-            <div className="text-sm text-muted-foreground">{t(language, "dashboard.no_upcoming")}</div>
-          ) : (
-            <ListGroup>
-              {upcoming.map((r) => {
-                const name = r.school?.[0]?.name ?? r.school_name ?? "School";
-                const date = r.starts_at ? new Date(r.starts_at).toLocaleDateString(locale) : "—";
-                return <ListRow key={r.id} title={name} value={date} />;
-              })}
-            </ListGroup>
-          )}
-        </InfoCard>
-
-        <div className="pt-2 text-xs text-muted-foreground">
-          Tip: Open day details can change — always verify on the school website.
-        </div>
       </div>
     </main>
   );

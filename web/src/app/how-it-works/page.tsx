@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { formatDateRange, getNextTimelineItems, KEUZEGIDS_TIMELINE_2025_26 } from "@/lib/keuzegidsTimeline";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type WorkspaceRow = { id: string; language?: Language | null };
 
@@ -90,9 +90,7 @@ export default function HowItWorksPage() {
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-4xl space-y-6">
         <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            {t(language, "how.title")}
-          </p>
+          <Wordmark />
           <h1 className="text-3xl font-semibold text-foreground">{t(language, "how.title")}</h1>
           <p className="text-sm text-muted-foreground">{t(language, "how.subtitle")}</p>
         </header>

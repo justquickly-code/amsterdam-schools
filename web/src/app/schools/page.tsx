@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { InfoCard, SchoolCard } from "@/components/schoolkeuze";
+import { InfoCard, SchoolCard, Wordmark } from "@/components/schoolkeuze";
 
 type Workspace = {
     id: string;
@@ -398,13 +398,9 @@ export default function SchoolsPage() {
         <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
             <div className="mx-auto w-full max-w-5xl space-y-6">
                 <header className="flex flex-col gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                        {t(language, "schools.title")}
-                    </p>
+                    <Wordmark />
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <h1 className="text-3xl font-semibold text-foreground">
-                            {t(language, "schools.title")}
-                        </h1>
+                        <h1 className="sr-only">{t(language, "schools.title")}</h1>
                         <span className="text-sm text-muted-foreground">
                             {t(language, "schools.count").replace("#{count}", String(sorted.length))}
                         </span>

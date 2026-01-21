@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
+import { Wordmark } from "@/components/schoolkeuze";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -108,11 +109,7 @@ export default function LoginPage() {
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
         <div className="mx-auto w-full max-w-md space-y-4">
           <div className="flex items-center justify-center">
-            <img
-              src="/branding/mijnschoolkeuze_kit_v4/wordmark.png"
-              alt="Mijn Schoolkeuze"
-              className="h-10 w-auto"
-            />
+            <Wordmark className="h-10" />
           </div>
           <div className="rounded-2xl border bg-card p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">

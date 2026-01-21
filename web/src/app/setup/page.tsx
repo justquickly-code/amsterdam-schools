@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type WorkspaceRow = {
   id: string;
@@ -310,6 +310,7 @@ export default function SetupPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-2xl space-y-6">
+        <Wordmark />
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">{t(language, "settings.language")}</div>
           <button

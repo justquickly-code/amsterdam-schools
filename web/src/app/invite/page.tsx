@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 export default function InviteStatusPage() {
   const params = useSearchParams();
@@ -119,6 +119,7 @@ export default function InviteStatusPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-xl space-y-6">
+        <Wordmark />
         <InfoCard
           title={status === "idle" ? "Joining workspace..." : ok ? "Workspace joined" : "Invite issue"}
         >

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { shortlistRankCapForLevels } from "@/lib/levels";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type WorkspaceRow = { id: string; advies_levels?: string[] };
 
@@ -197,9 +197,7 @@ export default function ShortlistPrintPage() {
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6 print:bg-white print:px-0 print:py-0">
       <div className="mx-auto w-full max-w-4xl space-y-6 print:max-w-none print:space-y-4">
         <header className="flex flex-col gap-2 print:pb-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground print:text-black">
-            Ranked list
-          </p>
+          <Wordmark className="print:hidden" />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between print:flex-row">
             <div>
               <h1 className="text-3xl font-semibold text-foreground print:text-black">Ranked list — Print</h1>
