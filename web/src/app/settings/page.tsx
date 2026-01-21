@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type Workspace = {
     id: string;
@@ -370,133 +371,140 @@ export default function SettingsPage() {
     const isOwner = role === "owner";
 
     return (
-        <main className="min-h-screen p-6 flex items-start justify-center">
-            <div className="w-full max-w-xl rounded-xl border p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">{t(language, "settings.title")}</h1>
-                </div>
+        <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+            <div className="mx-auto w-full max-w-4xl space-y-6">
+                <header className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        {t(language, "settings.title")}
+                    </p>
+                    <h1 className="text-3xl font-semibold text-foreground">{t(language, "settings.title")}</h1>
+                </header>
 
-                {loading && <p className="text-sm">Loading…</p>}
+                {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
                 {!loading && error && (
-                    <p className="text-sm text-red-600">Error: {error}</p>
+                    <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                        Error: {error}
+                    </div>
                 )}
 
                 {!loading && !error && !workspace && (
-                    <p className="text-sm">No workspace found.</p>
+                    <InfoCard title={t(language, "settings.title")}>
+                        <p className="text-sm text-muted-foreground">No workspace found.</p>
+                    </InfoCard>
                 )}
 
                 {!loading && workspace && (
-                    <div className="space-y-6 text-sm">
-                        <div className="space-y-4">
-                            <h2 className="text-base font-semibold">{t(language, "settings.edit")}</h2>
+                    <div className="space-y-6">
+                        <InfoCard title={t(language, "settings.edit")}>
+                            <div className="space-y-4 text-sm">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label className="space-y-1 sm:col-span-2">
+                                        <div className="text-sm font-medium">{t(language, "settings.child_name")}</div>
+                                        <input
+                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            value={childName}
+                                            onChange={(e) => setChildName(e.target.value)}
+                                            placeholder="Sam (child)"
+                                            disabled={!isOwner}
+                                        />
+                                    </label>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <label className="space-y-1 sm:col-span-2">
-                                    <div className="text-sm font-medium">{t(language, "settings.child_name")}</div>
-                                    <input
-                                        className="w-full rounded-md border px-3 py-2"
-                                        value={childName}
-                                        onChange={(e) => setChildName(e.target.value)}
-                                        placeholder="Sam (child)"
-                                        disabled={!isOwner}
-                                    />
-                                </label>
+                                    <label className="space-y-1">
+                                        <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
+                                        <input
+                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            value={homePostcode}
+                                            onChange={(e) => setHomePostcode(e.target.value)}
+                                            placeholder="1234 AB"
+                                            disabled={!isOwner}
+                                        />
+                                    </label>
 
-                                <label className="space-y-1">
-                                    <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
-                                    <input
-                                        className="w-full rounded-md border px-3 py-2"
-                                        value={homePostcode}
-                                        onChange={(e) => setHomePostcode(e.target.value)}
-                                        placeholder="1234 AB"
-                                        disabled={!isOwner}
-                                    />
-                                </label>
+                                    <label className="space-y-1">
+                                        <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
+                                        <input
+                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            value={homeHouseNumber}
+                                            onChange={(e) => setHomeHouseNumber(e.target.value)}
+                                            placeholder="10"
+                                            disabled={!isOwner}
+                                        />
+                                    </label>
+                                </div>
 
-                                <label className="space-y-1">
-                                    <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
-                                    <input
-                                        className="w-full rounded-md border px-3 py-2"
-                                        value={homeHouseNumber}
-                                        onChange={(e) => setHomeHouseNumber(e.target.value)}
-                                        placeholder="10"
-                                        disabled={!isOwner}
-                                    />
-                                </label>
-                            </div>
+                                <div className="space-y-2">
+                                    <label className="space-y-1">
+                                        <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
+                                        <select
+                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            value={adviesOption}
+                                            onChange={(e) => setAdviesOption(e.target.value)}
+                                            disabled={!isOwner}
+                                        >
+                                            <option value="">{t(language, "settings.advies_select")}</option>
+                                            {ADVIES_OPTIONS.map((opt) => (
+                                                <option key={opt.key} value={opt.key}>
+                                                    {opt.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                </div>
 
-                            <div className="space-y-2">
-                                <label className="space-y-1">
-                                    <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
-                                    <select
-                                        className="w-full rounded-md border px-3 py-2"
-                                        value={adviesOption}
-                                        onChange={(e) => setAdviesOption(e.target.value)}
-                                        disabled={!isOwner}
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <button
+                                        className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                                        onClick={saveSettings}
+                                        disabled={saving || !isOwner}
                                     >
-                                        <option value="">{t(language, "settings.advies_select")}</option>
-                                        {ADVIES_OPTIONS.map((opt) => (
-                                            <option key={opt.key} value={opt.key}>
-                                                {opt.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-                            </div>
+                                        {saving ? t(language, "settings.saving") : t(language, "settings.save")}
+                                    </button>
+                                    {savedMsg && <span className="text-sm text-foreground">{savedMsg}</span>}
+                                    {commuteMsg && <span className="text-sm text-muted-foreground">{commuteMsg}</span>}
+                                </div>
 
-                            <div className="flex items-center gap-3">
-                                <button
-                                    className="rounded-md border px-3 py-2"
-                                    onClick={saveSettings}
-                                    disabled={saving || !isOwner}
-                                >
-                                    {saving ? t(language, "settings.saving") : t(language, "settings.save")}
-                                </button>
-                                {savedMsg && <span className="text-green-700">{savedMsg}</span>}
-                                {commuteMsg && <span className="text-muted-foreground">{commuteMsg}</span>}
+                                <p className="text-sm text-muted-foreground">
+                                    Next: we’ll use these settings to filter schools and calculate cycling
+                                    time/distance.
+                                </p>
                             </div>
+                        </InfoCard>
 
-                            <p className="text-muted-foreground">
-                                Next: we’ll use these settings to filter schools and calculate cycling
-                                time/distance.
-                            </p>
-                        </div>
+                        <InfoCard title="Workspace members">
+                            <div className="space-y-4 text-sm">
+                                {availableWorkspaces.length > 1 && (
+                                    <div className="space-y-1">
+                                        <div className="text-xs text-muted-foreground">Current workspace</div>
+                                        <select
+                                            className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                                            value={activeWorkspaceId}
+                                            onChange={(e) => {
+                                                const next = e.target.value;
+                                                setActiveWorkspaceId(next);
+                                                if (typeof window !== "undefined") {
+                                                    window.localStorage.setItem("active_workspace_id", next);
+                                                    window.location.assign("/settings");
+                                                }
+                                            }}
+                                        >
+                                            {availableWorkspaces.map((ws) => (
+                                                <option key={ws.id} value={ws.id}>
+                                                    {ws.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
 
-                    <div className="space-y-4">
-                        <h2 className="text-base font-semibold">Workspace members</h2>
-                        {availableWorkspaces.length > 1 && (
-                            <div className="space-y-1 text-sm">
-                                <div className="text-xs text-muted-foreground">Current workspace</div>
-                                <select
-                                    className="w-full rounded-md border px-3 py-2 text-sm"
-                                    value={activeWorkspaceId}
-                                    onChange={(e) => {
-                                        const next = e.target.value;
-                                        setActiveWorkspaceId(next);
-                                        if (typeof window !== "undefined") {
-                                            window.localStorage.setItem("active_workspace_id", next);
-                                            window.location.assign("/settings");
-                                        }
-                                    }}
-                                >
-                                    {availableWorkspaces.map((ws) => (
-                                        <option key={ws.id} value={ws.id}>
-                                            {ws.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                            <div className="space-y-2 text-sm">
                                 {members.length === 0 ? (
                                     <p className="text-muted-foreground">No members found.</p>
                                 ) : (
-                                    <ul className="divide-y rounded-lg border">
+                                    <ul className="divide-y rounded-2xl border bg-card">
                                         {members.map((m) => (
-                                            <li key={m.user_id} className="flex items-center justify-between p-3">
+                                            <li key={m.user_id} className="flex items-center justify-between p-4">
                                                 <div>
-                                                    <div className="font-medium">
+                                                    <div className="font-medium text-foreground">
                                                         {m.member_email ?? "Member"}
                                                         {m.user_id === currentUserId ? " (you)" : ""}
                                                     </div>
@@ -506,40 +514,38 @@ export default function SettingsPage() {
                                         ))}
                                     </ul>
                                 )}
-                            </div>
 
-                            {isOwner ? (
-                                <div className="space-y-2">
-                                    <div className="text-sm font-medium">Invite a member</div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+                                {isOwner ? (
+                                    <div className="space-y-2">
+                                        <div className="text-sm font-medium">Invite a member</div>
                                         <input
-                                            className="w-full rounded-md border px-3 py-2"
+                                            className="w-full rounded-2xl border bg-background px-4 py-2"
                                             value={inviteEmail}
                                             onChange={(e) => setInviteEmail(e.target.value)}
                                             placeholder="parent@example.com"
                                         />
+                                        <div className="text-xs text-muted-foreground">
+                                            New family members join as editors.
+                                        </div>
+                                        <button
+                                            className="rounded-full border px-4 py-2 text-xs font-semibold"
+                                            onClick={inviteMember}
+                                            disabled={inviteBusy || !inviteEmail.trim()}
+                                        >
+                                            {inviteBusy ? "Inviting..." : "Invite"}
+                                        </button>
+                                        {inviteMsg && <div className="text-sm text-muted-foreground">{inviteMsg}</div>}
+                                        <div className="text-xs text-muted-foreground">
+                                            We’ll email a link to join this workspace.
+                                        </div>
                                     </div>
+                                ) : (
                                     <div className="text-xs text-muted-foreground">
-                                        New family members join as editors.
+                                        Only workspace owners can edit settings or invite members.
                                     </div>
-                                    <button
-                                        className="rounded-md border px-3 py-2"
-                                        onClick={inviteMember}
-                                        disabled={inviteBusy || !inviteEmail.trim()}
-                                    >
-                                        {inviteBusy ? "Inviting..." : "Invite"}
-                                    </button>
-                                    {inviteMsg && <div className="text-sm text-muted-foreground">{inviteMsg}</div>}
-                                    <div className="text-xs text-muted-foreground">
-                                        We’ll email a link to join this workspace.
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-xs text-muted-foreground">
-                                    Only workspace owners can edit settings or invite members.
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        </InfoCard>
                     </div>
                 )}
             </div>
