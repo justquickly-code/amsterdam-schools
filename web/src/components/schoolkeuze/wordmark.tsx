@@ -12,7 +12,7 @@ function Wordmark({ className }: WordmarkProps) {
     <img
       src="/branding/mijnschoolkeuze_kit_v4/wordmark.png"
       alt="Mijn Schoolkeuze"
-      className={cn("h-9 w-auto", className)}
+      className={cn("h-9 w-auto self-start object-contain", className)}
     />
   );
 }
