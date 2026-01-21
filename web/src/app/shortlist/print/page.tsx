@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { shortlistRankCapForLevels } from "@/lib/levels";
+import { InfoCard } from "@/components/schoolkeuze";
 
 type WorkspaceRow = { id: string; advies_levels?: string[] };
 
@@ -184,71 +185,77 @@ export default function ShortlistPrintPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm">Loading…</p>
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-4xl items-center justify-center">
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-6 flex items-start justify-center">
-      <div className="w-full max-w-3xl space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Ranked list — Print</h1>
-            <div className="text-sm text-muted-foreground">
-              Ranked shortlist with notes and ratings (cap {rankCap}).
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6 print:bg-white print:px-0 print:py-0">
+      <div className="mx-auto w-full max-w-4xl space-y-6 print:max-w-none print:space-y-4">
+        <header className="flex flex-col gap-2 print:pb-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground print:text-black">
+            Ranked list
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between print:flex-row">
+            <div>
+              <h1 className="text-3xl font-semibold text-foreground print:text-black">Ranked list — Print</h1>
+              <div className="text-sm text-muted-foreground print:text-black">
+                Ranked shortlist with notes and ratings (cap {rankCap}).
+              </div>
+            </div>
+            <div className="flex gap-3 print:hidden">
+              <button className="text-sm font-semibold text-primary hover:underline" onClick={() => window.print()}>
+                Print
+              </button>
+              <Link className="text-sm font-semibold text-muted-foreground hover:underline" href="/shortlist">
+                Back
+              </Link>
             </div>
           </div>
-          <div className="flex gap-3">
-            <button className="text-sm underline" onClick={() => window.print()}>
-              Print
-            </button>
-            <Link className="text-sm underline" href="/shortlist">
-              Back
-            </Link>
-          </div>
-        </div>
+        </header>
 
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
 
         {!error && ordered.length === 0 && (
-          <p className="text-sm text-muted-foreground">No ranked schools yet.</p>
+          <InfoCard title="No ranked schools">
+            <p className="text-sm text-muted-foreground">No ranked schools yet.</p>
+          </InfoCard>
         )}
 
-        <div className="space-y-3">
+        <div className="space-y-3 print:space-y-2">
           {ordered.map((item) => {
             const visit = visits.get(item.school_id) ?? null;
             const commute = commutes.get(item.school_id) ?? null;
             return (
-              <div key={item.school_id} className="rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div className="font-medium">
-                    #{item.rank} — {item.school_name}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
+              <InfoCard key={item.school_id} title={`#${item.rank} — ${item.school_name}`} className="print:shadow-none">
+                <div className="space-y-2 text-sm">
+                  <div className="text-sm text-muted-foreground print:text-black">
                     {visit?.rating_stars ? `${visit.rating_stars}★` : "No rating"}
                   </div>
-                </div>
 
-                <div className="text-sm text-muted-foreground mt-1">
-                  Attended: {visit?.attended ? "Yes" : "No"}
-                  {commute?.duration_minutes != null && commute?.distance_km != null ? (
-                    <> • 🚲 {commute.duration_minutes} min • {commute.distance_km} km</>
-                  ) : null}
-                </div>
-
-                {visit?.notes ? (
-                  <div className="text-sm mt-2">Notes: {visit.notes}</div>
-                ) : null}
-
-                {(visit?.pros || visit?.cons) && (
-                  <div className="text-sm mt-2">
-                    {visit?.pros ? <div>Pros: {visit.pros}</div> : null}
-                    {visit?.cons ? <div>Cons: {visit.cons}</div> : null}
+                  <div className="text-sm text-muted-foreground print:text-black">
+                    Attended: {visit?.attended ? "Yes" : "No"}
+                    {commute?.duration_minutes != null && commute?.distance_km != null ? (
+                      <> • 🚲 {commute.duration_minutes} min • {commute.distance_km} km</>
+                    ) : null}
                   </div>
-                )}
-              </div>
+
+                  {visit?.notes ? (
+                    <div className="text-sm">Notes: {visit.notes}</div>
+                  ) : null}
+
+                  {(visit?.pros || visit?.cons) && (
+                    <div className="text-sm">
+                      {visit?.pros ? <div>Pros: {visit.pros}</div> : null}
+                      {visit?.cons ? <div>Cons: {visit.cons}</div> : null}
+                    </div>
+                  )}
+                </div>
+              </InfoCard>
             );
           })}
         </div>
