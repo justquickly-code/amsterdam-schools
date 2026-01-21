@@ -387,14 +387,14 @@ export default function Home() {
   return (
     <main className="min-h-screen p-6 flex items-start justify-center">
       <div className="w-full max-w-3xl space-y-6">
-        <div className="space-y-2">
+        <header className="flex flex-col gap-2">
           <Wordmark />
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-3xl font-semibold text-foreground">
             {workspace?.child_name
               ? t(language, "dashboard.title_named").replace("{name}", workspace.child_name)
               : t(language, "dashboard.title")}
           </h1>
-        </div>
+        </header>
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
 

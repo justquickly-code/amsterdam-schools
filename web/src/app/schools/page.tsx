@@ -400,7 +400,9 @@ export default function SchoolsPage() {
                 <header className="flex flex-col gap-2">
                     <Wordmark />
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <h1 className="sr-only">{t(language, "schools.title")}</h1>
+                        <h1 className="text-3xl font-semibold text-foreground">
+                            {t(language, "schools.title")}
+                        </h1>
                         <span className="text-sm text-muted-foreground">
                             {t(language, "schools.count").replace("#{count}", String(sorted.length))}
                         </span>
