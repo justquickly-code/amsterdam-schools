@@ -450,9 +450,9 @@ export default function Home() {
           <Link className="text-sm underline" href={progressState.next.href}>
             {t(language, progressState.next.ctaKey)}
           </Link>
-        ) : (
+        ) : progressState.completed === 0 ? (
           <div className="text-xs text-muted-foreground">{t(language, "dashboard.recent_empty")}</div>
-        )}
+        ) : null}
 
         {setupNeeded && (
           <InfoCard title={t(language, "dashboard.finish_setup")}>
