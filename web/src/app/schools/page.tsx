@@ -516,12 +516,6 @@ export default function SchoolsPage() {
                                             </div>
 
                                             <div className="flex flex-wrap items-center gap-4">
-                                                <Link
-                                                    className="text-sm text-muted-foreground underline"
-                                                    href={`/schools/${s.id}`}
-                                                >
-                                                    {t(language, "schools.view_details")}
-                                                </Link>
                                                 {s.website_url ? (
                                                     <a
                                                         className="text-sm text-muted-foreground underline"
