@@ -486,13 +486,20 @@ export default function Home() {
               {plannerItems.planned.length > 0 && (
                 <ListGroup title={t(language, "dashboard.planner_open_days")}>
                   {plannerItems.planned.map((item) => (
-                    <ListRow
+                    <button
                       key={item.id}
-                      title={item.title}
-                      value={item.value}
-                      showArrow
-                      onClick={() => router.push(item.href)}
-                    />
+                      type="button"
+                      onClick={() => router.push(`${item.href}?from=dashboard`)}
+                      className="flex w-full items-center gap-3 py-3 text-left transition-colors -mx-4 px-4 rounded-lg hover:bg-secondary/50 active:bg-secondary"
+                    >
+                      <div className="flex flex-1 flex-col gap-0.5">
+                        <span className="font-medium text-primary underline underline-offset-2 hover:decoration-2">
+                          {item.title}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-sm text-muted-foreground">{item.value}</span>
+                      <span className="text-muted-foreground">›</span>
+                    </button>
                   ))}
                 </ListGroup>
               )}

@@ -605,7 +605,8 @@ export default function SchoolDetailPage() {
         );
     }
 
-    const backHref = searchParams.get("from") === "shortlist" ? "/shortlist" : "/schools";
+    const from = searchParams.get("from");
+    const backHref = from === "shortlist" ? "/shortlist" : from === "dashboard" ? "/" : "/schools";
 
     return (
         <main className="min-h-screen bg-background px-4 py-6 sm:px-6">

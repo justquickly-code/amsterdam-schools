@@ -482,6 +482,9 @@ export default function SchoolsPage() {
                                     const levelLabel =
                                         (s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
                                         t(language, "schools.levels_empty");
+                                    const hasBadges = Boolean(
+                                        s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended
+                                    );
                                     return (
                                         <SchoolCard
                                             key={s.id}
@@ -490,18 +493,20 @@ export default function SchoolsPage() {
                                             subtitle={levelLabel}
                                             className="gap-4"
                                         >
-                                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                                {s.visits?.[0]?.rating_stars ? (
-                                                    <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold">
-                                                        ★ {s.visits?.[0]?.rating_stars}/5
-                                                    </span>
-                                                ) : null}
-                                                {s.visits?.[0]?.attended ? (
-                                                    <span className="rounded-full border px-2 py-0.5 text-xs">
-                                                        {t(language, "schools.visited")}
-                                                    </span>
-                                                ) : null}
-                                            </div>
+                                            {hasBadges ? (
+                                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                                    {s.visits?.[0]?.rating_stars ? (
+                                                        <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold">
+                                                            ★ {s.visits?.[0]?.rating_stars}/5
+                                                        </span>
+                                                    ) : null}
+                                                    {s.visits?.[0]?.attended ? (
+                                                        <span className="rounded-full border px-2 py-0.5 text-xs">
+                                                            {t(language, "schools.visited")}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
 
                                             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                                                 {s.commute ? (
