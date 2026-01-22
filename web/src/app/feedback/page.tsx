@@ -10,7 +10,7 @@ type WorkspaceRow = { id: string; language?: Language | null };
 
 type FeedbackRow = {
   id: string;
-  category: "bug" | "idea" | "question" | "other";
+  category: "bug" | "idea" | "question" | "compliment" | "other";
   title: string | null;
   body: string;
   admin_response: string | null;
@@ -22,6 +22,7 @@ const CATEGORY_OPTIONS: Array<{ value: FeedbackRow["category"]; labelKey: string
   { value: "bug", labelKey: "feedback.category_bug" },
   { value: "idea", labelKey: "feedback.category_idea" },
   { value: "question", labelKey: "feedback.category_question" },
+  { value: "compliment", labelKey: "feedback.category_compliment" },
   { value: "other", labelKey: "feedback.category_other" },
 ];
 
