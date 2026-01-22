@@ -56,9 +56,24 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Shortlist export lives at `/shortlist/print`; print/export moved to top menu.
 - Commute compute is user-safe, scoped to workspace, and Settings can batch compute all schools.
 
+## Design Refresh Branch
+- Active redesign branch: `design/airbnb-refresh`
+- Design reference kit: `docs/ui-kit/incoming/ux-design-feedback`
+- Design plan + decisions are in `docs/DESIGN.md` (Design Refresh Plan section).
+
 ## Open Items
 - Confirm docs align with latest UI copy/flow after changes.
 - Optional: decide whether open days list should be filtered by shortlist by default.
+## Design Refresh Next Steps
+- Phase 1: theme + shared components
+- Phase 2: Explore/Home + Login
+- Phase 3: Schools list + School detail
+- Phase 4: Open days
+- Phase 5: My List (single list + top‑N highlight + drag)
+- Phase 6: Profile (Dashboard hub) + Setup wizard
+
+## Suggested Session Prompt (Redesign Work)
+“Switch to `design/airbnb-refresh`. Read `docs/DESIGN.md` (Design Refresh Plan). Implement Phase 1 only (theme + shared components), no functional changes.”
 
 ## UX Decisions to Keep
 - Bottom nav always visible (main screens)
