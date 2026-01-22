@@ -431,9 +431,7 @@ export default function Home() {
               ? t(language, progressState.next.tipKey)
               : t(language, "dashboard.tip_done")
           }
-          recentActivity={
-            progressState.recent.length ? `${t(language, "dashboard.recent_title")} ${recentText}` : undefined
-          }
+          recentActivity={progressState.recent.length ? recentText : undefined}
         />
         {progressState.next ? (
           <Link className="text-sm underline" href={progressState.next.href}>
