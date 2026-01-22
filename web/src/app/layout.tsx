@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 import ClientShell from "@/components/ClientShell";
 
-const nunito = Nunito({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  variable: "--font-dm-sans",
+  weight: ["400", "500", "600", "700"],
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  weight: ["600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -42,7 +49,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${nunito.className} min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased`}>
+      <body
+        className={`${dmSans.variable} ${fraunces.variable} min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans`}
+      >
         <ClientShell>{children}</ClientShell>
       </body>
     </html>
