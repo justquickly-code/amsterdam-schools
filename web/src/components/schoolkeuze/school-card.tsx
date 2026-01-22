@@ -38,7 +38,7 @@ function SchoolCard({
       <div className="flex flex-col gap-1">
         <h3 className="text-base font-semibold text-card-foreground">
           {titleHref ? (
-            <Link className="text-primary hover:underline" href={titleHref}>
+            <Link className="text-primary underline underline-offset-2 hover:decoration-2" href={titleHref}>
               {title}
             </Link>
           ) : (

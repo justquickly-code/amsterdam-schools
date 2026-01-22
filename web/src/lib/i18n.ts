@@ -198,6 +198,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "shortlist.rank_cap": "Ranglimiet",
     "shortlist.saved_title": "Bewaard (nog niet gerangschikt)",
     "shortlist.rank_next": "Zet op volgende rang",
+    "shortlist.planned": "Gepland",
+    "shortlist.no_plan": "Nog niet gepland",
+    "shortlist.no_open_days": "Geen open dagen",
 
     "how.title": "Hoe werkt het?",
     "how.subtitle":
@@ -466,6 +469,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "shortlist.rank_cap": "Rank cap",
     "shortlist.saved_title": "Saved (not ranked yet)",
     "shortlist.rank_next": "Put on next rank",
+    "shortlist.planned": "Planned",
+    "shortlist.no_plan": "Not planned yet",
+    "shortlist.no_open_days": "No open days listed",
 
     "how.title": "How it works",
     "how.subtitle":

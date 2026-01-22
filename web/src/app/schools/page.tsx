@@ -501,11 +501,6 @@ export default function SchoolsPage() {
                                                         {t(language, "schools.visited")}
                                                     </span>
                                                 ) : null}
-                                                {s.has_open_day && !s.has_planned_open_day && !s.visits?.[0]?.attended ? (
-                                                    <span className="rounded-full bg-progress-muted px-2 py-0.5 text-xs text-progress-foreground">
-                                                        {t(language, "schools.open_day_missing")}
-                                                    </span>
-                                                ) : null}
                                             </div>
 
                                             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">

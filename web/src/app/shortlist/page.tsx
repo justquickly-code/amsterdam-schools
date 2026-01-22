@@ -25,11 +25,16 @@ type ShortlistItem = {
   rank: number | null;
   school?: { id: string; name: string } | null;
   rating_stars?: number | null;
+  attended?: boolean;
   commute?: { duration_minutes: number | null; distance_km: number | null } | null;
+  has_planned?: boolean;
+  has_open_days?: boolean;
 };
 
-type VisitRow = { school_id: string; rating_stars: number | null };
+type VisitRow = { school_id: string; rating_stars: number | null; attended: boolean | null };
 type CommuteRow = { school_id: string; duration_minutes: number | null; distance_km: number | null };
+type PlannedRow = { open_day?: { school_id: string | null } | Array<{ school_id: string | null }> | null };
+type OpenDayRow = { school_id: string | null };
 
 function sortItems(list: ShortlistItem[]) {
   return [...list].sort((a, b) => {
@@ -46,6 +51,13 @@ function commuteLabel(commute: ShortlistItem["commute"]) {
   if (commute.duration_minutes != null) parts.push(`${commute.duration_minutes} min`);
   if (commute.distance_km != null) parts.push(`${commute.distance_km} km`);
   return parts.length ? `🚲 ${parts.join(" • ")}` : null;
+}
+
+function statusLabel(item: ShortlistItem, language: Language) {
+  if (item.attended) return t(language, "schools.visited");
+  if (item.has_planned) return t(language, "shortlist.planned");
+  if (item.has_open_days) return t(language, "shortlist.no_plan");
+  return t(language, "shortlist.no_open_days");
 }
 
 export default function ShortlistPage() {
@@ -149,12 +161,14 @@ export default function ShortlistPage() {
 
       let visits: VisitRow[] = [];
       let commutes: CommuteRow[] = [];
+      let plannedRows: PlannedRow[] = [];
+      let openDayRows: OpenDayRow[] = [];
 
       if (workspaceRow.id && schoolIds.length) {
-        const [{ data: visitRows }, { data: commuteRows }] = await Promise.all([
+        const [{ data: visitRows }, { data: commuteRows }, { data: planned }, { data: openDays }] = await Promise.all([
           supabase
             .from("visits")
-            .select("school_id,rating_stars")
+            .select("school_id,rating_stars,attended")
             .eq("workspace_id", workspaceRow.id)
             .in("school_id", schoolIds),
           supabase
@@ -163,22 +177,46 @@ export default function ShortlistPage() {
             .eq("workspace_id", workspaceRow.id)
             .eq("mode", "bike")
             .in("school_id", schoolIds),
+          supabase
+            .from("planned_open_days")
+            .select("open_day:open_days(school_id)")
+            .eq("workspace_id", workspaceRow.id),
+          supabase
+            .from("open_days")
+            .select("school_id")
+            .in("school_id", schoolIds),
         ]);
 
         if (!mounted) return;
         visits = (visitRows ?? []) as VisitRow[];
         commutes = (commuteRows ?? []) as CommuteRow[];
+        plannedRows = (planned ?? []) as PlannedRow[];
+        openDayRows = (openDays ?? []) as OpenDayRow[];
       }
 
       const visitMap = new Map(visits.map((v) => [v.school_id, v]));
       const commuteMap = new Map(commutes.map((c) => [c.school_id, c]));
+      const plannedSet = new Set(
+        plannedRows
+          .map((row) => {
+            const openDay = Array.isArray(row.open_day) ? row.open_day[0] ?? null : row.open_day ?? null;
+            return openDay?.school_id ?? null;
+          })
+          .filter(Boolean) as string[]
+      );
+      const openDaySet = new Set(
+        openDayRows.map((row) => row.school_id).filter(Boolean) as string[]
+      );
 
       setItems(
         sortItems(
           normalized.map((item) => ({
             ...item,
             rating_stars: visitMap.get(item.school_id)?.rating_stars ?? null,
+            attended: Boolean(visitMap.get(item.school_id)?.attended),
             commute: commuteMap.get(item.school_id) ?? null,
+            has_planned: plannedSet.has(item.school_id),
+            has_open_days: openDaySet.has(item.school_id),
           }))
         )
       );
@@ -499,11 +537,16 @@ export default function ShortlistPage() {
                     {it ? (
                       <div className="space-y-2">
                         <Link
-                          className="text-base font-semibold text-primary hover:underline"
+                          className="text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
                           href={`/schools/${it.school_id}?from=shortlist`}
                         >
                           {it.school?.name ?? it.school_id}
                         </Link>
+                        {(it.attended || it.has_planned || it.has_open_days) && (
+                          <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                            {statusLabel(it, language)}
+                          </span>
+                        )}
                         {(it.rating_stars || commuteLabel(it.commute)) && (
                           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             {it.rating_stars ? (
@@ -544,11 +587,18 @@ export default function ShortlistPage() {
                 <li key={it.school_id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <Link
-                      className="truncate text-base font-semibold text-primary hover:underline"
+                      className="truncate text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
                       href={`/schools/${it.school_id}?from=shortlist`}
                     >
                       {it.school?.name ?? it.school_id}
                     </Link>
+                    {(it.attended || it.has_planned || it.has_open_days) && (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        <span className="rounded-full border px-2 py-0.5">
+                          {statusLabel(it, language)}
+                        </span>
+                      </div>
+                    )}
                     {(it.rating_stars || commuteLabel(it.commute)) && (
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         {it.rating_stars ? (

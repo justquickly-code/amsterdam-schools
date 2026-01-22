@@ -446,7 +446,7 @@ export default function Home() {
           }
           recentActivity={progressState.recent.length ? recentText : undefined}
         />
-        {progressState.next ? (
+        {progressState.next && progressState.next.href !== "/shortlist" ? (
           <Link className="text-sm underline" href={progressState.next.href}>
             {t(language, progressState.next.ctaKey)}
           </Link>
