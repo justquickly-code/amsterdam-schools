@@ -37,8 +37,8 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">
-      <div className="mx-auto max-w-3xl px-4 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 border-t bg-card/95 backdrop-blur">
+      <div className="mx-auto max-w-3xl px-4 py-3">
         <div className="grid grid-cols-4 gap-2 text-center text-xs">
           {items.map((item) => {
             const active = isActive(pathname, item.href);
@@ -46,7 +46,7 @@ export default function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-md px-2 py-2 ${active ? "bg-muted font-medium" : "text-muted-foreground"}`}
+                className={`rounded-full px-3 py-2 transition-colors ${active ? "bg-secondary font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 {item.label}
               </Link>

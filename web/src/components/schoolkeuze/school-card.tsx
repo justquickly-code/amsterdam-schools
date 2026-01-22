@@ -30,7 +30,7 @@ function SchoolCard({
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        "flex w-full flex-col gap-3 rounded-2xl border bg-card p-4 text-left shadow-sm transition-shadow",
+        "flex w-full flex-col gap-3 rounded-3xl border bg-card/95 p-5 text-left shadow-md shadow-black/5 transition-shadow",
         onClick && "cursor-pointer hover:shadow-md active:shadow-sm",
         className
       )}

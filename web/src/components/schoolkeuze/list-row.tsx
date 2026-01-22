@@ -30,7 +30,7 @@ function ListRow({
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-3 py-3 text-left transition-colors",
-        onClick && "cursor-pointer hover:bg-secondary/50 active:bg-secondary -mx-4 px-4 rounded-lg",
+        onClick && "cursor-pointer hover:bg-secondary/50 active:bg-secondary -mx-4 px-4 rounded-xl",
         className
       )}
     >

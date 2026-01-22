@@ -25,10 +25,12 @@ function ProgressCard({
   const calculatedCompletedSteps = completedSteps ?? Math.round((progress / 100) * totalSteps);
 
   return (
-    <div className={cn("flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm", className)}>
+    <div className={cn("flex flex-col gap-3 rounded-3xl border bg-card/95 p-5 shadow-md shadow-black/5", className)}>
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-card-foreground">{title}</h3>
-        <span className="text-sm text-muted-foreground">{progress}% complete</span>
+        <span className="rounded-full bg-secondary px-2 py-1 text-xs text-muted-foreground">
+          {progress}% complete
+        </span>
       </div>
 
       <div className="flex gap-1.5 text-xl leading-none">
