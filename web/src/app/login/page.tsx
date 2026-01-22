@@ -29,7 +29,7 @@ export default function LoginPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       if (data.session) {
-        router.replace("/");
+        router.replace("/profile");
       } else {
         setCheckingSession(false);
       }

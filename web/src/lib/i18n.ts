@@ -24,6 +24,17 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "login.invalid_email": "Vul een geldig e‑mailadres in.",
     "login.sign_in": "Ga naar inloggen",
 
+    "explore.hero_title": "Ontdek jouw nieuwe school",
+    "explore.hero_subtitle": "Vergelijk scholen, plan open dagen en maak samen je lijst.",
+    "explore.search_postcode": "Postcode",
+    "explore.search_advice": "Advies",
+    "explore.search_cta": "Bekijk scholen",
+    "explore.popular": "Populaire scholen in Amsterdam",
+    "explore.nearby": "Scholen bij jou in de buurt",
+    "explore.browse_all": "Bekijk alle scholen",
+    "explore.login": "Inloggen",
+    "explore.profile": "Profiel",
+
     "dashboard.title": "Dashboard",
     "dashboard.welcome": "Welkom",
     "dashboard.title_named": "Dashboard van {name}",
@@ -126,9 +137,12 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "menu.signout": "Uitloggen",
 
     "nav.dashboard": "Dashboard",
+    "nav.explore": "Ontdek",
     "nav.schools": "Scholen",
     "nav.open_days": "Open dagen",
     "nav.shortlist": "Shortlist",
+    "nav.my_list": "Mijn lijst",
+    "nav.profile": "Profiel",
 
     "schools.title": "Scholen",
     "schools.count": "#{count} scholen",
@@ -298,6 +312,17 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "login.invalid_email": "Please enter a valid email address.",
     "login.sign_in": "Go to sign in",
 
+    "explore.hero_title": "Find your new school",
+    "explore.hero_subtitle": "Compare schools, plan open days, and build your list together.",
+    "explore.search_postcode": "Postcode",
+    "explore.search_advice": "Advice",
+    "explore.search_cta": "See schools",
+    "explore.popular": "Popular schools in Amsterdam",
+    "explore.nearby": "Schools near you",
+    "explore.browse_all": "Browse all schools",
+    "explore.login": "Sign in",
+    "explore.profile": "Profile",
+
     "dashboard.title": "Dashboard",
     "dashboard.welcome": "Welcome",
     "dashboard.title_named": "{name}'s Dashboard",
@@ -398,9 +423,12 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "menu.signout": "Sign out",
 
     "nav.dashboard": "Dashboard",
+    "nav.explore": "Explore",
     "nav.schools": "Schools",
     "nav.open_days": "Open days",
     "nav.shortlist": "Shortlist",
+    "nav.my_list": "My list",
+    "nav.profile": "Profile",
 
     "schools.title": "Schools",
     "schools.count": "#{count} schools",

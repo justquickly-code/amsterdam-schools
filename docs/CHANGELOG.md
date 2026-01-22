@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Explore: add public hero landing page with search + featured schools; move dashboard to /profile and update bottom nav labels.
 - Dashboard: align header layout and unify planner list (timeline + planned open days) with clickable items.
 - Planner: normalize open-day school join shape to keep advies filtering working reliably.
 - Shortlist: show rating + commute time/distance for ranked and unranked items.

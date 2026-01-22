@@ -30,16 +30,17 @@ export default function BottomNav() {
   }, []);
 
   const items = [
-    { href: "/", label: t(language, "nav.dashboard") },
+    { href: "/", label: t(language, "nav.explore") },
     { href: "/schools", label: t(language, "nav.schools") },
     { href: "/planner", label: t(language, "nav.open_days") },
-    { href: "/shortlist", label: t(language, "nav.shortlist") },
+    { href: "/shortlist", label: t(language, "nav.my_list") },
+    { href: "/profile", label: t(language, "nav.profile") },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-card/95 backdrop-blur">
       <div className="mx-auto max-w-3xl px-4 py-3">
-        <div className="grid grid-cols-4 gap-2 text-center text-xs">
+        <div className="grid grid-cols-5 gap-2 text-center text-xs">
           {items.map((item) => {
             const active = isActive(pathname, item.href);
             return (

@@ -400,7 +400,7 @@ export default function SetupPage() {
                 <button
                   className="rounded-full border px-4 py-2 text-xs font-semibold"
                   type="button"
-                  onClick={() => router.replace("/?setup=done")}
+                  onClick={() => router.replace("/profile?setup=done")}
                 >
                   {t(language, "setup.skip")}
                 </button>

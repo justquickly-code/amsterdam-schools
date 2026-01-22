@@ -146,7 +146,7 @@ export default function HowItWorksPage() {
             <button
               className="rounded-full border px-4 py-2 text-xs font-semibold"
               type="button"
-              onClick={() => router.replace("/?setup=done")}
+              onClick={() => router.replace("/profile?setup=done")}
             >
               {t(language, "how.finish_setup")}
             </button>

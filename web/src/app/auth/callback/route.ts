@@ -110,7 +110,7 @@ export async function GET(request: Request) {
   }
 
   // After successful exchange, redirect home.
-  const homeUrl = new URL("/", redirectOrigin);
+  const homeUrl = new URL("/profile", redirectOrigin);
   if (lang === "en" || lang === "nl") homeUrl.searchParams.set("lang", lang);
   return NextResponse.redirect(homeUrl);
 }
