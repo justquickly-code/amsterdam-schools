@@ -335,7 +335,7 @@ export default function Home() {
     }
   }, [loading, email, router]);
 
-  const nextDates = useMemo(() => getNextTimelineItems(new Date(), 6), []);
+  const nextDates = useMemo(() => getNextTimelineItems(new Date(), 3), []);
 
   const plannerItems = useMemo(() => {
     const now = new Date();
