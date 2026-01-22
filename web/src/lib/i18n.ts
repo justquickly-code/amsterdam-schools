@@ -62,6 +62,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.recent_empty": "Nog niets afgerond.",
     "dashboard.planner_title": "Planner",
     "dashboard.planner_empty": "Nog geen items gevonden.",
+    "dashboard.planner_important": "Belangrijke data",
+    "dashboard.planner_open_days": "Geplande open dagen",
     "dashboard.tip":
       "Tip: na het inloggen kun je scholen bekijken, notities maken, een ranglijst maken en open dagen zien.",
     "dashboard.signin_body":
@@ -330,6 +332,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.recent_empty": "Nothing completed yet.",
     "dashboard.planner_title": "Planner",
     "dashboard.planner_empty": "No items yet.",
+    "dashboard.planner_important": "Important dates",
+    "dashboard.planner_open_days": "Planned open days",
     "dashboard.tip":
       "Tip: once signed in, you’ll be able to browse schools, save visit notes, build a ranked list, and see open days.",
     "dashboard.signin_body":

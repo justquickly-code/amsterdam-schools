@@ -340,7 +340,7 @@ export default function Home() {
   const plannerItems = useMemo(() => {
     const now = new Date();
     const locale = getLocale(language);
-    const items: Array<{
+    const timeline: Array<{
       id: string;
       title: string;
       value: string;
@@ -351,7 +351,7 @@ export default function Home() {
 
     for (const item of nextDates) {
       const start = new Date(`${item.start}T00:00:00`);
-      items.push({
+      timeline.push({
         id: `timeline-${item.id}`,
         title: t(language, item.titleKey),
         value: formatDateRange(item, locale),
@@ -360,6 +360,15 @@ export default function Home() {
         isToday: false,
       });
     }
+
+    const planned: Array<{
+      id: string;
+      title: string;
+      value: string;
+      href: string;
+      sortTs: number;
+      isToday: boolean;
+    }> = [];
 
     for (const row of plannedOpenDays) {
       const openDay = row.open_day ?? null;
@@ -370,7 +379,7 @@ export default function Home() {
       const value = start
         ? `${start.toLocaleDateString(locale, { day: "numeric", month: "short" })} · ${start.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`
         : "—";
-      items.push({
+      planned.push({
         id: `planned-${openDay.id}`,
         title: name,
         value,
@@ -380,11 +389,15 @@ export default function Home() {
       });
     }
 
-    const plannedToday = items.filter((i) => i.isToday);
-    const sorted = [...items].sort((a, b) => a.sortTs - b.sortTs);
+    const plannedToday = planned.filter((i) => i.isToday);
+    const plannedSorted = [...planned].sort((a, b) => a.sortTs - b.sortTs);
     const remainingCap = Math.max(0, 6 - plannedToday.length);
-    const withoutToday = sorted.filter((i) => !i.isToday).slice(0, remainingCap);
-    return [...plannedToday, ...withoutToday];
+    const plannedDisplay = [
+      ...plannedToday,
+      ...plannedSorted.filter((i) => !i.isToday).slice(0, remainingCap),
+    ];
+
+    return { timeline, planned: plannedDisplay };
   }, [language, nextDates, plannedOpenDays]);
 
   if (loading) {
@@ -453,20 +466,37 @@ export default function Home() {
         )}
 
         <InfoCard title={t(language, "dashboard.planner_title")}>
-          {plannerItems.length === 0 ? (
+          {plannerItems.timeline.length === 0 && plannerItems.planned.length === 0 ? (
             <div className="text-sm text-muted-foreground">{t(language, "dashboard.planner_empty")}</div>
           ) : (
-            <ListGroup>
-              {plannerItems.map((item) => (
-                <ListRow
-                  key={item.id}
-                  title={item.title}
-                  value={item.value}
-                  showArrow
-                  onClick={() => router.push(item.href)}
-                />
-              ))}
-            </ListGroup>
+            <div className="space-y-4">
+              {plannerItems.timeline.length > 0 && (
+                <ListGroup title={t(language, "dashboard.planner_important")}>
+                  {plannerItems.timeline.map((item) => (
+                    <ListRow
+                      key={item.id}
+                      title={item.title}
+                      value={item.value}
+                      showArrow
+                      onClick={() => router.push(item.href)}
+                    />
+                  ))}
+                </ListGroup>
+              )}
+              {plannerItems.planned.length > 0 && (
+                <ListGroup title={t(language, "dashboard.planner_open_days")}>
+                  {plannerItems.planned.map((item) => (
+                    <ListRow
+                      key={item.id}
+                      title={item.title}
+                      value={item.value}
+                      showArrow
+                      onClick={() => router.push(item.href)}
+                    />
+                  ))}
+                </ListGroup>
+              )}
+            </div>
           )}
         </InfoCard>
       </div>
