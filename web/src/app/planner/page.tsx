@@ -511,12 +511,14 @@ export default function OpenDaysPage() {
 
         <InfoCard title={t(language, "open_days.filters_title")}>
           <div className="space-y-4">
-            {adviesLabel ? (
-              <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-                {t(language, "open_days.filters_advies")} {adviesLabel}
-              </div>
-            ) : null}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {adviesLabel ? (
+                <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                  {t(language, "open_days.filters_advies")} {adviesLabel}
+                </div>
+              ) : (
+                <span />
+              )}
               <div className="text-sm text-muted-foreground">
                 {year ? (
                   <>
@@ -637,7 +639,16 @@ export default function OpenDaysPage() {
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                           <div className="min-w-0 space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <div className="font-semibold text-foreground truncate">{displayName}</div>
+                              {r.school?.id ? (
+                                <Link
+                                  className="font-semibold text-primary underline underline-offset-2 hover:decoration-2 truncate"
+                                  href={`/schools/${r.school.id}`}
+                                >
+                                  {displayName}
+                                </Link>
+                              ) : (
+                                <div className="font-semibold text-foreground truncate">{displayName}</div>
+                              )}
 
                               {label && <span className={pillClass()}>{label}</span>}
 
@@ -660,12 +671,6 @@ export default function OpenDaysPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
-                            {r.school?.id && (
-                              <Link className={actionClass()} href={`/schools/${r.school.id}`}>
-                                {t(language, "open_days.notes")}
-                              </Link>
-                            )}
-
                             <button
                               className={actionClass()}
                               type="button"
