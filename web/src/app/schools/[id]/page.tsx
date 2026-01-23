@@ -199,6 +199,7 @@ export default function SchoolDetailPage() {
     const [openDays, setOpenDays] = useState<OpenDay[]>([]);
     const [plannedOpenDayIds, setPlannedOpenDayIds] = useState<Set<string>>(new Set());
     const [planningId, setPlanningId] = useState<string | null>(null);
+    const [hasSession, setHasSession] = useState(false);
 
     const [attended, setAttended] = useState(false);
     const [rating, setRating] = useState<number | null>(null);
@@ -215,26 +216,29 @@ export default function SchoolDetailPage() {
             setSavedMsg("");
 
             const { data: session } = await supabase.auth.getSession();
-            if (!session.session) {
-                setError("Not signed in.");
-                setLoading(false);
-                return;
-            }
-            setCurrentUserId(session.session.user.id);
+            const authed = Boolean(session.session);
+            setHasSession(authed);
+            setCurrentUserId(session.session?.user.id ?? "");
 
-            const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-                "id,language"
-            );
+            let workspaceRow: WorkspaceRow | null = null;
+            if (authed) {
+                const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+                    "id,language"
+                );
 
-            if (!mounted) return;
-            const workspaceRow = (ws ?? null) as WorkspaceRow | null;
-            if (wErr || !workspaceRow) {
-                setError(wErr ?? "No workspace found.");
-                setLoading(false);
-                return;
+                if (!mounted) return;
+                workspaceRow = (ws ?? null) as WorkspaceRow | null;
+                if (wErr || !workspaceRow) {
+                    setError(wErr ?? "No workspace found.");
+                    setLoading(false);
+                    return;
+                }
+                setWorkspace(workspaceRow);
+                setLanguage((workspaceRow?.language as Language) ?? readStoredLanguage());
+            } else {
+                setWorkspace(null);
+                setLanguage(readStoredLanguage());
             }
-            setWorkspace(workspaceRow);
-            setLanguage((workspaceRow?.language as Language) ?? readStoredLanguage());
 
             const { data: sch, error: sErr } = await supabase
                 .from("schools")
@@ -251,66 +255,76 @@ export default function SchoolDetailPage() {
             }
             setSchool(schoolRow);
 
-            const { data: v, error: vErr } = await supabase
-                .from("visits")
-                .select("id,workspace_id,school_id,attended,rating_stars,updated_at")
-                .eq("workspace_id", workspaceRow.id)
-                .eq("school_id", schoolId)
-                .maybeSingle();
+            if (authed && workspaceRow) {
+                const { data: v, error: vErr } = await supabase
+                    .from("visits")
+                    .select("id,workspace_id,school_id,attended,rating_stars,updated_at")
+                    .eq("workspace_id", workspaceRow.id)
+                    .eq("school_id", schoolId)
+                    .maybeSingle();
 
-            if (!mounted) return;
-            if (vErr) {
-                setError(vErr.message);
-                setLoading(false);
-                return;
+                if (!mounted) return;
+                if (vErr) {
+                    setError(vErr.message);
+                    setLoading(false);
+                    return;
+                }
+
+                const visitRow = (v ?? null) as VisitRow | null;
+                setVisit(visitRow);
+                setVisitUpdatedAt(visitRow?.updated_at ?? null);
+
+                const existing = visitRow;
+                setAttended(existing?.attended ?? false);
+                setRating(existing?.rating_stars ?? null);
+
+                const { data: memberRows } = await supabase
+                    .from("workspace_members")
+                    .select("user_id,member_email")
+                    .eq("workspace_id", workspaceRow.id);
+
+                const memberList = (memberRows ?? []) as MemberRow[];
+                const memberMap = new Map<string, string>();
+                for (const m of memberList) {
+                    if (m.user_id) memberMap.set(m.user_id, m.member_email ?? "Member");
+                }
+
+                const { data: noteRows, error: nErr } = await supabase
+                    .from("visit_notes")
+                    .select("id,workspace_id,school_id,user_id,notes,updated_at")
+                    .eq("workspace_id", workspaceRow.id)
+                    .eq("school_id", schoolId);
+
+                if (!mounted) return;
+                if (nErr) {
+                    setError(nErr.message);
+                    setLoading(false);
+                    return;
+                }
+
+                const notesList = (noteRows ?? []) as VisitNoteRow[];
+                const own = notesList.find((n) => n.user_id === session.session?.user.id) ?? null;
+                setNoteText(own?.notes ?? "");
+                setNoteUpdatedAt(own?.updated_at ?? null);
+                setOtherNotes(
+                    notesList
+                        .filter((n) => n.user_id !== session.session?.user.id)
+                        .map((n) => ({
+                            user_id: n.user_id,
+                            email: memberMap.get(n.user_id) ?? "Member",
+                            notes: n.notes ?? "",
+                        }))
+                        .filter((n) => n.notes.trim().length > 0)
+                );
+            } else {
+                setVisit(null);
+                setVisitUpdatedAt(null);
+                setAttended(false);
+                setRating(null);
+                setNoteText("");
+                setNoteUpdatedAt(null);
+                setOtherNotes([]);
             }
-
-            const visitRow = (v ?? null) as VisitRow | null;
-            setVisit(visitRow);
-            setVisitUpdatedAt(visitRow?.updated_at ?? null);
-
-            const existing = visitRow;
-            setAttended(existing?.attended ?? false);
-            setRating(existing?.rating_stars ?? null);
-
-            const { data: memberRows } = await supabase
-                .from("workspace_members")
-                .select("user_id,member_email")
-                .eq("workspace_id", workspaceRow.id);
-
-            const memberList = (memberRows ?? []) as MemberRow[];
-            const memberMap = new Map<string, string>();
-            for (const m of memberList) {
-                if (m.user_id) memberMap.set(m.user_id, m.member_email ?? "Member");
-            }
-
-            const { data: noteRows, error: nErr } = await supabase
-                .from("visit_notes")
-                .select("id,workspace_id,school_id,user_id,notes,updated_at")
-                .eq("workspace_id", workspaceRow.id)
-                .eq("school_id", schoolId);
-
-            if (!mounted) return;
-            if (nErr) {
-                setError(nErr.message);
-                setLoading(false);
-                return;
-            }
-
-            const notesList = (noteRows ?? []) as VisitNoteRow[];
-            const own = notesList.find((n) => n.user_id === session.session?.user.id) ?? null;
-            setNoteText(own?.notes ?? "");
-            setNoteUpdatedAt(own?.updated_at ?? null);
-            setOtherNotes(
-                notesList
-                    .filter((n) => n.user_id !== session.session?.user.id)
-                    .map((n) => ({
-                        user_id: n.user_id,
-                        email: memberMap.get(n.user_id) ?? "Member",
-                        notes: n.notes ?? "",
-                    }))
-                    .filter((n) => n.notes.trim().length > 0)
-            );
 
             const { data: openDaysRows, error: oErr } = await supabase
                 .from("open_days")
@@ -338,7 +352,7 @@ export default function SchoolDetailPage() {
             })) as OpenDay[];
             setOpenDays(mapped);
 
-            if (workspaceRow.id && mapped.length > 0) {
+            if (authed && workspaceRow?.id && mapped.length > 0) {
                 const { data: plannedRows, error: pErr } = await supabase
                     .from("planned_open_days")
                     .select("open_day_id")
@@ -606,7 +620,7 @@ export default function SchoolDetailPage() {
     }
 
     const from = searchParams.get("from");
-    const backHref = from === "shortlist" ? "/shortlist" : from === "dashboard" ? "/" : "/schools";
+    const backHref = from === "shortlist" ? "/shortlist" : "/";
 
     return (
         <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
@@ -672,23 +686,25 @@ export default function SchoolDetailPage() {
                                                 </div>
                                             </div>
                                             <div className="flex gap-2 sm:shrink-0 sm:justify-end">
-                                                <button
-                                                    className={actionClass()}
-                                                    type="button"
-                                                    onClick={() => togglePlanned(r.id)}
-                                                    disabled={planningId === r.id}
-                                                    title={
-                                                        planned
+                                                {hasSession ? (
+                                                    <button
+                                                        className={actionClass()}
+                                                        type="button"
+                                                        onClick={() => togglePlanned(r.id)}
+                                                        disabled={planningId === r.id}
+                                                        title={
+                                                            planned
+                                                                ? t(language, "open_days.planned")
+                                                                : t(language, "open_days.plan")
+                                                        }
+                                                    >
+                                                        {planningId === r.id
+                                                            ? t(language, "open_days.saving")
+                                                            : planned
                                                             ? t(language, "open_days.planned")
-                                                            : t(language, "open_days.plan")
-                                                    }
-                                                >
-                                                    {planningId === r.id
-                                                        ? t(language, "open_days.saving")
-                                                        : planned
-                                                        ? t(language, "open_days.planned")
-                                                        : t(language, "open_days.plan")}
-                                                </button>
+                                                            : t(language, "open_days.plan")}
+                                                    </button>
+                                                ) : null}
                                                 {r.info_url && (
                                                     <a
                                                         className={actionClass()}
@@ -709,68 +725,70 @@ export default function SchoolDetailPage() {
                     )}
                 </InfoCard>
 
-                <InfoCard title="Your visit notes">
-                    <div className="space-y-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                                <input
-                                    type="checkbox"
-                                    checked={attended}
-                                    onChange={(e) => setAttended(e.target.checked)}
-                                />
-                                <span>Visited</span>
-                            </label>
-                            <StarRating value={rating} onChange={setRating} />
-                        </div>
-
-                        <label className="space-y-2 block">
-                            <div className="text-sm font-medium text-foreground">Your notes</div>
-                            <textarea
-                                className="w-full rounded-2xl border bg-background px-4 py-3 min-h-28 text-sm"
-                                value={noteText}
-                                onChange={(e) => setNoteText(e.target.value)}
-                                placeholder="What stood out? Atmosphere, teachers, vibe…"
-                            />
-                        </label>
-
-                        {otherNotes.length > 0 && (
-                            <div className="space-y-2">
-                                <div className="text-sm font-medium text-foreground">Notes from others</div>
-                                <ul className="divide-y rounded-2xl border bg-card">
-                                    {otherNotes.map((n) => (
-                                        <li key={n.user_id} className="p-4">
-                                            <div className="text-xs text-muted-foreground">{n.email}</div>
-                                            <div className="text-sm whitespace-pre-wrap text-foreground">{n.notes}</div>
-                                        </li>
-                                    ))}
-                                </ul>
+                {hasSession ? (
+                    <InfoCard title="Your visit notes">
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                    <input
+                                        type="checkbox"
+                                        checked={attended}
+                                        onChange={(e) => setAttended(e.target.checked)}
+                                    />
+                                    <span>Visited</span>
+                                </label>
+                                <StarRating value={rating} onChange={setRating} />
                             </div>
-                        )}
 
-                        <div className="flex flex-wrap items-center gap-3">
-                            <button
-                                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
-                                onClick={save}
-                                disabled={!canSave || saving}
-                            >
-                                {saving ? "Saving..." : "Save"}
-                            </button>
-                            {savedMsg && <span className="text-sm text-foreground">{savedMsg}</span>}
-                            {visit && (
-                                <span className="text-xs text-muted-foreground">Visit record exists</span>
+                            <label className="space-y-2 block">
+                                <div className="text-sm font-medium text-foreground">Your notes</div>
+                                <textarea
+                                    className="w-full rounded-2xl border bg-background px-4 py-3 min-h-28 text-sm"
+                                    value={noteText}
+                                    onChange={(e) => setNoteText(e.target.value)}
+                                    placeholder="What stood out? Atmosphere, teachers, vibe…"
+                                />
+                            </label>
+
+                            {otherNotes.length > 0 && (
+                                <div className="space-y-2">
+                                    <div className="text-sm font-medium text-foreground">Notes from others</div>
+                                    <ul className="divide-y rounded-2xl border bg-card">
+                                        {otherNotes.map((n) => (
+                                            <li key={n.user_id} className="p-4">
+                                                <div className="text-xs text-muted-foreground">{n.email}</div>
+                                                <div className="text-sm whitespace-pre-wrap text-foreground">{n.notes}</div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             )}
+
+                            <div className="flex flex-wrap items-center gap-3">
+                                <button
+                                    className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                                    onClick={save}
+                                    disabled={!canSave || saving}
+                                >
+                                    {saving ? "Saving..." : "Save"}
+                                </button>
+                                {savedMsg && <span className="text-sm text-foreground">{savedMsg}</span>}
+                                {visit && (
+                                    <span className="text-xs text-muted-foreground">Visit record exists</span>
+                                )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <button
+                                    className="rounded-full border px-4 py-2 text-xs font-semibold"
+                                    onClick={addToShortlist}
+                                >
+                                    {t(language, "schools.shortlist_add_full")}
+                                </button>
+                                {shortlistMsg && <span className="text-sm text-foreground">{shortlistMsg}</span>}
+                            </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <button
-                                className="rounded-full border px-4 py-2 text-xs font-semibold"
-                                onClick={addToShortlist}
-                            >
-                                {t(language, "schools.shortlist_add_full")}
-                            </button>
-                            {shortlistMsg && <span className="text-sm text-foreground">{shortlistMsg}</span>}
-                        </div>
-                    </div>
-                </InfoCard>
+                    </InfoCard>
+                ) : null}
             </div>
         </main>
     );

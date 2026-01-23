@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- School detail: allow public read of overview + open days; notes/ratings/planning only when logged in.
 - Explore: remove duplicate filters card for logged-out view (hero search only).
 - Explore: hide “no results” card for logged-out users.
 - Explore: simplified public filters (postcode + advice only); full filter controls now require login.
