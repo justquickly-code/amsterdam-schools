@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { InfoCard, SchoolCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type Workspace = {
     id: string;
@@ -85,6 +85,21 @@ type School = {
 };
 
 type SortMode = "name" | "bike";
+
+const SCHOOL_IMAGES = [
+    "/branding/hero/school-1.jpg",
+    "/branding/hero/school-2.jpg",
+    "/branding/hero/school-3.jpg",
+    "/branding/hero/school-4.jpg",
+];
+
+function pickSchoolImage(id: string) {
+    let hash = 0;
+    for (let i = 0; i < id.length; i += 1) {
+        hash = (hash + id.charCodeAt(i) * (i + 1)) % SCHOOL_IMAGES.length;
+    }
+    return SCHOOL_IMAGES[hash] ?? SCHOOL_IMAGES[0];
+}
 
 function matchesAdvies(
     schoolLevels: string[],
@@ -397,14 +412,27 @@ export default function SchoolsPage() {
     return (
         <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
             <div className="mx-auto w-full max-w-5xl space-y-6">
-                <header className="flex flex-col gap-2">
+                <header className="flex flex-col gap-3">
                     <Wordmark />
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <h1 className="text-3xl font-semibold text-foreground">
-                            {t(language, "schools.title")}
-                        </h1>
-                        <span className="text-sm text-muted-foreground">
-                            {t(language, "schools.count").replace("#{count}", String(sorted.length))}
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                        <div className="space-y-1">
+                            <h1 className="font-serif text-3xl font-semibold text-foreground">
+                                {t(language, "schools.title")}
+                            </h1>
+                            <div className="text-sm text-muted-foreground">
+                                {t(language, "schools.count").replace("#{count}", String(sorted.length))}
+                            </div>
+                        </div>
+                        <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                            {t(language, "schools.filters_advies")}{" "}
+                            {(ws?.advies_levels ?? []).length
+                                ? (ws?.advies_levels ?? []).join(" / ")
+                                : "—"}
+                            {(ws?.advies_levels?.length ?? 0) === 2 && (
+                                <span className="text-[11px] text-muted-foreground">
+                                    ({ws?.advies_match_mode})
+                                </span>
+                            )}
                         </span>
                     </div>
                 </header>
@@ -415,29 +443,14 @@ export default function SchoolsPage() {
 
                 {!loading && !error && (
                     <div className="space-y-5">
-                        <InfoCard
-                            title={t(language, "schools.filters_title")}
-                            action={
-                                <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-                                    {t(language, "schools.filters_advies")}{" "}
-                                    {(ws?.advies_levels ?? []).length
-                                        ? (ws?.advies_levels ?? []).join(" / ")
-                                        : "—"}
-                                    {(ws?.advies_levels?.length ?? 0) === 2 && (
-                                        <span className="text-[11px] text-muted-foreground">
-                                            ({ws?.advies_match_mode})
-                                        </span>
-                                    )}
-                                </span>
-                            }
-                        >
+                        <InfoCard title={t(language, "schools.filters_title")}>
                             <div className="flex flex-col gap-4">
                                 <div className="flex flex-wrap items-center gap-3">
                                     <label className="text-sm font-medium text-muted-foreground">
                                         {t(language, "schools.sort")}
                                     </label>
                                     <select
-                                        className="rounded-full border bg-background px-3 py-1 text-sm"
+                                        className="rounded-full border bg-background px-4 py-2 text-sm"
                                         value={sortMode}
                                         onChange={(e) => setSortMode(e.target.value as SortMode)}
                                     >
@@ -456,7 +469,7 @@ export default function SchoolsPage() {
                                 </div>
 
                                 <input
-                                    className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                                    className="w-full rounded-2xl border bg-background px-4 py-3 text-sm"
                                     placeholder={t(language, "schools.search")}
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
@@ -477,7 +490,7 @@ export default function SchoolsPage() {
                                 </p>
                             </InfoCard>
                         ) : (
-                            <div className="grid gap-4">
+                            <div className="grid gap-4 md:grid-cols-2">
                                 {sorted.map((s) => {
                                     const levelLabel =
                                         (s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
@@ -485,58 +498,90 @@ export default function SchoolsPage() {
                                     const hasBadges = Boolean(
                                         s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended
                                     );
+                                    const image = pickSchoolImage(s.id);
                                     return (
-                                        <SchoolCard
+                                        <div
                                             key={s.id}
-                                            title={s.name}
-                                            titleHref={`/schools/${s.id}`}
-                                            subtitle={levelLabel}
-                                            className="gap-4"
+                                            className="flex flex-col overflow-hidden rounded-3xl border bg-card shadow-md"
                                         >
-                                            {hasBadges ? (
-                                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                                    {s.visits?.[0]?.rating_stars ? (
-                                                        <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold">
-                                                            ★ {s.visits?.[0]?.rating_stars}/5
-                                                        </span>
-                                                    ) : null}
-                                                    {s.visits?.[0]?.attended ? (
-                                                        <span className="rounded-full border px-2 py-0.5 text-xs">
-                                                            {t(language, "schools.visited")}
-                                                        </span>
-                                                    ) : null}
+                                            <Link href={`/schools/${s.id}`} className="block">
+                                                <div className="relative h-40 overflow-hidden">
+                                                    <img
+                                                        src={image}
+                                                        alt=""
+                                                        className="h-full w-full object-cover"
+                                                    />
                                                 </div>
-                                            ) : null}
-
-                                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                                {s.commute ? (
-                                                    <span>🚲 {s.commute.duration_minutes} min • {s.commute.distance_km} km</span>
-                                                ) : null}
-                                                {s.address ? <span>{s.address}</span> : null}
-                                            </div>
-
-                                            <div className="flex flex-wrap items-center gap-4">
-                                                {s.website_url ? (
-                                                    <a
-                                                        className="text-sm text-muted-foreground underline"
-                                                        href={s.website_url}
-                                                        target="_blank"
-                                                        rel="noreferrer"
+                                            </Link>
+                                            <div className="space-y-3 p-4">
+                                                <div className="space-y-1">
+                                                    <Link
+                                                        className="text-base font-semibold text-primary underline underline-offset-2"
+                                                        href={`/schools/${s.id}`}
                                                     >
-                                                        {t(language, "schools.website")}
-                                                    </a>
+                                                        {s.name}
+                                                    </Link>
+                                                    <div className="text-sm text-muted-foreground">{levelLabel}</div>
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-2 text-xs">
+                                                    {(s.supported_levels ?? []).slice(0, 3).map((lvl) => (
+                                                        <span
+                                                            key={lvl}
+                                                            className="rounded-full bg-secondary/70 px-3 py-1 font-semibold text-foreground"
+                                                        >
+                                                            {friendlyLevel(lvl)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                {hasBadges ? (
+                                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                                        {s.visits?.[0]?.rating_stars ? (
+                                                            <span className="rounded-full bg-secondary px-2 py-0.5 font-semibold">
+                                                                ★ {s.visits?.[0]?.rating_stars}/5
+                                                            </span>
+                                                        ) : null}
+                                                        {s.visits?.[0]?.attended ? (
+                                                            <span className="rounded-full border px-2 py-0.5">
+                                                                {t(language, "schools.visited")}
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
                                                 ) : null}
-                                                <button
-                                                    className="ml-auto rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
-                                                    onClick={() => addSchoolToShortlist(s.id)}
-                                                    disabled={shortlistBusyId === s.id}
-                                                >
-                                                    {shortlistBusyId === s.id
-                                                        ? t(language, "schools.shortlist_adding")
-                                                        : t(language, "schools.shortlist_add")}
-                                                </button>
+
+                                                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                                                    {s.commute ? (
+                                                        <span>
+                                                            🚲 {s.commute.duration_minutes} min • {s.commute.distance_km} km
+                                                        </span>
+                                                    ) : null}
+                                                    {s.address ? <span>{s.address}</span> : null}
+                                                </div>
+
+                                                <div className="flex flex-wrap items-center gap-4">
+                                                    {s.website_url ? (
+                                                        <a
+                                                            className="text-sm text-muted-foreground underline"
+                                                            href={s.website_url}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                        >
+                                                            {t(language, "schools.website")}
+                                                        </a>
+                                                    ) : null}
+                                                    <button
+                                                        className="ml-auto rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                                                        onClick={() => addSchoolToShortlist(s.id)}
+                                                        disabled={shortlistBusyId === s.id}
+                                                    >
+                                                        {shortlistBusyId === s.id
+                                                            ? t(language, "schools.shortlist_adding")
+                                                            : t(language, "schools.shortlist_add")}
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </SchoolCard>
+                                        </div>
                                     );
                                 })}
                             </div>

@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Schools: redesign list with image cards, tag pills, and Airbnb-style layout.
 - Nav: further enlarge My list heart icon for better visual balance.
 - Nav: increase My list heart icon size and stroke weight for parity with VO.
 - Nav: normalize mobile icon alignment and spacing to match VO bottom bar layout.
