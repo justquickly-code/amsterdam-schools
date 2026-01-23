@@ -423,9 +423,9 @@ export default function Home() {
             {t(language, "profile.list_count").replace("{count}", String(shortlistIds.length))}
           </div>
           <div className="relative mt-4">
-            <div className="absolute left-5 right-5 top-5 h-0.5 bg-border" />
+            <div className="absolute left-5 right-5 top-6 h-0.5 bg-border" />
             <div
-              className="absolute left-5 top-5 h-0.5 bg-primary"
+              className="absolute left-5 top-6 h-0.5 bg-primary"
               style={{ width: `${Math.min(100, journeyProgress.pct)}%` }}
             />
             <div className="flex justify-between">
@@ -435,7 +435,7 @@ export default function Home() {
                 return (
                   <div key={step.key} className="flex flex-col items-center gap-2 w-full">
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full border ${
+                      className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border ${
                         done ? "border-primary bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                       }`}
                     >
@@ -539,12 +539,6 @@ export default function Home() {
               description: t(language, "profile.desc_about"),
               action: () => router.push("/about"),
             },
-            {
-              icon: LogoutIcon,
-              label: t(language, "menu.logout"),
-              description: t(language, "profile.desc_logout"),
-              action: () => supabase.auth.signOut(),
-            },
           ]
             .filter(Boolean)
             .map((item) => {
@@ -575,6 +569,16 @@ export default function Home() {
                 </button>
               );
             })}
+        </section>
+
+        <section className="px-4 py-2">
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <LogoutIcon />
+            <span className="text-sm font-medium">{t(language, "menu.logout")}</span>
+          </button>
         </section>
       </div>
     </main>

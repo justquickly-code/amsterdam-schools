@@ -152,3 +152,4 @@
 - Profile: journey-style progress + stats cards + menu ordering refresh.
 - Profile: fix hook order to avoid hydration warnings.
 - Profile: redesigned layout to match new UI kit (journey stepper, stats, menu cards).
+- Profile: adjust journey line layering + move logout into standalone row.
