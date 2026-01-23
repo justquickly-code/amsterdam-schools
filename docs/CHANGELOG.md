@@ -144,3 +144,4 @@
 - Visits: notes are per member; shared rating/attended remain.
 - UI: language toggle in top menu (Dutch default, English optional), live updates without refresh.
 - Docs: updated PRD-status + AGENTS with completed Phase 4 items and current state summary.
+- Open Days: allow public viewing; planning + shortlist filters are login-gated.

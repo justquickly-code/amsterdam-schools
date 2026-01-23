@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
@@ -132,6 +133,7 @@ function matchesAdvies(
 }
 
 export default function OpenDaysPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [rows, setRows] = useState<OpenDay[]>([]);
@@ -140,6 +142,7 @@ export default function OpenDaysPage() {
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [hasSession, setHasSession] = useState(false);
 
   const [shortlistOnly, setShortlistOnly] = useState(false);
   const [shortlistSchoolIds, setShortlistSchoolIds] = useState<string[]>([]);
@@ -160,32 +163,36 @@ export default function OpenDaysPage() {
       setError("");
 
       const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        setError("Not signed in.");
-        setLoading(false);
-        return;
+      const authed = !!session.session;
+      setHasSession(authed);
+      setLanguage(readStoredLanguage());
+
+      let wsRow: WorkspaceRow | null = null;
+
+      if (authed) {
+        const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
+          "id,home_postcode,home_house_number,advies_levels,advies_match_mode,language"
+        );
+
+        if (!mounted) return;
+
+        if (wErr) {
+          setError(wErr);
+          setLoading(false);
+          return;
+        }
+
+        wsRow = (ws ?? null) as WorkspaceRow | null;
+        setWorkspace(wsRow);
+        setWorkspaceId(wsRow?.id ?? null);
+        setLanguage((wsRow?.language as Language) ?? readStoredLanguage());
+      } else {
+        setWorkspace(null);
+        setWorkspaceId(null);
       }
-
-      // Workspace (MVP assumes 1 per user)
-      const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-        "id,home_postcode,home_house_number,advies_levels,advies_match_mode,language"
-      );
-
-      if (!mounted) return;
-
-      if (wErr) {
-        setError(wErr);
-        setLoading(false);
-        return;
-      }
-
-      const wsRow = (ws ?? null) as WorkspaceRow | null;
-      setWorkspace(wsRow);
-      setWorkspaceId(wsRow?.id ?? null);
-      setLanguage((wsRow?.language as Language) ?? readStoredLanguage());
 
       // Planned open days
-      if (wsRow?.id) {
+      if (authed && wsRow?.id) {
         const { data: planned, error: pErr } = await supabase
           .from("planned_open_days")
           .select("open_day_id")
@@ -207,7 +214,7 @@ export default function OpenDaysPage() {
 
       // Shortlist ids
       const workspaceRow = wsRow;
-      if (workspaceRow?.id) {
+      if (authed && workspaceRow?.id) {
         const { data: shortlist, error: sErr } = await supabase
           .from("shortlists")
           .select("id")
@@ -246,6 +253,8 @@ export default function OpenDaysPage() {
         } else {
           setShortlistSchoolIds([]);
         }
+      } else {
+        setShortlistSchoolIds([]);
       }
 
       // Open days
@@ -298,6 +307,10 @@ export default function OpenDaysPage() {
   }, []);
 
   async function downloadIcs(openDayId: string) {
+    if (!hasSession) {
+      router.push("/login");
+      return;
+    }
     setDownloadingId(openDayId);
     setError("");
     try {
@@ -338,6 +351,10 @@ export default function OpenDaysPage() {
   }
 
   async function togglePlanned(openDayId: string) {
+    if (!hasSession) {
+      router.push("/login");
+      return;
+    }
     if (!workspaceId) return;
     setPlanningId(openDayId);
     setError("");
@@ -512,13 +529,6 @@ export default function OpenDaysPage() {
         <InfoCard title={t(language, "open_days.filters_title")}>
           <div className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {adviesLabel ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-                  {t(language, "open_days.filters_advies")} {adviesLabel}
-                </div>
-              ) : (
-                <span />
-              )}
               <div className="text-sm text-muted-foreground">
                 {year ? (
                   <>
@@ -534,6 +544,13 @@ export default function OpenDaysPage() {
                   </>
                 ) : null}
               </div>
+              {adviesLabel ? (
+                <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                  {t(language, "open_days.filters_advies")} {adviesLabel}
+                </div>
+              ) : (
+                <span />
+              )}
 
               <div className="flex flex-wrap items-center gap-4">
                 {yearOptions.length > 1 && (
@@ -552,14 +569,16 @@ export default function OpenDaysPage() {
                     </select>
                   </label>
                 )}
-                <label className="flex items-center gap-2 select-none text-sm">
-                  <input
-                    type="checkbox"
-                    checked={shortlistOnly}
-                    onChange={(e) => setShortlistOnly(e.target.checked)}
-                  />
-                  <span>{t(language, "open_days.shortlist_only")}</span>
-                </label>
+                {hasSession && (
+                  <label className="flex items-center gap-2 select-none text-sm">
+                    <input
+                      type="checkbox"
+                      checked={shortlistOnly}
+                      onChange={(e) => setShortlistOnly(e.target.checked)}
+                    />
+                    <span>{t(language, "open_days.shortlist_only")}</span>
+                  </label>
+                )}
               </div>
             </div>
 
@@ -652,7 +671,9 @@ export default function OpenDaysPage() {
 
                               {label && <span className={pillClass()}>{label}</span>}
 
-                              {planned && <span className={pillClass()}>{t(language, "open_days.planned")}</span>}
+                              {hasSession && planned && (
+                                <span className={pillClass()}>{t(language, "open_days.planned")}</span>
+                              )}
 
                               {r.is_active === false && <span className={pillClass()}>{t(language, "open_days.verify")}</span>}
                             </div>
@@ -689,17 +710,19 @@ export default function OpenDaysPage() {
                                 : t(language, "open_days.plan")}
                             </button>
 
-                            <button
-                              className={actionClass()}
-                              type="button"
-                              onClick={() => downloadIcs(r.id)}
-                              disabled={downloadingId === r.id}
-                              title={t(language, "open_days.calendar")}
-                            >
-                              {downloadingId === r.id
-                                ? t(language, "open_days.downloading")
-                                : t(language, "open_days.calendar")}
-                            </button>
+                            {hasSession && (
+                              <button
+                                className={actionClass()}
+                                type="button"
+                                onClick={() => downloadIcs(r.id)}
+                                disabled={downloadingId === r.id}
+                                title={t(language, "open_days.calendar")}
+                              >
+                                {downloadingId === r.id
+                                  ? t(language, "open_days.downloading")
+                                  : t(language, "open_days.calendar")}
+                              </button>
+                            )}
 
                             {r.info_url && (
                               <a
