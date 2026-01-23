@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Explore: move language toggle to top-right on the hero screen; remove login button there.
+- Nav: schools tab icon switched to heart; my list uses list icon.
 - Nav: bottom tab bar now shows icons + labels with red active state to match VO design.
 - Nav: hide bottom nav on tablet/desktop; show top-right menu with language toggle (public + authed items).
 - Nav: show 3-item bottom nav when logged out (Explore/Schools/Sign in); full 5-item nav after login.

@@ -71,6 +71,15 @@ export default function ExploreHome() {
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
 
+  const toggleLanguage = () => {
+    const next = language === "nl" ? "en" : "nl";
+    setLanguage(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("schools_language", next);
+      window.dispatchEvent(new CustomEvent<Language>(LANGUAGE_EVENT, { detail: next }));
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
@@ -116,12 +125,13 @@ export default function ExploreHome() {
         <div className="relative px-5 pt-6 pb-12">
           <div className="flex items-center justify-between">
             <Wordmark className="h-9" />
-            <Link
-              className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow-sm"
-              href={hasSession ? "/profile" : "/login"}
+            <button
+              className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm"
+              type="button"
+              onClick={toggleLanguage}
             >
-              {hasSession ? t(language, "explore.profile") : t(language, "explore.login")}
-            </Link>
+              {language === "nl" ? "NL" : "EN"}
+            </button>
           </div>
 
           <div className="mt-10 max-w-xl">

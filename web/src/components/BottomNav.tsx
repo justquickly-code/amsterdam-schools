@@ -55,6 +55,17 @@ function UserIcon({ className }: NavIconProps) {
   );
 }
 
+function ListIcon({ className }: NavIconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path d="M5 7h14M5 12h14M5 17h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="3" cy="7" r="1" fill="currentColor" />
+      <circle cx="3" cy="12" r="1" fill="currentColor" />
+      <circle cx="3" cy="17" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 function LoginIcon({ className }: NavIconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
@@ -113,14 +124,14 @@ export default function BottomNav() {
   const items = isAuthed
     ? [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/schools", label: t(language, "nav.schools"), icon: SearchIcon },
+        { href: "/schools", label: t(language, "nav.schools"), icon: HeartIcon },
         { href: "/planner", label: t(language, "nav.open_days"), icon: CalendarIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: ListIcon },
         { href: "/profile", label: t(language, "nav.profile"), icon: UserIcon },
       ]
     : [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/schools", label: t(language, "nav.schools"), icon: SearchIcon },
+        { href: "/schools", label: t(language, "nav.schools"), icon: HeartIcon },
         { href: "/login", label: t(language, "nav.login"), icon: LoginIcon },
       ];
 
