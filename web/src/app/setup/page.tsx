@@ -46,6 +46,8 @@ export default function SetupPage() {
   const [homeHouseNumber, setHomeHouseNumber] = useState("");
   const [adviesOption, setAdviesOption] = useState("");
 
+  const stepIndex = step === "profile" ? 0 : step === "invite" ? 1 : 2;
+
   useEffect(() => {
     let mounted = true;
 
@@ -312,7 +314,10 @@ export default function SetupPage() {
       <div className="mx-auto w-full max-w-2xl space-y-6">
         <Wordmark />
         <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">{t(language, "settings.language")}</div>
+          <div>
+            <h1 className="text-3xl font-semibold text-foreground">{t(language, "setup.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t(language, "setup.subtitle")}</p>
+          </div>
           <button
             className="rounded-full border px-3 py-1 text-xs"
             type="button"
@@ -320,6 +325,19 @@ export default function SetupPage() {
           >
             {language === "nl" ? "NL" : "EN"}
           </button>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {["profile", "invite", "tutorial"].map((key, idx) => (
+            <div
+              key={key}
+              className={`rounded-full border px-3 py-1 ${
+                idx === stepIndex ? "bg-secondary text-foreground" : ""
+              }`}
+            >
+              {t(language, `setup.step_${key}`)}
+            </div>
+          ))}
         </div>
 
         <InfoCard title={t(language, "setup.title")}>

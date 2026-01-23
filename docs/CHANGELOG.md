@@ -147,3 +147,5 @@
 - Open Days: allow public viewing; planning + shortlist filters are login-gated.
 - Build: fix Explore schools select typing for Supabase.
 - My List: unified list with top-N highlight and rank controls (no separate unranked section).
+- Profile: new header + quick links; progress actions point to Explore.
+- Setup: added step pills + updated setup header copy.

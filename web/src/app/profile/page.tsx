@@ -262,7 +262,7 @@ export default function Home() {
         key: "shortlist",
         done: shortlistIds.length > 0,
         tipKey: "dashboard.tip_shortlist",
-        href: "/schools",
+        href: "/",
         ctaKey: "dashboard.tip_cta_schools",
         labelKey: "dashboard.milestone_shortlist",
       },
@@ -278,7 +278,7 @@ export default function Home() {
         key: "note",
         done: hasNote,
         tipKey: "dashboard.tip_note",
-        href: "/schools",
+        href: "/",
         ctaKey: "dashboard.tip_cta_schools",
         labelKey: "dashboard.milestone_note",
       },
@@ -286,7 +286,7 @@ export default function Home() {
         key: "rating",
         done: hasRating,
         tipKey: "dashboard.tip_rating",
-        href: "/schools",
+        href: "/",
         ctaKey: "dashboard.tip_cta_schools",
         labelKey: "dashboard.milestone_rating",
       },
@@ -425,11 +425,14 @@ export default function Home() {
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="flex flex-col gap-2">
           <Wordmark />
-          <h1 className="text-3xl font-semibold text-foreground">
-            {workspace?.child_name
-              ? t(language, "dashboard.title_named").replace("{name}", workspace.child_name)
-              : t(language, "dashboard.title")}
-          </h1>
+          <div>
+            <h1 className="text-3xl font-semibold text-foreground">{t(language, "profile.title")}</h1>
+            {workspace?.child_name ? (
+              <p className="text-sm text-muted-foreground">
+                {t(language, "profile.subtitle").replace("{name}", workspace.child_name)}
+              </p>
+            ) : null}
+          </div>
         </header>
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
@@ -505,6 +508,16 @@ export default function Home() {
               )}
             </div>
           )}
+        </InfoCard>
+
+        <InfoCard title={t(language, "profile.quick_links")}>
+          <ListGroup>
+            <ListRow title={t(language, "profile.link_explore")} onClick={() => router.push("/")} showArrow />
+            <ListRow title={t(language, "profile.link_my_list")} onClick={() => router.push("/shortlist")} showArrow />
+            <ListRow title={t(language, "profile.link_open_days")} onClick={() => router.push("/planner")} showArrow />
+            <ListRow title={t(language, "profile.link_settings")} onClick={() => router.push("/settings")} showArrow />
+            <ListRow title={t(language, "profile.link_feedback")} onClick={() => router.push("/feedback")} showArrow />
+          </ListGroup>
         </InfoCard>
       </div>
     </main>

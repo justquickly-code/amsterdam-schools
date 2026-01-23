@@ -80,7 +80,11 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.signin_body":
       "Log in met een e‑mail van een familielid. Je blijft ingelogd op dit apparaat.",
 
-    "setup.title": "Welkom",
+    "setup.title": "Instellen",
+    "setup.subtitle": "Een paar snelle stappen om te starten.",
+    "setup.step_profile": "Profiel",
+    "setup.step_invite": "Uitnodigen",
+    "setup.step_tutorial": "Uitleg",
     "setup.intro": "Laten we het even instellen. Dit duurt ongeveer een minuut.",
     "setup.profile_why":
       "We gebruiken dit om scholen te filteren op advies en om reistijden te berekenen.",
@@ -112,6 +116,15 @@ const STRINGS: Record<Language, Record<string, string>> = {
       "Dit is geen app‑uitleg, maar een korte, kindvriendelijke uitleg van het proces in 2025/26.",
     "setup.tutorial_start": "Start uitleg",
     "setup.tutorial_later": "Je kunt dit later altijd terugvinden in het menu.",
+
+    "profile.title": "Profiel",
+    "profile.subtitle": "Overzicht voor {name}",
+    "profile.quick_links": "Snel naar",
+    "profile.link_explore": "Ontdek scholen",
+    "profile.link_my_list": "Mijn lijst",
+    "profile.link_open_days": "Open dagen",
+    "profile.link_settings": "Instellingen",
+    "profile.link_feedback": "Feedback",
 
     "settings.title": "Instellingen",
     "settings.edit": "Instellingen bewerken",
@@ -373,7 +386,11 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.signin_body":
       "Sign in with a family member email. The app stays signed in on this device.",
 
-    "setup.title": "Welcome",
+    "setup.title": "Setup",
+    "setup.subtitle": "Just a few quick steps to get started.",
+    "setup.step_profile": "Profile",
+    "setup.step_invite": "Invite",
+    "setup.step_tutorial": "Guide",
     "setup.intro": "Let’s set things up. It takes about a minute.",
     "setup.profile_why": "We use this to filter by advice and calculate commute times.",
     "setup.finish": "Finish setup",
@@ -403,6 +420,15 @@ const STRINGS: Record<Language, Record<string, string>> = {
       "This is not app training — it’s the 2025/26 Year‑8 process explained simply.",
     "setup.tutorial_start": "Start overview",
     "setup.tutorial_later": "You can always find this later in the menu.",
+
+    "profile.title": "Profile",
+    "profile.subtitle": "Overview for {name}",
+    "profile.quick_links": "Quick links",
+    "profile.link_explore": "Explore schools",
+    "profile.link_my_list": "My list",
+    "profile.link_open_days": "Open days",
+    "profile.link_settings": "Settings",
+    "profile.link_feedback": "Feedback",
 
     "settings.title": "Settings",
     "settings.edit": "Edit settings",
