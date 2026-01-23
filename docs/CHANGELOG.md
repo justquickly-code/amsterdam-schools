@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Explore: hide “no results” card for logged-out users.
 - Explore: simplified public filters (postcode + advice only); full filter controls now require login.
 - Explore: merge schools list into the Explore page and remove standalone /schools route.
 - Schools: redesign list with image cards, tag pills, and Airbnb-style layout.

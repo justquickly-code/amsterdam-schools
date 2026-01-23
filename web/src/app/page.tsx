@@ -650,9 +650,11 @@ export default function ExploreHome() {
           {!loading && error && <p className="text-sm text-red-600">Error: {error}</p>}
 
           {!loading && !error && sorted.length === 0 ? (
-            <InfoCard title={t(language, "schools.no_matches_title")}>
-              <p className="text-sm text-muted-foreground">{t(language, "schools.no_matches_body")}</p>
-            </InfoCard>
+            hasSession ? (
+              <InfoCard title={t(language, "schools.no_matches_title")}>
+                <p className="text-sm text-muted-foreground">{t(language, "schools.no_matches_body")}</p>
+              </InfoCard>
+            ) : null
           ) : null}
 
           {!loading && !error && sorted.length > 0 ? (
