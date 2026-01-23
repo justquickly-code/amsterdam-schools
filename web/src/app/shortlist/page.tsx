@@ -275,7 +275,7 @@ export default function ShortlistPage() {
     return null;
   }
 
-  async function removeRank(rank: number) {
+  async function clearRank(rank: number) {
     if (!shortlistId) return;
     const existing = rankMap.get(rank);
     if (!existing) return;
@@ -286,13 +286,15 @@ export default function ShortlistPage() {
 
     const { error } = await supabase
       .from("shortlist_items")
-      .delete()
+      .update({ rank: null })
       .eq("shortlist_id", shortlistId)
       .eq("school_id", existing.school_id);
 
     if (error) setError(error.message);
     else {
-      setItems((prev) => prev.filter((x) => x.rank !== rank));
+      setItems((prev) =>
+        sortItems(prev.map((x) => (x.school_id === existing.school_id ? { ...x, rank: null } : x)))
+      );
       setSavedMsg(t(language, "shortlist.saved"));
     }
 
@@ -505,50 +507,50 @@ export default function ShortlistPage() {
         )}
 
         <InfoCard title={t(language, "shortlist.title")}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {Array.from({ length: rankCap }).map((_, i) => {
-              const rank = i + 1;
-              const it = rankMap.get(rank);
-              return (
-                <div key={rank} className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-muted-foreground">
-                      {t(language, "shortlist.rank")} #{rank}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="rounded-full border px-2 py-1 text-xs"
-                        disabled={saving || !it || rank === 1}
-                        onClick={() => move(rank, rank - 1)}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        className="rounded-full border px-2 py-1 text-xs"
-                        disabled={saving || !it || rank === rankCap}
-                        onClick={() => move(rank, rank + 1)}
-                      >
-                        ↓
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="min-h-12">
-                    {it ? (
-                      <div className="space-y-2">
+          {items.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t(language, "shortlist.empty_list")}</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {sortItems(items).map((it) => {
+                const isRanked = typeof it.rank === "number" && it.rank <= rankCap;
+                const rankLabel = isRanked ? `${t(language, "shortlist.rank")} ${it.rank}` : null;
+                return (
+                  <li
+                    key={it.school_id}
+                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between"
+                  >
+                    <div className="flex min-w-0 items-start gap-3">
+                      <div className="mt-1 select-none text-muted-foreground">⋮⋮</div>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {rankLabel ? (
+                            <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                              {rankLabel}
+                            </span>
+                          ) : (
+                            <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                              {t(language, "shortlist.saved_title")}
+                            </span>
+                          )}
+                          {isRanked && (
+                            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+                              Top {rankCap}
+                            </span>
+                          )}
+                          {(it.attended || it.has_planned || it.has_open_days) && (
+                            <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                              {statusLabel(it, language)}
+                            </span>
+                          )}
+                        </div>
                         <Link
-                          className="text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
+                          className="mt-2 block truncate text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
                           href={`/schools/${it.school_id}?from=shortlist`}
                         >
                           {it.school?.name ?? it.school_id}
                         </Link>
-                        {(it.attended || it.has_planned || it.has_open_days) && (
-                          <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
-                            {statusLabel(it, language)}
-                          </span>
-                        )}
                         {(it.rating_stars || commuteLabel(it.commute)) && (
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             {it.rating_stars ? (
                               <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
                                 ★ {it.rating_stars}/5
@@ -558,79 +560,56 @@ export default function ShortlistPage() {
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground">{t(language, "shortlist.empty_slot")}</div>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className="flex justify-end">
-                    {it && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {isRanked ? (
+                        <>
+                          <button
+                            className="rounded-full border px-2 py-1 text-xs"
+                            disabled={saving || !it.rank || it.rank === 1}
+                            onClick={() => it.rank && move(it.rank, it.rank - 1)}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            className="rounded-full border px-2 py-1 text-xs"
+                            disabled={saving || !it.rank || it.rank === rankCap}
+                            onClick={() => it.rank && move(it.rank, it.rank + 1)}
+                          >
+                            ↓
+                          </button>
+                          <button
+                            className="rounded-full border px-3 py-1 text-xs"
+                            disabled={saving || !it.rank}
+                            onClick={() => it.rank && clearRank(it.rank)}
+                          >
+                            {t(language, "shortlist.unrank")}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded-full border px-3 py-1 text-xs"
+                          disabled={saving}
+                          onClick={() => promoteToNextRank(it)}
+                        >
+                          {t(language, "shortlist.add_to_ranked")}
+                        </button>
+                      )}
                       <button
                         className="text-xs text-muted-foreground underline"
-                        onClick={() => removeRank(rank)}
+                        onClick={() => removeSchool(it.school_id)}
                         disabled={saving}
                       >
                         {t(language, "shortlist.remove")}
                       </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </InfoCard>
-
-        {unranked.length ? (
-          <InfoCard title={t(language, "shortlist.saved_title")}>
-            <ul className="divide-y divide-border">
-              {unranked.map((it) => (
-                <li key={it.school_id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <Link
-                      className="truncate text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
-                      href={`/schools/${it.school_id}?from=shortlist`}
-                    >
-                      {it.school?.name ?? it.school_id}
-                    </Link>
-                    {(it.attended || it.has_planned || it.has_open_days) && (
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        <span className="rounded-full border px-2 py-0.5">
-                          {statusLabel(it, language)}
-                        </span>
-                      </div>
-                    )}
-                    {(it.rating_stars || commuteLabel(it.commute)) && (
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        {it.rating_stars ? (
-                          <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
-                            ★ {it.rating_stars}/5
-                          </span>
-                        ) : null}
-                        {commuteLabel(it.commute) ? <span>{commuteLabel(it.commute)}</span> : null}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="rounded-full border px-3 py-1 text-xs"
-                      disabled={saving}
-                      onClick={() => promoteToNextRank(it)}
-                    >
-                      {t(language, "shortlist.rank_next")}
-                    </button>
-                    <button
-                      className="text-xs text-muted-foreground underline"
-                      onClick={() => removeSchool(it.school_id)}
-                      disabled={saving}
-                    >
-                      {t(language, "shortlist.remove")}
-                    </button>
-                  </div>
-                </li>
-              ))}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
-          </InfoCard>
-        ) : null}
+          )}
+        </InfoCard>
 
       </div>
     </main>
