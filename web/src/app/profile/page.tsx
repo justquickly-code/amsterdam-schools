@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, t } from "@/lib/i18n";
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
 import { InfoCard } from "@/components/schoolkeuze";
@@ -298,6 +298,7 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("schools_language", language);
+    emitLanguageChanged(language);
   }, [language]);
 
   useEffect(() => {
@@ -325,6 +326,18 @@ export default function Home() {
       setIsAdmin(Boolean(json?.ok));
     })().catch(() => setIsAdmin(false));
   }, []);
+
+  async function updateLanguage(next: Language) {
+    if (next === language) return;
+    if (workspace?.id) {
+      const { error } = await supabase
+        .from("workspaces")
+        .update({ language: next })
+        .eq("id", workspace.id);
+      if (error) return;
+    }
+    setLanguage(next);
+  }
 
   const journeySteps = useMemo(() => {
     const doneProfile = !setupNeeded;
@@ -504,7 +517,7 @@ export default function Home() {
               icon: SearchIcon,
               label: t(language, "profile.link_language"),
               description: t(language, "profile.desc_language"),
-              action: () => setLanguage(language === "nl" ? "en" : "nl"),
+              action: () => updateLanguage(language === "nl" ? "en" : "nl"),
               badge: language === "nl" ? "NL" : "EN",
             },
             {
