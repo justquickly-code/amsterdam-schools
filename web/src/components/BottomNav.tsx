@@ -124,14 +124,14 @@ export default function BottomNav() {
   const items = isAuthed
     ? [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/schools", label: t(language, "nav.schools"), icon: HeartIcon },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-6 w-6" },
         { href: "/planner", label: t(language, "nav.open_days"), icon: CalendarIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: ListIcon },
+        { href: "/schools", label: t(language, "nav.schools"), icon: ListIcon },
         { href: "/profile", label: t(language, "nav.profile"), icon: UserIcon },
       ]
     : [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/schools", label: t(language, "nav.schools"), icon: HeartIcon },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-6 w-6" },
         { href: "/login", label: t(language, "nav.login"), icon: LoginIcon },
       ];
 
@@ -142,6 +142,7 @@ export default function BottomNav() {
           {items.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
+            const iconClass = item.iconSize ?? "h-5 w-5";
             return (
               <Link
                 key={item.href}
@@ -150,7 +151,7 @@ export default function BottomNav() {
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className={iconClass} />
                 <span className={`font-medium ${active ? "text-primary" : ""}`}>{item.label}</span>
               </Link>
             );

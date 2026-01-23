@@ -124,7 +124,7 @@ export default function ExploreHome() {
         </div>
         <div className="relative px-5 pt-6 pb-12">
           <div className="flex items-center justify-between">
-            <Wordmark className="h-9" />
+            <Wordmark className="rounded-xl bg-white/90 px-3 py-2 shadow-sm backdrop-blur" />
             <button
               className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm"
               type="button"

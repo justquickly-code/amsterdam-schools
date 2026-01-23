@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Explore: add light pill background behind wordmark for readability on hero image.
+- Nav: switch heart tab to My list and increase heart icon size.
 - Explore: move language toggle to top-right on the hero screen; remove login button there.
 - Nav: schools tab icon switched to heart; my list uses list icon.
 - Nav: bottom tab bar now shows icons + labels with red active state to match VO design.
