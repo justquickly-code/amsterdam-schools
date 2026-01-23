@@ -76,7 +76,13 @@ export default function LoginPage() {
 
       window.localStorage.setItem("last_login_email", trimmed);
 
-      const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+      const envOrigin = process.env.NEXT_PUBLIC_SITE_URL;
+      const origin =
+        envOrigin && envOrigin.length > 0
+          ? envOrigin.replace(/\/$/, "")
+          : typeof window !== "undefined"
+            ? window.location.origin
+            : "http://localhost:3000";
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
