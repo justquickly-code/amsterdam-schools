@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Explore: remove duplicate filters card for logged-out view (hero search only).
 - Explore: hide “no results” card for logged-out users.
 - Explore: simplified public filters (postcode + advice only); full filter controls now require login.
 - Explore: merge schools list into the Explore page and remove standalone /schools route.

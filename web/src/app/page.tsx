@@ -577,36 +577,7 @@ export default function ExploreHome() {
 
       <section id="school-list" className="bg-background px-5 pb-12">
         <div className="mx-auto w-full max-w-5xl space-y-6">
-          {!hasSession ? (
-            <InfoCard title={t(language, "schools.filters_title")}>
-              <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr]">
-                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
-                  {t(language, "explore.search_postcode")}
-                  <input
-                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
-                    placeholder="1011 AB"
-                    value={postcode}
-                    onChange={(event) => setPostcode(event.target.value)}
-                  />
-                </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
-                  {t(language, "explore.search_advice")}
-                  <select
-                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
-                    value={adviesKey}
-                    onChange={(event) => setAdviesKey(event.target.value)}
-                  >
-                    <option value="">{t(language, "settings.advies_select")}</option>
-                    {ADVIES_OPTIONS.map((option) => (
-                      <option key={option.key} value={option.key}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </InfoCard>
-          ) : (
+          {hasSession ? (
             <InfoCard
               title={t(language, "schools.filters_title")}
               action={activeAdviesLevels.length ? (
@@ -638,7 +609,7 @@ export default function ExploreHome() {
                 />
               </div>
             </InfoCard>
-          )}
+          ) : null}
 
           {shortlistMsg && (
             <div className="rounded-2xl border border-info-muted bg-info-muted px-4 py-3 text-sm text-foreground">
