@@ -4,11 +4,115 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { formatDateRange, getNextTimelineItems } from "@/lib/keuzegidsTimeline";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
-import { InfoCard, ListGroup, ListRow, ProgressCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard } from "@/components/schoolkeuze";
+
+const IconBase = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    {children}
+  </svg>
+);
+
+const BellIcon = () => (
+  <IconBase className="h-5 w-5">
+    <path d="M6 9a6 6 0 1 1 12 0v4l2 2H4l2-2z" />
+    <path d="M10 19a2 2 0 0 0 4 0" />
+  </IconBase>
+);
+const UsersIcon = () => (
+  <IconBase className="h-5 w-5">
+    <circle cx="8" cy="8" r="3" />
+    <circle cx="16" cy="10" r="3" />
+    <path d="M4 20c0-3 3-5 6-5" />
+    <path d="M12 20c0-3 3-5 6-5" />
+  </IconBase>
+);
+const ShareIcon = () => (
+  <IconBase className="h-5 w-5">
+    <circle cx="6" cy="12" r="2.5" />
+    <circle cx="18" cy="6" r="2.5" />
+    <circle cx="18" cy="18" r="2.5" />
+    <path d="M8.2 11l6.6-3.3" />
+    <path d="M8.2 13l6.6 3.3" />
+  </IconBase>
+);
+const NoteIcon = () => (
+  <IconBase className="h-5 w-5">
+    <path d="M7 3h8l4 4v14H7z" />
+    <path d="M15 3v5h5" />
+  </IconBase>
+);
+const HelpIcon = () => (
+  <IconBase className="h-5 w-5">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.3-1.5 1.1-1.5 2.2" />
+    <circle cx="12" cy="17" r="1" />
+  </IconBase>
+);
+const SettingsIcon = () => (
+  <IconBase className="h-5 w-5">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1 1 0 0 0 .2-1.1l-1-1.8a7.8 7.8 0 0 0 0-2.2l1-1.8a1 1 0 0 0-.2-1.1l-1.5-1.5a1 1 0 0 0-1.1-.2l-1.8 1a7.8 7.8 0 0 0-2.2 0l-1.8-1a1 1 0 0 0-1.1.2L7 5.8a1 1 0 0 0-.2 1.1l1 1.8a7.8 7.8 0 0 0 0 2.2l-1 1.8a1 1 0 0 0 .2 1.1l1.5 1.5a1 1 0 0 0 1.1.2l1.8-1a7.8 7.8 0 0 0 2.2 0l1.8 1a1 1 0 0 0 1.1-.2z" />
+  </IconBase>
+);
+const LogoutIcon = () => (
+  <IconBase className="h-5 w-5">
+    <path d="M10 16l-4-4 4-4" />
+    <path d="M6 12h12" />
+    <path d="M14 4h4v16h-4" />
+  </IconBase>
+);
+const HeartIcon = () => (
+  <IconBase className="h-6 w-6">
+    <path d="M12 21s-7-4.6-9-8.5C1.4 9.5 3.5 6 7 6c2 0 3.3 1.2 5 3 1.7-1.8 3-3 5-3 3.5 0 5.6 3.5 4 6.5C19 16.4 12 21 12 21z" />
+  </IconBase>
+);
+const CalendarIcon = () => (
+  <IconBase className="h-6 w-6">
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M7 3v4M17 3v4M3 9h18" />
+  </IconBase>
+);
+const MapPinIcon = () => (
+  <IconBase className="h-4 w-4">
+    <path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10z" />
+    <circle cx="12" cy="11" r="2.5" />
+  </IconBase>
+);
+const CapIcon = () => (
+  <IconBase className="h-4 w-4">
+    <path d="M3 9l9-4 9 4-9 4z" />
+    <path d="M7 12v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4" />
+  </IconBase>
+);
+const SearchIcon = () => (
+  <IconBase className="h-5 w-5">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-3.5-3.5" />
+  </IconBase>
+);
+const HomeIcon = () => (
+  <IconBase className="h-5 w-5">
+    <path d="M3 10l9-7 9 7" />
+    <path d="M5 10v10h14V10" />
+  </IconBase>
+);
+const CheckIcon = () => (
+  <IconBase className="h-5 w-5">
+    <path d="M5 12l4 4 10-10" />
+  </IconBase>
+);
 
 type WorkspaceRow = {
   id: string;
@@ -19,33 +123,6 @@ type WorkspaceRow = {
   language?: Language | null;
 };
 
-type PlannedOpenDayRow = {
-  open_day?: {
-    id: string;
-    starts_at: string | null;
-    school_id: string | null;
-    school_name: string | null;
-    school?: Array<{ id: string; name: string } | null> | null;
-  } | null;
-};
-type PlannedOpenDayRowRaw = {
-  open_day?:
-    | {
-        id: string;
-        starts_at: string | null;
-        school_id: string | null;
-        school_name: string | null;
-        school?: Array<{ id: string; name: string } | null> | null;
-      }
-    | Array<{
-        id: string;
-        starts_at: string | null;
-        school_id: string | null;
-        school_name: string | null;
-        school?: Array<{ id: string; name: string } | null> | null;
-      }>
-    | null;
-};
 type ShortlistRow = { id: string; workspace_id: string };
 type ShortlistItemRow = { school_id: string; rank: number | null };
 
@@ -54,7 +131,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
-  const [plannedOpenDays, setPlannedOpenDays] = useState<PlannedOpenDayRow[]>([]);
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [dashError, setDashError] = useState<string>("");
   const [language, setLanguage] = useState<Language>(() => {
@@ -62,11 +138,7 @@ export default function Home() {
     const stored = window.localStorage.getItem("schools_language");
     return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
   });
-  const [hasFamilyMember, setHasFamilyMember] = useState(false);
-  const [hasNote, setHasNote] = useState(false);
-  const [hasRating, setHasRating] = useState(false);
   const [hasAttended, setHasAttended] = useState(false);
-  const [hasTutorial, setHasTutorial] = useState(false);
   const [hasCompleteShortlist, setHasCompleteShortlist] = useState(false);
   const [visitedCount, setVisitedCount] = useState(0);
   const [plannedCount, setPlannedCount] = useState(0);
@@ -153,34 +225,11 @@ export default function Home() {
       setHasCompleteShortlist(rankCap > 0 && rankedCount >= rankCap);
 
       if (workspaceId) {
-        const inviteSent =
-          typeof window !== "undefined" && window.localStorage.getItem(`invite_sent_${workspaceId}`) === "1";
         const { data: session } = await supabase.auth.getSession();
-        const userId = session.session?.user?.id ?? "";
         const [
-          { data: memberRows },
-          { data: noteRows },
-          { data: ratingRows },
           { data: attendedRows },
-          { data: tutorialRow },
           { data: attendedCountRows },
         ] = await Promise.all([
-          supabase
-            .from("workspace_members")
-            .select("user_id")
-            .eq("workspace_id", workspaceId)
-            .limit(2),
-          supabase
-            .from("visit_notes")
-            .select("id")
-            .eq("workspace_id", workspaceId)
-            .limit(1),
-          supabase
-            .from("visits")
-            .select("id")
-            .eq("workspace_id", workspaceId)
-            .not("rating_stars", "is", null)
-            .limit(1),
           supabase
             .from("visits")
             .select("id")
@@ -192,23 +241,11 @@ export default function Home() {
             .select("id")
             .eq("workspace_id", workspaceId)
             .eq("attended", true),
-          userId
-            ? supabase
-                .from("workspace_members")
-                .select("tutorial_completed_at")
-                .eq("workspace_id", workspaceId)
-                .eq("user_id", userId)
-                .maybeSingle()
-            : Promise.resolve({ data: null }),
         ]);
 
         if (!mounted) return;
 
-        setHasFamilyMember((memberRows ?? []).length > 1 || inviteSent);
-        setHasNote((noteRows ?? []).length > 0);
-        setHasRating((ratingRows ?? []).length > 0);
         setHasAttended((attendedRows ?? []).length > 0);
-        setHasTutorial(Boolean((tutorialRow as { tutorial_completed_at?: string | null } | null)?.tutorial_completed_at));
         setVisitedCount((attendedCountRows ?? []).length);
       }
 
@@ -226,11 +263,10 @@ export default function Home() {
         }
 
         const normalized = (plannedRows ?? []).map((row) => {
-          const r = row as PlannedOpenDayRowRaw;
+          const r = row as { open_day?: { id?: string } | Array<{ id?: string }> | null };
           const openDay = Array.isArray(r.open_day) ? r.open_day[0] ?? null : r.open_day ?? null;
-          return { open_day: openDay } as PlannedOpenDayRow;
-        });
-        setPlannedOpenDays(normalized);
+          return openDay?.id ?? null;
+        }).filter(Boolean);
         setPlannedCount(normalized.length);
       }
     }
@@ -249,82 +285,6 @@ export default function Home() {
     const hasAdvies = (workspace.advies_levels ?? []).length > 0;
     return !hasChild || !hasAddress || !hasAdvies;
   }, [workspace]);
-
-  const progressState = useMemo(() => {
-    const profileDone = !setupNeeded;
-    const milestones = [
-      {
-        key: "profile",
-        done: profileDone,
-        tipKey: "dashboard.tip_profile",
-        href: "/settings",
-        ctaKey: "dashboard.tip_cta_settings",
-        labelKey: "dashboard.milestone_profile",
-      },
-      {
-        key: "invite",
-        done: hasFamilyMember,
-        tipKey: "dashboard.tip_invite",
-        href: "/settings",
-        ctaKey: "dashboard.tip_cta_settings",
-        labelKey: "dashboard.milestone_invite",
-      },
-      {
-        key: "shortlist",
-        done: shortlistIds.length > 0,
-        tipKey: "dashboard.tip_shortlist",
-        href: "/",
-        ctaKey: "dashboard.tip_cta_schools",
-        labelKey: "dashboard.milestone_shortlist",
-      },
-      {
-        key: "shortlist_complete",
-        done: hasCompleteShortlist,
-        tipKey: "dashboard.tip_shortlist_complete",
-        href: "/shortlist",
-        ctaKey: "dashboard.tip_cta_shortlist",
-        labelKey: "dashboard.milestone_shortlist_complete",
-      },
-      {
-        key: "note",
-        done: hasNote,
-        tipKey: "dashboard.tip_note",
-        href: "/",
-        ctaKey: "dashboard.tip_cta_schools",
-        labelKey: "dashboard.milestone_note",
-      },
-      {
-        key: "rating",
-        done: hasRating,
-        tipKey: "dashboard.tip_rating",
-        href: "/",
-        ctaKey: "dashboard.tip_cta_schools",
-        labelKey: "dashboard.milestone_rating",
-      },
-      {
-        key: "tutorial",
-        done: hasTutorial,
-        tipKey: "dashboard.tip_tutorial",
-        href: "/how-it-works",
-        ctaKey: "dashboard.tip_cta_tutorial",
-        labelKey: "dashboard.milestone_tutorial",
-      },
-      {
-        key: "attended",
-        done: hasAttended,
-        tipKey: "dashboard.tip_attended",
-        href: "/planner",
-        ctaKey: "dashboard.tip_cta_open_days",
-        labelKey: "dashboard.milestone_attended",
-      },
-    ];
-    const completed = milestones.filter((m) => m.done).length;
-    const total = milestones.length;
-    const percent = Math.round((completed / total) * 100);
-    const next = milestones.find((m) => !m.done);
-    const recent = milestones.filter((m) => m.done).slice(-2);
-    return { milestones, completed, total, percent, next, recent };
-  }, [setupNeeded, hasFamilyMember, shortlistIds, hasCompleteShortlist, hasNote, hasRating, hasTutorial, hasAttended]);
 
   useEffect(() => {
     function onLang(e: Event) {
@@ -366,70 +326,28 @@ export default function Home() {
     })().catch(() => setIsAdmin(false));
   }, []);
 
-  const nextDates = useMemo(() => getNextTimelineItems(new Date(), 3), []);
-
-  const plannerItems = useMemo(() => {
-    const now = new Date();
-    const locale = getLocale(language);
-    const timeline: Array<{
-      id: string;
-      title: string;
-      value: string;
-      href: string;
-      sortTs: number;
-      isToday: boolean;
-    }> = [];
-
-    for (const item of nextDates) {
-      const start = new Date(`${item.start}T00:00:00`);
-      timeline.push({
-        id: `timeline-${item.id}`,
-        title: t(language, item.titleKey),
-        value: formatDateRange(item, locale),
-        href: "/how-it-works",
-        sortTs: start.getTime(),
-        isToday: false,
-      });
-    }
-
-    const planned: Array<{
-      id: string;
-      title: string;
-      value: string;
-      href: string;
-      sortTs: number;
-      isToday: boolean;
-    }> = [];
-
-    for (const row of plannedOpenDays) {
-      const openDay = row.open_day ?? null;
-      if (!openDay) continue;
-      const start = openDay.starts_at ? new Date(openDay.starts_at) : null;
-      const isToday = start ? start.toDateString() === now.toDateString() : false;
-      const name = openDay.school?.[0]?.name ?? openDay.school_name ?? "School";
-      const value = start
-        ? `${start.toLocaleDateString(locale, { day: "numeric", month: "short" })} · ${start.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`
-        : "—";
-      planned.push({
-        id: `planned-${openDay.id}`,
-        title: name,
-        value,
-        href: openDay.school_id ? `/schools/${openDay.school_id}` : "/planner",
-        sortTs: start ? start.getTime() : Number.POSITIVE_INFINITY,
-        isToday,
-      });
-    }
-
-    const plannedToday = planned.filter((i) => i.isToday);
-    const plannedSorted = [...planned].sort((a, b) => a.sortTs - b.sortTs);
-    const remainingCap = Math.max(0, 6 - plannedToday.length);
-    const plannedDisplay = [
-      ...plannedToday,
-      ...plannedSorted.filter((i) => !i.isToday).slice(0, remainingCap),
+  const journeySteps = useMemo(() => {
+    const doneProfile = !setupNeeded;
+    const doneDiscover = shortlistIds.length > 0;
+    const doneList = hasCompleteShortlist;
+    const doneDays = plannedCount > 0 || hasAttended;
+    const doneChoice = false;
+    return [
+      { key: "start", labelKey: "profile.journey_start", done: doneProfile, Icon: HomeIcon },
+      { key: "discover", labelKey: "profile.journey_discover", done: doneDiscover, Icon: SearchIcon },
+      { key: "list", labelKey: "profile.journey_list", done: doneList, Icon: HeartIcon },
+      { key: "days", labelKey: "profile.journey_days", done: doneDays, Icon: CalendarIcon },
+      { key: "choice", labelKey: "profile.journey_choice", done: doneChoice, Icon: CheckIcon },
     ];
+  }, [setupNeeded, shortlistIds.length, hasCompleteShortlist, plannedCount, hasAttended]);
 
-    return { timeline, planned: plannedDisplay };
-  }, [language, nextDates, plannedOpenDays]);
+  const journeyProgress = useMemo(() => {
+    const lastDoneIndex = [...journeySteps].reverse().findIndex((s) => s.done);
+    const idx = lastDoneIndex === -1 ? -1 : journeySteps.length - 1 - lastDoneIndex;
+    const progressIndex = Math.max(idx, 0);
+    const pct = journeySteps.length > 1 ? (progressIndex / (journeySteps.length - 1)) * 100 : 0;
+    return { progressIndex, pct };
+  }, [journeySteps]);
 
   const adviceLabel = useMemo(() => {
     const levels = workspace?.advies_levels ?? [];
@@ -440,6 +358,13 @@ export default function Home() {
   const addressLabel = useMemo(() => {
     if (!workspace?.home_postcode || !workspace?.home_house_number) return "";
     return `${workspace.home_postcode} ${workspace.home_house_number}`;
+  }, [workspace]);
+
+  const initials = useMemo(() => {
+    const name = (workspace?.child_name ?? "").trim();
+    if (!name) return "MS";
+    const parts = name.split(/\s+/).slice(0, 2);
+    return parts.map((p) => p[0]?.toUpperCase() ?? "").join("");
   }, [workspace]);
 
   if (loading) {
@@ -459,72 +384,102 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
-        <header className="flex flex-col gap-2">
-          <Wordmark />
-          <div>
-            <h1 className="text-3xl font-semibold text-foreground">
-              {workspace?.child_name
-                ? t(language, "profile.title_named").replace("{name}", workspace.child_name)
-                : t(language, "profile.title")}
-            </h1>
-            <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+    <main className="min-h-screen bg-background pb-24">
+      <header className="bg-gradient-to-br from-primary/10 via-background to-accent/10 pt-8 pb-6 px-4 sm:px-6">
+        <div className="mx-auto w-full max-w-5xl">
+          <div className="flex items-center gap-4">
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
+              {initials}
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">
+                {workspace?.child_name
+                  ? t(language, "profile.title_named").replace("{name}", workspace.child_name)
+                  : t(language, "profile.title")}
+              </h1>
               {addressLabel ? (
-                <span className="rounded-full border px-2 py-0.5">{addressLabel}</span>
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <MapPinIcon />
+                  {addressLabel}
+                </p>
               ) : null}
               {adviceLabel ? (
-                <span className="rounded-full border px-2 py-0.5">
-                  {t(language, "profile.advice_label")} {adviceLabel}
+                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-foreground">
+                  <CapIcon />
+                  {adviceLabel} {t(language, "profile.advice_suffix")}
                 </span>
               ) : null}
             </div>
           </div>
-        </header>
+        </div>
+      </header>
+
+      <div className="mx-auto w-full max-w-5xl space-y-6 px-4 sm:px-6 -mt-2">
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
 
-        <InfoCard title={t(language, "profile.journey_title")}>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{t(language, "profile.journey_progress")}</span>
-            <span>{progressState.percent}%</span>
+        <InfoCard>
+          <div className="text-center text-sm text-muted-foreground">
+            {t(language, "profile.list_count").replace("{count}", String(shortlistIds.length))}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {progressState.milestones.map((m) => (
-              <div
-                key={m.key}
-                className={`flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${
-                  m.done ? "border-primary text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <span className={`inline-block h-2 w-2 rounded-full ${m.done ? "bg-primary" : "bg-muted-foreground/40"}`} />
-                <span>{t(language, m.labelKey)}</span>
-              </div>
-            ))}
-          </div>
-          {progressState.next ? (
-            <div className="mt-3 text-sm text-muted-foreground">
-              {t(language, progressState.next.tipKey)}
+          <div className="relative mt-4">
+            <div className="absolute left-5 right-5 top-5 h-0.5 bg-border" />
+            <div
+              className="absolute left-5 top-5 h-0.5 bg-primary"
+              style={{ width: `${Math.min(100, journeyProgress.pct)}%` }}
+            />
+            <div className="flex justify-between">
+              {journeySteps.map((step) => {
+                const DoneIcon = step.Icon;
+                const done = step.done;
+                return (
+                  <div key={step.key} className="flex flex-col items-center gap-2 w-full">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border ${
+                        done ? "border-primary bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <DoneIcon />
+                    </div>
+                    <span className={`text-xs ${done ? "text-primary" : "text-muted-foreground"}`}>
+                      {t(language, step.labelKey)}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-          ) : (
-            <div className="mt-3 text-sm text-muted-foreground">{t(language, "dashboard.tip_done")}</div>
-          )}
+          </div>
         </InfoCard>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <InfoCard>
-            <div className="text-2xl font-semibold text-foreground">{shortlistIds.length}</div>
-            <div className="text-xs text-muted-foreground">{t(language, "profile.stats_list")}</div>
-          </InfoCard>
-          <InfoCard>
-            <div className="text-2xl font-semibold text-foreground">{plannedCount}</div>
-            <div className="text-xs text-muted-foreground">{t(language, "profile.stats_planned")}</div>
-          </InfoCard>
-          <InfoCard>
-            <div className="text-2xl font-semibold text-foreground">{visitedCount}</div>
-            <div className="text-xs text-muted-foreground">{t(language, "profile.stats_visited")}</div>
-          </InfoCard>
-        </div>
+        <section className="grid grid-cols-3 gap-3">
+          {[
+            { value: shortlistIds.length, label: t(language, "profile.stats_list"), color: "text-foreground" },
+            { value: plannedCount, label: t(language, "profile.stats_planned"), color: "text-accent" },
+            { value: visitedCount, label: t(language, "profile.stats_visited"), color: "text-chart-3" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-card rounded-xl p-3 text-center shadow-sm">
+              <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+              <div className="text-xs text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
+        </section>
+
+        <section className="flex gap-3">
+          <Link
+            href="/shortlist"
+            className="flex-1 bg-primary/10 rounded-2xl p-4 flex flex-col items-center gap-2"
+          >
+            <HeartIcon />
+            <span className="text-sm font-medium text-foreground">{t(language, "profile.cta_my_list")}</span>
+          </Link>
+          <Link
+            href="/planner"
+            className="flex-1 bg-accent/10 rounded-2xl p-4 flex flex-col items-center gap-2"
+          >
+            <CalendarIcon />
+            <span className="text-sm font-medium text-foreground">{t(language, "profile.cta_open_days")}</span>
+          </Link>
+        </section>
 
         {setupNeeded && (
           <InfoCard title={t(language, "dashboard.finish_setup")}>
@@ -537,67 +492,90 @@ export default function Home() {
           </InfoCard>
         )}
 
-        <InfoCard title={t(language, "dashboard.planner_title")}>
-          {plannerItems.timeline.length === 0 && plannerItems.planned.length === 0 ? (
-            <div className="text-sm text-muted-foreground">{t(language, "dashboard.planner_empty")}</div>
-          ) : (
-            <div className="space-y-4">
-              {plannerItems.timeline.length > 0 && (
-                <ListGroup title={t(language, "dashboard.planner_important")}>
-                  {plannerItems.timeline.map((item) => (
-                    <ListRow
-                      key={item.id}
-                      title={item.title}
-                      value={item.value}
-                      showArrow
-                      onClick={() => router.push(item.href)}
-                    />
-                  ))}
-                </ListGroup>
-              )}
-              {plannerItems.planned.length > 0 && (
-                <ListGroup title={t(language, "dashboard.planner_open_days")}>
-                  {plannerItems.planned.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => router.push(`${item.href}?from=dashboard`)}
-                      className="flex w-full items-center gap-3 py-3 text-left transition-colors -mx-4 px-4 rounded-lg hover:bg-secondary/50 active:bg-secondary"
-                    >
-                      <div className="flex flex-1 flex-col gap-0.5">
-                        <span className="font-medium text-primary underline underline-offset-2 hover:decoration-2">
-                          {item.title}
+        <section className="bg-card rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
+          {[
+            {
+              icon: SettingsIcon,
+              label: t(language, "profile.link_settings"),
+              description: t(language, "profile.desc_settings"),
+              action: () => router.push("/settings"),
+            },
+            {
+              icon: SearchIcon,
+              label: t(language, "profile.link_language"),
+              description: t(language, "profile.desc_language"),
+              action: () => setLanguage(language === "nl" ? "en" : "nl"),
+              badge: language === "nl" ? "NL" : "EN",
+            },
+            {
+              icon: HelpIcon,
+              label: t(language, "menu.how_it_works"),
+              description: t(language, "profile.desc_how"),
+              action: () => router.push("/how-it-works"),
+            },
+            {
+              icon: NoteIcon,
+              label: t(language, "profile.link_feedback"),
+              description: t(language, "profile.desc_feedback"),
+              action: () => router.push("/feedback"),
+            },
+            isAdmin
+              ? {
+                  icon: SettingsIcon,
+                  label: t(language, "menu.admin"),
+                  description: t(language, "profile.desc_admin"),
+                  action: () => router.push("/admin"),
+                }
+              : null,
+            {
+              icon: ShareIcon,
+              label: t(language, "profile.link_invite"),
+              description: t(language, "profile.desc_invite"),
+              action: () => router.push("/settings"),
+            },
+            {
+              icon: HelpIcon,
+              label: t(language, "menu.about"),
+              description: t(language, "profile.desc_about"),
+              action: () => router.push("/about"),
+            },
+            {
+              icon: LogoutIcon,
+              label: t(language, "menu.logout"),
+              description: t(language, "profile.desc_logout"),
+              action: () => supabase.auth.signOut(),
+            },
+          ]
+            .filter(Boolean)
+            .map((item) => {
+              const icon = (item as { icon: () => JSX.Element }).icon;
+              return (
+                <button
+                  key={(item as { label: string }).label}
+                  onClick={(item as { action: () => void }).action}
+                  className="flex w-full items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                    {icon()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground">{(item as { label: string }).label}</span>
+                      {(item as { badge?: string }).badge ? (
+                        <span className="text-xs rounded-full bg-primary/10 text-primary px-2 py-0.5">
+                          {(item as { badge: string }).badge}
                         </span>
-                      </div>
-                      <span className="shrink-0 text-sm text-muted-foreground">{item.value}</span>
-                      <span className="text-muted-foreground">›</span>
-                    </button>
-                  ))}
-                </ListGroup>
-              )}
-            </div>
-          )}
-        </InfoCard>
-
-        <InfoCard title={t(language, "profile.quick_links")}>
-          <ListGroup>
-            <ListRow title={t(language, "profile.link_settings")} onClick={() => router.push("/settings")} showArrow />
-            <ListRow
-              title={t(language, "profile.link_language")}
-              value={language === "nl" ? "NL" : "EN"}
-              onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
-              showArrow
-            />
-            <ListRow title={t(language, "menu.how_it_works")} onClick={() => router.push("/how-it-works")} showArrow />
-            <ListRow title={t(language, "profile.link_feedback")} onClick={() => router.push("/feedback")} showArrow />
-            {isAdmin && (
-              <ListRow title={t(language, "menu.admin")} onClick={() => router.push("/admin")} showArrow />
-            )}
-            <ListRow title={t(language, "menu.about")} onClick={() => router.push("/about")} showArrow />
-            <ListRow title={t(language, "profile.link_invite")} onClick={() => router.push("/settings")} showArrow />
-            <ListRow title={t(language, "menu.logout")} onClick={() => supabase.auth.signOut()} showArrow />
-          </ListGroup>
-        </InfoCard>
+                      ) : null}
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {(item as { description: string }).description}
+                    </p>
+                  </div>
+                  <span className="text-muted-foreground">›</span>
+                </button>
+              );
+            })}
+        </section>
       </div>
     </main>
   );

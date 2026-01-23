@@ -151,3 +151,4 @@
 - Setup: added step pills + updated setup header copy.
 - Profile: journey-style progress + stats cards + menu ordering refresh.
 - Profile: fix hook order to avoid hydration warnings.
+- Profile: redesigned layout to match new UI kit (journey stepper, stats, menu cards).
