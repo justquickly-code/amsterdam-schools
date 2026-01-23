@@ -343,6 +343,18 @@ export default function ExploreHome() {
   }, [adviesKey]);
 
   const sectionTitle = searchStarted ? t(language, "explore.nearby") : t(language, "explore.popular");
+  const featuredSchools = useMemo(() => {
+    if (sorted.length === 0) return [];
+    return sorted.slice(0, 4).map((s) => ({
+      id: s.id,
+      name: s.name,
+      image: pickSchoolImage(s.id),
+      tags: (s.supported_levels ?? []).slice(0, 2).map(friendlyLevel),
+      address: s.address ?? "",
+      commute: s.commute ?? null,
+      rating: s.visits?.[0]?.rating_stars ?? null,
+    }));
+  }, [sorted]);
 
   const toggleFavorite = (id: string) => {
     if (!hasSession) {
@@ -534,12 +546,20 @@ export default function ExploreHome() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {HERO_SCHOOLS.map((school) => {
+          {(featuredSchools.length > 0 ? featuredSchools : HERO_SCHOOLS).map((school) => {
             const isFavorite = favorites.includes(school.id);
+            const hasLink = "address" in school;
+            const schoolHref = hasLink ? `/schools/${school.id}` : "#school-list";
             return (
               <div key={school.id} className="overflow-hidden rounded-3xl border bg-card shadow-md">
                 <div className="relative h-40">
-                  <Image src={school.image} alt={school.name} fill className="object-cover" />
+                  {hasLink ? (
+                    <Link href={schoolHref} className="absolute inset-0">
+                      <Image src={school.image} alt={school.name} fill className="object-cover" />
+                    </Link>
+                  ) : (
+                    <Image src={school.image} alt={school.name} fill className="object-cover" />
+                  )}
                   <button
                     className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
                       isFavorite ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
@@ -553,11 +573,29 @@ export default function ExploreHome() {
                 </div>
                 <div className="space-y-3 p-4">
                   <div>
-                    <h3 className="text-base font-semibold text-foreground">{school.name}</h3>
+                    {hasLink ? (
+                      <Link className="text-base font-semibold text-primary underline underline-offset-2" href={schoolHref}>
+                        {school.name}
+                      </Link>
+                    ) : (
+                      <h3 className="text-base font-semibold text-foreground">{school.name}</h3>
+                    )}
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      <span>📍 {school.distance}</span>
-                      <span>👥 {school.students} leerlingen</span>
-                      <span>⭐ {school.rating}</span>
+                      {"address" in school ? (
+                        <>
+                          {school.commute?.duration_minutes ? (
+                            <span>🚲 {school.commute.duration_minutes} min</span>
+                          ) : null}
+                          {school.address ? <span>{school.address}</span> : null}
+                          {school.rating ? <span>⭐ {school.rating}/5</span> : null}
+                        </>
+                      ) : (
+                        <>
+                          <span>📍 {school.distance}</span>
+                          <span>👥 {school.students} leerlingen</span>
+                          <span>⭐ {school.rating}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -567,7 +605,9 @@ export default function ExploreHome() {
                       </span>
                     ))}
                   </div>
-                  <div className="text-xs text-muted-foreground">Open dag: {school.openDay}</div>
+                  {"openDay" in school ? (
+                    <div className="text-xs text-muted-foreground">Open dag: {school.openDay}</div>
+                  ) : null}
                 </div>
               </div>
             );

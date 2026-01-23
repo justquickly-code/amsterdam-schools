@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Explore: make featured card image/title clickable when real school data is loaded.
 - School detail: allow public read of overview + open days; notes/ratings/planning only when logged in.
 - Explore: remove duplicate filters card for logged-out view (hero search only).
 - Explore: hide “no results” card for logged-out users.
