@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { formatDateRange, getNextTimelineItems } from "@/lib/keuzegidsTimeline";
-import { shortlistRankCapForLevels } from "@/lib/levels";
+import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
 import { InfoCard, ListGroup, ListRow, ProgressCard, Wordmark } from "@/components/schoolkeuze";
 
@@ -68,6 +68,9 @@ export default function Home() {
   const [hasAttended, setHasAttended] = useState(false);
   const [hasTutorial, setHasTutorial] = useState(false);
   const [hasCompleteShortlist, setHasCompleteShortlist] = useState(false);
+  const [visitedCount, setVisitedCount] = useState(0);
+  const [plannedCount, setPlannedCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -160,6 +163,7 @@ export default function Home() {
           { data: ratingRows },
           { data: attendedRows },
           { data: tutorialRow },
+          { data: attendedCountRows },
         ] = await Promise.all([
           supabase
             .from("workspace_members")
@@ -183,6 +187,11 @@ export default function Home() {
             .eq("workspace_id", workspaceId)
             .eq("attended", true)
             .limit(1),
+          supabase
+            .from("visits")
+            .select("id")
+            .eq("workspace_id", workspaceId)
+            .eq("attended", true),
           userId
             ? supabase
                 .from("workspace_members")
@@ -200,6 +209,7 @@ export default function Home() {
         setHasRating((ratingRows ?? []).length > 0);
         setHasAttended((attendedRows ?? []).length > 0);
         setHasTutorial(Boolean((tutorialRow as { tutorial_completed_at?: string | null } | null)?.tutorial_completed_at));
+        setVisitedCount((attendedCountRows ?? []).length);
       }
 
       if (workspaceId) {
@@ -221,6 +231,7 @@ export default function Home() {
           return { open_day: openDay } as PlannedOpenDayRow;
         });
         setPlannedOpenDays(normalized);
+        setPlannedCount(normalized.length);
       }
     }
 
@@ -312,7 +323,7 @@ export default function Home() {
     const percent = Math.round((completed / total) * 100);
     const next = milestones.find((m) => !m.done);
     const recent = milestones.filter((m) => m.done).slice(-2);
-    return { completed, total, percent, next, recent };
+    return { milestones, completed, total, percent, next, recent };
   }, [setupNeeded, hasFamilyMember, shortlistIds, hasCompleteShortlist, hasNote, hasRating, hasTutorial, hasAttended]);
 
   useEffect(() => {
@@ -334,6 +345,26 @@ export default function Home() {
       router.replace("/login");
     }
   }, [loading, email, router]);
+
+  useEffect(() => {
+    (async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      const accessToken = sess.session?.access_token ?? "";
+      if (!accessToken) {
+        setIsAdmin(false);
+        return;
+      }
+      const res = await fetch("/api/admin/check", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) {
+        setIsAdmin(false);
+        return;
+      }
+      const json = await res.json().catch(() => null);
+      setIsAdmin(Boolean(json?.ok));
+    })().catch(() => setIsAdmin(false));
+  }, []);
 
   const nextDates = useMemo(() => getNextTimelineItems(new Date(), 3), []);
 
@@ -416,9 +447,16 @@ export default function Home() {
     );
   }
 
-  const recentText = progressState.recent.length
-    ? progressState.recent.map((m) => t(language, m.labelKey)).join(", ")
-    : "";
+  const adviceLabel = useMemo(() => {
+    const levels = workspace?.advies_levels ?? [];
+    if (!levels.length) return "";
+    return levels.map(friendlyLevel).join(" / ");
+  }, [workspace]);
+
+  const addressLabel = useMemo(() => {
+    if (!workspace?.home_postcode || !workspace?.home_house_number) return "";
+    return `${workspace.home_postcode} ${workspace.home_house_number}`;
+  }, [workspace]);
 
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
@@ -426,36 +464,67 @@ export default function Home() {
         <header className="flex flex-col gap-2">
           <Wordmark />
           <div>
-            <h1 className="text-3xl font-semibold text-foreground">{t(language, "profile.title")}</h1>
-            {workspace?.child_name ? (
-              <p className="text-sm text-muted-foreground">
-                {t(language, "profile.subtitle").replace("{name}", workspace.child_name)}
-              </p>
-            ) : null}
+            <h1 className="text-3xl font-semibold text-foreground">
+              {workspace?.child_name
+                ? t(language, "profile.title_named").replace("{name}", workspace.child_name)
+                : t(language, "profile.title")}
+            </h1>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              {addressLabel ? (
+                <span className="rounded-full border px-2 py-0.5">{addressLabel}</span>
+              ) : null}
+              {adviceLabel ? (
+                <span className="rounded-full border px-2 py-0.5">
+                  {t(language, "profile.advice_label")} {adviceLabel}
+                </span>
+              ) : null}
+            </div>
           </div>
         </header>
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
 
-        <ProgressCard
-          title={t(language, "dashboard.progress_title")}
-          progress={progressState.percent}
-          totalSteps={progressState.total}
-          completedSteps={progressState.completed}
-          message={
-            progressState.next
-              ? t(language, progressState.next.tipKey)
-              : t(language, "dashboard.tip_done")
-          }
-          recentActivity={progressState.recent.length ? recentText : undefined}
-        />
-        {progressState.next && progressState.next.href !== "/shortlist" ? (
-          <Link className="text-sm underline" href={progressState.next.href}>
-            {t(language, progressState.next.ctaKey)}
-          </Link>
-        ) : progressState.completed === 0 ? (
-          <div className="text-xs text-muted-foreground">{t(language, "dashboard.recent_empty")}</div>
-        ) : null}
+        <InfoCard title={t(language, "profile.journey_title")}>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{t(language, "profile.journey_progress")}</span>
+            <span>{progressState.percent}%</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {progressState.milestones.map((m) => (
+              <div
+                key={m.key}
+                className={`flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${
+                  m.done ? "border-primary text-primary" : "text-muted-foreground"
+                }`}
+              >
+                <span className={`inline-block h-2 w-2 rounded-full ${m.done ? "bg-primary" : "bg-muted-foreground/40"}`} />
+                <span>{t(language, m.labelKey)}</span>
+              </div>
+            ))}
+          </div>
+          {progressState.next ? (
+            <div className="mt-3 text-sm text-muted-foreground">
+              {t(language, progressState.next.tipKey)}
+            </div>
+          ) : (
+            <div className="mt-3 text-sm text-muted-foreground">{t(language, "dashboard.tip_done")}</div>
+          )}
+        </InfoCard>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <InfoCard>
+            <div className="text-2xl font-semibold text-foreground">{shortlistIds.length}</div>
+            <div className="text-xs text-muted-foreground">{t(language, "profile.stats_list")}</div>
+          </InfoCard>
+          <InfoCard>
+            <div className="text-2xl font-semibold text-foreground">{plannedCount}</div>
+            <div className="text-xs text-muted-foreground">{t(language, "profile.stats_planned")}</div>
+          </InfoCard>
+          <InfoCard>
+            <div className="text-2xl font-semibold text-foreground">{visitedCount}</div>
+            <div className="text-xs text-muted-foreground">{t(language, "profile.stats_visited")}</div>
+          </InfoCard>
+        </div>
 
         {setupNeeded && (
           <InfoCard title={t(language, "dashboard.finish_setup")}>
@@ -512,11 +581,21 @@ export default function Home() {
 
         <InfoCard title={t(language, "profile.quick_links")}>
           <ListGroup>
-            <ListRow title={t(language, "profile.link_explore")} onClick={() => router.push("/")} showArrow />
-            <ListRow title={t(language, "profile.link_my_list")} onClick={() => router.push("/shortlist")} showArrow />
-            <ListRow title={t(language, "profile.link_open_days")} onClick={() => router.push("/planner")} showArrow />
             <ListRow title={t(language, "profile.link_settings")} onClick={() => router.push("/settings")} showArrow />
+            <ListRow
+              title={t(language, "profile.link_language")}
+              value={language === "nl" ? "NL" : "EN"}
+              onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
+              showArrow
+            />
+            <ListRow title={t(language, "menu.how_it_works")} onClick={() => router.push("/how-it-works")} showArrow />
             <ListRow title={t(language, "profile.link_feedback")} onClick={() => router.push("/feedback")} showArrow />
+            {isAdmin && (
+              <ListRow title={t(language, "menu.admin")} onClick={() => router.push("/admin")} showArrow />
+            )}
+            <ListRow title={t(language, "menu.about")} onClick={() => router.push("/about")} showArrow />
+            <ListRow title={t(language, "profile.link_invite")} onClick={() => router.push("/settings")} showArrow />
+            <ListRow title={t(language, "menu.logout")} onClick={() => supabase.auth.signOut()} showArrow />
           </ListGroup>
         </InfoCard>
       </div>
