@@ -240,14 +240,23 @@ export default function ExploreHome() {
         setWs(null);
       }
 
-      const selectFields = authed
-        ? "id,name,supported_levels,address,website_url,visits(id,workspace_id,attended,rating_stars)"
-        : "id,name,supported_levels,address,website_url";
-
-      const { data: schoolsData, error: sErr } = await supabase
-        .from("schools")
-        .select(selectFields)
-        .order("name", { ascending: true });
+      let schoolsData: unknown;
+      let sErr: { message: string } | null = null;
+      if (authed) {
+        const { data, error } = await supabase
+          .from("schools")
+          .select("id,name,supported_levels,address,website_url,visits(id,workspace_id,attended,rating_stars)")
+          .order("name", { ascending: true });
+        schoolsData = data;
+        sErr = error;
+      } else {
+        const { data, error } = await supabase
+          .from("schools")
+          .select("id,name,supported_levels,address,website_url")
+          .order("name", { ascending: true });
+        schoolsData = data;
+        sErr = error;
+      }
 
       if (!mounted) return;
 
