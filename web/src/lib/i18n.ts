@@ -135,6 +135,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "menu.print": "Print / Export",
     "menu.admin": "Admin",
     "menu.signout": "Uitloggen",
+    "menu.login": "Inloggen of aanmelden",
+    "menu.profile": "Profiel",
 
     "nav.dashboard": "Dashboard",
     "nav.explore": "Ontdek",
@@ -422,6 +424,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "menu.print": "Print / Export",
     "menu.admin": "Admin",
     "menu.signout": "Sign out",
+    "menu.login": "Sign in or sign up",
+    "menu.profile": "Profile",
 
     "nav.dashboard": "Dashboard",
     "nav.explore": "Explore",

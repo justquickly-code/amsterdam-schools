@@ -16,6 +16,7 @@ export default function TopMenu() {
   const [hasNewFeedback, setHasNewFeedback] = useState(false);
   const adminFeedbackSeenEvent = "admin-feedback-seen";
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const isAuthed = Boolean(email);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -30,7 +31,9 @@ export default function TopMenu() {
       setLanguage((workspace?.language as Language) ?? readStoredLanguage());
       setWorkspaceId(workspace?.id ?? "");
       setRole(role ?? null);
-    })().catch(() => null);
+    })().catch(() => {
+      setLanguage(readStoredLanguage());
+    });
 
     (async () => {
       const { data: sess } = await supabase.auth.getSession();
@@ -130,18 +133,20 @@ export default function TopMenu() {
   }
 
   async function updateLanguage(next: Language) {
-    if (!workspaceId) return;
     if (next === language) return;
-    const { error } = await supabase
-      .from("workspaces")
-      .update({ language: next })
-      .eq("id", workspaceId);
-    if (!error) setLanguage(next);
-    if (!error) emitLanguageChanged(next);
+    if (workspaceId) {
+      const { error } = await supabase
+        .from("workspaces")
+        .update({ language: next })
+        .eq("id", workspaceId);
+      if (error) return;
+    }
+    setLanguage(next);
+    emitLanguageChanged(next);
   }
 
   return (
-    <div className="fixed right-6 top-6 z-50" ref={menuRef}>
+    <div className="fixed right-6 top-6 z-50 hidden md:block" ref={menuRef}>
       <div className="relative">
         <button
           className="flex h-9 w-9 items-center justify-center rounded-xl border text-sm"
@@ -160,38 +165,46 @@ export default function TopMenu() {
             {email ? (
               <div className="px-2 py-1 text-xs text-muted-foreground">{email}</div>
             ) : null}
-            {role === "owner" && (
-              <div className="px-2 py-1">
-                <div className="text-xs text-muted-foreground mb-1">
-                  {t(language, "settings.language")}
-                </div>
-                <button
-                  type="button"
-                  className="relative inline-flex h-8 w-24 items-center rounded-full border bg-muted/30 px-1 text-[11px]"
-                  onClick={() => updateLanguage(language === "nl" ? "en" : "nl")}
-                  aria-label="Toggle language"
-                >
-                  <span
-                    className={`absolute h-6 w-11 rounded-full bg-white shadow transition-transform ${
-                      language === "nl" ? "translate-x-0" : "translate-x-12"
-                    }`}
-                  />
-                  <span className={`relative z-10 w-11 text-center ${language === "nl" ? "" : "text-muted-foreground"}`}>
-                    NL
-                  </span>
-                  <span className={`relative z-10 w-11 text-center ${language === "en" ? "" : "text-muted-foreground"}`}>
-                    EN
-                  </span>
-                </button>
+            <div className="px-2 py-1">
+              <div className="text-xs text-muted-foreground mb-1">
+                {t(language, "settings.language")}
               </div>
+              <button
+                type="button"
+                className="relative inline-flex h-8 w-24 items-center rounded-full border bg-muted/30 px-1 text-[11px]"
+                onClick={() => updateLanguage(language === "nl" ? "en" : "nl")}
+                aria-label="Toggle language"
+              >
+                <span
+                  className={`absolute h-6 w-11 rounded-full bg-white shadow transition-transform ${
+                    language === "nl" ? "translate-x-0" : "translate-x-12"
+                  }`}
+                />
+                <span className={`relative z-10 w-11 text-center ${language === "nl" ? "" : "text-muted-foreground"}`}>
+                  NL
+                </span>
+                <span className={`relative z-10 w-11 text-center ${language === "en" ? "" : "text-muted-foreground"}`}>
+                  EN
+                </span>
+              </button>
+            </div>
+            {isAuthed ? (
+              <Link
+                className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+                href="/profile"
+                onClick={() => setOpen(false)}
+              >
+                {t(language, "menu.profile")}
+              </Link>
+            ) : (
+              <Link
+                className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+                href="/login"
+                onClick={() => setOpen(false)}
+              >
+                {t(language, "menu.login")}
+              </Link>
             )}
-            <Link
-              className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
-              href="/settings"
-              onClick={() => setOpen(false)}
-            >
-              {t(language, "menu.settings")}
-            </Link>
             <Link
               className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
               href="/about"
@@ -206,46 +219,50 @@ export default function TopMenu() {
             >
               {t(language, "menu.how_it_works")}
             </Link>
-            <Link
-              className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
-              href="/feedback"
-              onClick={() => setOpen(false)}
-            >
-              <span className="flex items-center justify-between">
-                {t(language, "menu.feedback")}
-                {!isAdmin && hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
-              </span>
-            </Link>
-            <Link
-              className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
-              href="/shortlist/print"
-              target="_blank"
-              onClick={() => setOpen(false)}
-            >
-              {t(language, "menu.print")}
-            </Link>
-            {isAdmin && (
-              <Link
-                className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
-                href="/admin"
-                onClick={() => setOpen(false)}
-              >
-                <span className="flex items-center justify-between">
-                  {t(language, "menu.admin")}
-                  {hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
-                </span>
-              </Link>
-            )}
-            <button
-              className="block w-full rounded px-2 py-2 text-left text-sm hover:bg-muted/40"
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                signOut();
-              }}
-            >
-              {t(language, "menu.signout")}
-            </button>
+            {isAuthed ? (
+              <>
+                <Link
+                  className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+                  href="/feedback"
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="flex items-center justify-between">
+                    {t(language, "menu.feedback")}
+                    {!isAdmin && hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
+                  </span>
+                </Link>
+                <Link
+                  className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+                  href="/shortlist/print"
+                  target="_blank"
+                  onClick={() => setOpen(false)}
+                >
+                  {t(language, "menu.print")}
+                </Link>
+                {isAdmin && (
+                  <Link
+                    className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
+                    href="/admin"
+                    onClick={() => setOpen(false)}
+                  >
+                    <span className="flex items-center justify-between">
+                      {t(language, "menu.admin")}
+                      {hasNewFeedback && <span className="h-2 w-2 rounded-full bg-red-500" />}
+                    </span>
+                  </Link>
+                )}
+                <button
+                  className="block w-full rounded px-2 py-2 text-left text-sm hover:bg-muted/40"
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    signOut();
+                  }}
+                >
+                  {t(language, "menu.signout")}
+                </button>
+              </>
+            ) : null}
           </div>
         )}
       </div>
