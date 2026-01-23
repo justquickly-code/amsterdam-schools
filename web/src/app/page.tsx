@@ -356,14 +356,14 @@ export default function ExploreHome() {
   const matchMode = ws?.advies_match_mode ?? "either";
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = hasSession ? query.trim().toLowerCase() : "";
     return schools
       .filter((s) => (q ? s.name.toLowerCase().includes(q) : true))
       .filter((s) => matchesAdvies(s.supported_levels ?? [], activeAdviesLevels, matchMode));
-  }, [schools, query, activeAdviesLevels, matchMode]);
+  }, [schools, query, activeAdviesLevels, matchMode, hasSession]);
 
   const sorted = useMemo(() => {
-    if (sortMode === "name") {
+    if (!hasSession || sortMode === "name") {
       return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
     }
     const withCommute = [...filtered].filter((s) => s.commute?.duration_minutes != null);
@@ -374,7 +374,7 @@ export default function ExploreHome() {
         (b.commute?.duration_minutes ?? Number.POSITIVE_INFINITY)
     );
     return withCommute.concat(withoutCommute);
-  }, [filtered, sortMode]);
+  }, [filtered, sortMode, hasSession]);
 
   async function addSchoolToShortlist(schoolId: string) {
     if (!hasSession) {
@@ -577,36 +577,68 @@ export default function ExploreHome() {
 
       <section id="school-list" className="bg-background px-5 pb-12">
         <div className="mx-auto w-full max-w-5xl space-y-6">
-          <InfoCard title={t(language, "schools.filters_title")}
-            action={activeAdviesLevels.length ? (
-              <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-                {t(language, "schools.filters_advies")} {activeAdviesLevels.join(" / ")}
-              </span>
-            ) : undefined}
-          >
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t(language, "schools.sort")}
+          {!hasSession ? (
+            <InfoCard title={t(language, "schools.filters_title")}>
+              <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr]">
+                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                  {t(language, "explore.search_postcode")}
+                  <input
+                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
+                    placeholder="1011 AB"
+                    value={postcode}
+                    onChange={(event) => setPostcode(event.target.value)}
+                  />
                 </label>
-                <select
-                  className="rounded-full border bg-background px-4 py-2 text-sm"
-                  value={sortMode}
-                  onChange={(e) => setSortMode(e.target.value as SortMode)}
-                >
-                  <option value="name">{t(language, "schools.sort_name")}</option>
-                  <option value="bike">{t(language, "schools.sort_bike")}</option>
-                </select>
+                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                  {t(language, "explore.search_advice")}
+                  <select
+                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
+                    value={adviesKey}
+                    onChange={(event) => setAdviesKey(event.target.value)}
+                  >
+                    <option value="">{t(language, "settings.advies_select")}</option>
+                    {ADVIES_OPTIONS.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
+            </InfoCard>
+          ) : (
+            <InfoCard
+              title={t(language, "schools.filters_title")}
+              action={activeAdviesLevels.length ? (
+                <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                  {t(language, "schools.filters_advies")} {activeAdviesLevels.join(" / ")}
+                </span>
+              ) : undefined}
+            >
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    {t(language, "schools.sort")}
+                  </label>
+                  <select
+                    className="rounded-full border bg-background px-4 py-2 text-sm"
+                    value={sortMode}
+                    onChange={(e) => setSortMode(e.target.value as SortMode)}
+                  >
+                    <option value="name">{t(language, "schools.sort_name")}</option>
+                    <option value="bike">{t(language, "schools.sort_bike")}</option>
+                  </select>
+                </div>
 
-              <input
-                className="w-full rounded-2xl border bg-background px-4 py-3 text-sm"
-                placeholder={t(language, "schools.search")}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-          </InfoCard>
+                <input
+                  className="w-full rounded-2xl border bg-background px-4 py-3 text-sm"
+                  placeholder={t(language, "schools.search")}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+            </InfoCard>
+          )}
 
           {shortlistMsg && (
             <div className="rounded-2xl border border-info-muted bg-info-muted px-4 py-3 text-sm text-foreground">

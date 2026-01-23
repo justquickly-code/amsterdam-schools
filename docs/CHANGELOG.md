@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Explore: simplified public filters (postcode + advice only); full filter controls now require login.
 - Explore: merge schools list into the Explore page and remove standalone /schools route.
 - Schools: redesign list with image cards, tag pills, and Airbnb-style layout.
 - Nav: further enlarge My list heart icon for better visual balance.
