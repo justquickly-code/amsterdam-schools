@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, t } from "@/lib/i18n";
 import { Wordmark } from "@/components/schoolkeuze";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));

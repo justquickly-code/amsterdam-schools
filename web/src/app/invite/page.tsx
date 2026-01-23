@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -16,7 +16,7 @@ export default function InviteStatusPage() {
   const [readyToChoose, setReadyToChoose] = useState(false);
   const [joining, setJoining] = useState(false);
 
-  async function acceptInvite(mode: "switch" | "keep") {
+  const acceptInvite = useCallback(async (mode: "switch" | "keep") => {
     if (!workspaceId) return;
     setJoining(true);
     const { data: session } = await supabase.auth.getSession();
@@ -57,7 +57,7 @@ export default function InviteStatusPage() {
 
     setStatus("ok");
     setJoining(false);
-  }
+  }, [existingWorkspaces, workspaceId]);
 
   useEffect(() => {
     (async () => {
@@ -112,7 +112,7 @@ export default function InviteStatusPage() {
       setStatus("error");
       setReason(msg);
     });
-  }, [workspaceId]);
+  }, [workspaceId, acceptInvite]);
 
   const ok = status === "ok";
 

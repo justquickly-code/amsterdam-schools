@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
@@ -61,10 +62,10 @@ function statusLabel(item: ShortlistItem, language: Language) {
 }
 
 export default function ShortlistPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [shortlistId, setShortlistId] = useState<string | null>(null);
   const [items, setItems] = useState<ShortlistItem[]>([]);
   const [saving, setSaving] = useState(false);
@@ -81,8 +82,7 @@ export default function ShortlistPage() {
 
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        setError("Not signed in.");
-        setLoading(false);
+        router.replace("/login");
         return;
       }
 
@@ -99,7 +99,6 @@ export default function ShortlistPage() {
         return;
       }
       setWorkspace(workspaceRow);
-      setWorkspaceId(workspaceRow.id);
       setLanguage((workspaceRow.language as Language) ?? readStoredLanguage());
 
       // Ensure shortlist exists for workspace
@@ -228,7 +227,7 @@ export default function ShortlistPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const onLang = (event: Event) => {
@@ -251,14 +250,6 @@ export default function ShortlistPage() {
     }
     return m;
   }, [items, rankCap]);
-
-  const unranked = useMemo(
-    () =>
-      items
-        .filter((it) => typeof it.rank !== "number" || it.rank > rankCap)
-        .sort((a, b) => (a.school?.name ?? "").localeCompare(b.school?.name ?? "")),
-    [items, rankCap]
-  );
 
   const takenRanks = useMemo(() => {
     return new Set<number>(

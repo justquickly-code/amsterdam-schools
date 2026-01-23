@@ -488,7 +488,7 @@ export default function OpenDaysPage() {
     }
 
     return list;
-  }, [rowsForYear, shortlistOnly, shortlistSchoolIds, eventTypeFilter, dateRange]);
+  }, [rowsForYear, shortlistOnly, shortlistSchoolIds, eventTypeFilter, dateRange, workspace]);
 
   const grouped = useMemo(() => {
     const g = new Map<string, OpenDay[]>();

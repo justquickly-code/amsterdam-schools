@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
@@ -25,7 +25,6 @@ function normalizePostcode(input: string) {
 
 export default function SetupPage() {
   const router = useRouter();
-  const params = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [error, setError] = useState<string>("");
@@ -33,6 +32,9 @@ export default function SetupPage() {
   const [role, setRole] = useState<WorkspaceRole | null>(null);
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("lang");
+    if (fromUrl === "en" || fromUrl === "nl") return fromUrl;
     const stored = window.localStorage.getItem("schools_language");
     return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
   });
@@ -95,17 +97,6 @@ export default function SetupPage() {
     window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
-
-  useEffect(() => {
-    const fromUrl = params.get("lang");
-    if (fromUrl === "en" || fromUrl === "nl") {
-      setLanguage(fromUrl);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("schools_language", fromUrl);
-        emitLanguageChanged(fromUrl);
-      }
-    }
-  }, [params]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

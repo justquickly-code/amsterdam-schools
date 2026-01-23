@@ -31,18 +31,10 @@ export default function SetupGate({
   const [loading, setLoading] = useState(true);
   const [gate, setGate] = useState(false);
   const [role, setRole] = useState<WorkspaceRole | null>(null);
-  const [redirecting, setRedirecting] = useState(false);
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window === "undefined") return DEFAULT_LANGUAGE;
     const stored = window.localStorage.getItem("schools_language");
     return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
-  });
-  const [recentCompletion, setRecentCompletion] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const ts = window.localStorage.getItem("setup_completed_at");
-    if (!ts) return false;
-    const ageMs = Date.now() - new Date(ts).getTime();
-    return Number.isFinite(ageMs) && ageMs < 2 * 60 * 1000;
   });
 
   useEffect(() => {
@@ -89,22 +81,7 @@ export default function SetupGate({
     return () => {
       mounted = false;
     };
-  }, [bypass]);
-
-  useEffect(() => {
-    const param = searchParams.get("setup");
-    if (param !== "done") return;
-    setRecentCompletion(true);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("setup_completed_at", new Date().toISOString());
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (!recentCompletion) return;
-    const timer = window.setTimeout(() => setRecentCompletion(false), 5000);
-    return () => window.clearTimeout(timer);
-  }, [recentCompletion]);
+  }, [bypass, router]);
 
   useEffect(() => {
     const onLang = (event: Event) => {
@@ -118,12 +95,16 @@ export default function SetupGate({
   useEffect(() => {
     if (!gate) return;
     if (searchParams.get("setup") === "done") return;
-    if (recentCompletion) return;
     if (role && role !== "owner") return;
     if (pathname === "/setup") return;
-    setRedirecting(true);
     router.replace("/setup");
-  }, [gate, role, pathname, router, recentCompletion, searchParams]);
+  }, [gate, role, pathname, router, searchParams]);
+
+  const shouldRedirect =
+    gate &&
+    searchParams.get("setup") !== "done" &&
+    !(role && role !== "owner") &&
+    pathname !== "/setup";
 
   if (loading) {
     return (
@@ -147,7 +128,7 @@ export default function SetupGate({
         </main>
       );
     }
-    if (redirecting) {
+    if (shouldRedirect) {
       return (
         <div className={showNav ? "pb-20" : ""}>
           {children}

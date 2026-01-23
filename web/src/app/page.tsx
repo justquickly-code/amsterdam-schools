@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { ADVIES_OPTIONS, friendlyLevel } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 const HERO_SCHOOLS = [
@@ -155,7 +155,7 @@ function levelsForAdviesKey(key: string) {
 
 export default function ExploreHome() {
   const router = useRouter();
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
   const [hasSession, setHasSession] = useState(false);
   const [searchStarted, setSearchStarted] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -171,7 +171,6 @@ export default function ExploreHome() {
   const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
 
   useEffect(() => {
-    setLanguage(readStoredLanguage());
     const onLang = (event: Event) => {
       const next = (event as CustomEvent<Language>).detail;
       if (next) setLanguage(next);
@@ -180,12 +179,15 @@ export default function ExploreHome() {
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
 
-  const toggleLanguage = () => {
+  const toggleLanguage = async () => {
     const next = language === "nl" ? "en" : "nl";
+    if (hasSession && ws?.id) {
+      await supabase.from("workspaces").update({ language: next }).eq("id", ws.id);
+    }
     setLanguage(next);
     if (typeof window !== "undefined") {
       window.localStorage.setItem("schools_language", next);
-      window.dispatchEvent(new CustomEvent<Language>(LANGUAGE_EVENT, { detail: next }));
+      emitLanguageChanged(next);
     }
   };
 
@@ -228,7 +230,14 @@ export default function ExploreHome() {
         }
         workspaceRow = (workspace ?? null) as WorkspaceRow | null;
         setWs(workspaceRow);
-        setLanguage((workspaceRow?.language as Language) ?? readStoredLanguage());
+        const storedLang = readStoredLanguage();
+        const wsLang = (workspaceRow?.language as Language | null) ?? null;
+        if (storedLang && storedLang !== wsLang && workspaceRow?.id) {
+          await supabase.from("workspaces").update({ language: storedLang }).eq("id", workspaceRow.id);
+          setLanguage(storedLang);
+        } else {
+          setLanguage(wsLang ?? storedLang);
+        }
         if (!adviesKey && (workspaceRow?.advies_levels ?? []).length > 0) {
           const key = ADVIES_OPTIONS.find((opt) => {
             const levels = opt.levels.join("|");
@@ -361,7 +370,10 @@ export default function ExploreHome() {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
   };
 
-  const activeAdviesLevels = adviesKey ? levelsForAdviesKey(adviesKey) : ws?.advies_levels ?? [];
+  const activeAdviesLevels = useMemo(
+    () => (adviesKey ? levelsForAdviesKey(adviesKey) : ws?.advies_levels ?? []),
+    [adviesKey, ws]
+  );
   const matchMode = ws?.advies_match_mode ?? "either";
 
   const filtered = useMemo(() => {
@@ -690,7 +702,13 @@ export default function ExploreHome() {
                   <div key={s.id} className="flex flex-col overflow-hidden rounded-3xl border bg-card shadow-md">
                     <Link href={`/schools/${s.id}`} className="block">
                       <div className="relative h-40 overflow-hidden">
-                        <img src={image} alt="" className="h-full w-full object-cover" />
+                        <Image
+                          src={image}
+                          alt=""
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          className="object-cover"
+                        />
                       </div>
                     </Link>
                     <div className="space-y-3 p-4">

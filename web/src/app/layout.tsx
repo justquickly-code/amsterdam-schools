@@ -1,19 +1,6 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 import ClientShell from "@/components/ClientShell";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-dm-sans",
-  weight: ["400", "500", "600", "700"],
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  weight: ["600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Amsterdam Schools",
@@ -50,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${fraunces.variable} min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans`}
+        className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans"
       >
         <ClientShell>{children}</ClientShell>
       </body>

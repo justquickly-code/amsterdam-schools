@@ -64,17 +64,6 @@ function UserIcon({ className }: NavIconProps) {
   );
 }
 
-function ListIcon({ className }: NavIconProps) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path d="M5 7h14M5 12h14M5 17h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="3" cy="7" r="1" fill="currentColor" />
-      <circle cx="3" cy="12" r="1" fill="currentColor" />
-      <circle cx="3" cy="17" r="1" fill="currentColor" />
-    </svg>
-  );
-}
-
 function LoginIcon({ className }: NavIconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">

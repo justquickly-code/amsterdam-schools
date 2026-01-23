@@ -24,20 +24,6 @@ const IconBase = ({ children, className = "" }: { children: React.ReactNode; cla
   </svg>
 );
 
-const BellIcon = () => (
-  <IconBase className="h-5 w-5">
-    <path d="M6 9a6 6 0 1 1 12 0v4l2 2H4l2-2z" />
-    <path d="M10 19a2 2 0 0 0 4 0" />
-  </IconBase>
-);
-const UsersIcon = () => (
-  <IconBase className="h-5 w-5">
-    <circle cx="8" cy="8" r="3" />
-    <circle cx="16" cy="10" r="3" />
-    <path d="M4 20c0-3 3-5 6-5" />
-    <path d="M12 20c0-3 3-5 6-5" />
-  </IconBase>
-);
 const ShareIcon = () => (
   <IconBase className="h-5 w-5">
     <circle cx="6" cy="12" r="2.5" />
@@ -225,7 +211,6 @@ export default function Home() {
       setHasCompleteShortlist(rankCap > 0 && rankedCount >= rankCap);
 
       if (workspaceId) {
-        const { data: session } = await supabase.auth.getSession();
         const [
           { data: attendedRows },
           { data: attendedCountRows },
@@ -431,7 +416,7 @@ export default function Home() {
 
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
 
-        <InfoCard>
+        <InfoCard title={t(language, "profile.journey_title")}>
           <div className="text-center text-sm text-muted-foreground">
             {t(language, "profile.list_count").replace("{count}", String(shortlistIds.length))}
           </div>

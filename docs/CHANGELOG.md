@@ -155,3 +155,7 @@
 - Profile: adjust journey line layering + move logout into standalone row.
 - i18n: profile language toggle now persists + broadcasts.
 - Docs: align Routes/UI + Design + PRD/PRD-status + AGENTS with redesign decisions.
+- Cleanup: remove unused UI components (progress/list/school card).
+- Auth: /shortlist redirects to login when logged out.
+- UI: school list buttons now say “My list” consistently.
+- Build: swap Google Fonts for locally hosted DM Sans + Fraunces to avoid network fetch during build.

@@ -69,12 +69,6 @@ export default function AdminFeedbackPage() {
     })().catch(() => setForbidden(true));
   }, []);
 
-  useEffect(() => {
-    if (!selected) return;
-    setStatus(selected.status);
-    setResponse(selected.admin_response ?? "");
-  }, [selected]);
-
   async function save() {
     if (!selected) return;
     setSaving(true);
@@ -163,7 +157,11 @@ export default function AdminFeedbackPage() {
                     <li
                       key={item.id}
                       className={`p-4 cursor-pointer ${selected?.id === item.id ? "bg-secondary/40" : ""}`}
-                      onClick={() => setSelected(item)}
+                      onClick={() => {
+                        setSelected(item);
+                        setStatus(item.status);
+                        setResponse(item.admin_response ?? "");
+                      }}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">

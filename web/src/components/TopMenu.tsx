@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
+import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 export default function TopMenu() {
   const [open, setOpen] = useState(false);
@@ -12,7 +12,6 @@ export default function TopMenu() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [workspaceId, setWorkspaceId] = useState<string>("");
-  const [role, setRole] = useState<WorkspaceRole | null>(null);
   const [hasNewFeedback, setHasNewFeedback] = useState(false);
   const adminFeedbackSeenEvent = "admin-feedback-seen";
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -25,12 +24,11 @@ export default function TopMenu() {
     });
 
     (async () => {
-      const { workspace, role } = await fetchCurrentWorkspace<{ id: string; language?: Language | null }>(
+      const { workspace } = await fetchCurrentWorkspace<{ id: string; language?: Language | null }>(
         "id,language"
       );
       setLanguage((workspace?.language as Language) ?? readStoredLanguage());
       setWorkspaceId(workspace?.id ?? "");
-      setRole(role ?? null);
     })().catch(() => {
       setLanguage(readStoredLanguage());
     });

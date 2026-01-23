@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 export default function AboutPage() {
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
 
   useEffect(() => {
-    setLanguage(readStoredLanguage());
     const onLang = (event: Event) => {
       const next = (event as CustomEvent<Language>).detail;
       if (next) setLanguage(next);

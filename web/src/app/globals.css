@@ -1,8 +1,64 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin.woff2") format("woff2"),
+    url("/fonts/dm-sans-latin-ext.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin.woff2") format("woff2"),
+    url("/fonts/dm-sans-latin-ext.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin.woff2") format("woff2"),
+    url("/fonts/dm-sans-latin-ext.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin.woff2") format("woff2"),
+    url("/fonts/dm-sans-latin-ext.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/fraunces-latin.woff2") format("woff2"),
+    url("/fonts/fraunces-latin-ext.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/fraunces-latin.woff2") format("woff2"),
+    url("/fonts/fraunces-latin-ext.woff2") format("woff2");
+}
+
 /* App-wide defaults */
 :root {
   color-scheme: light;
+  --font-dm-sans: "DM Sans";
+  --font-fraunces: "Fraunces";
   --background: oklch(0.98 0.005 80);
   --foreground: oklch(0.2 0.02 250);
   --card: oklch(1 0 0);

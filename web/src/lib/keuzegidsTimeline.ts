@@ -75,7 +75,6 @@ export function getNextTimelineItems(now: Date, count = 2) {
   );
 
   const currentOrUpcoming = items.filter((item) => {
-    const start = asDate(item.start).getTime();
     const end = asDate(item.end ?? item.start).getTime();
     const ts = now.getTime();
     return ts <= end;
