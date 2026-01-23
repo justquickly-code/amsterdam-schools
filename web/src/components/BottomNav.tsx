@@ -39,7 +39,7 @@ function HeartIcon({ className }: NavIconProps) {
         d="M12 20s-7-4.35-7-10.2a4.4 4.4 0 0 1 7-3.4 4.4 4.4 0 0 1 7 3.4C19 15.65 12 20 12 20Z"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinejoin="round"
       />
     </svg>
@@ -133,14 +133,14 @@ export default function BottomNav() {
   const items = isAuthed
     ? [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-7 w-7" },
         { href: "/planner", label: t(language, "nav.open_days"), icon: CalendarIcon },
         { href: "/schools", label: t(language, "nav.schools"), icon: ListIcon },
         { href: "/profile", label: t(language, "nav.profile"), icon: UserIcon },
       ]
     : [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-7 w-7" },
         { href: "/login", label: t(language, "nav.login"), icon: LoginIcon },
       ];
 
@@ -151,7 +151,7 @@ export default function BottomNav() {
           {items.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
-            const iconClass = "h-6 w-6";
+            const iconClass = item.iconSize ?? "h-6 w-6";
             return (
               <Link
                 key={item.href}
