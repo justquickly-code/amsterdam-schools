@@ -124,14 +124,14 @@ export default function BottomNav() {
   const items = isAuthed
     ? [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-6 w-6" },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon },
         { href: "/planner", label: t(language, "nav.open_days"), icon: CalendarIcon },
         { href: "/schools", label: t(language, "nav.schools"), icon: ListIcon },
         { href: "/profile", label: t(language, "nav.profile"), icon: UserIcon },
       ]
     : [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-6 w-6" },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon },
         { href: "/login", label: t(language, "nav.login"), icon: LoginIcon },
       ];
 
@@ -142,17 +142,19 @@ export default function BottomNav() {
           {items.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
-            const iconClass = item.iconSize ?? "h-5 w-5";
+            const iconClass = "h-6 w-6";
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 rounded-2xl px-2 py-2 transition-colors ${
+                className={`flex h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-colors ${
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Icon className={iconClass} />
-                <span className={`font-medium ${active ? "text-primary" : ""}`}>{item.label}</span>
+                <span className={`text-[11px] font-medium leading-none ${active ? "text-primary" : ""}`}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
