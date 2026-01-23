@@ -1,11 +1,11 @@
 # Design System (MVP)
 
-Style reference: iOS Settings / Apple Health (calm, list-first).
+Style reference: Airbnb‑inspired (warm, visual, journey‑first).
 
 ## Core patterns
-- Lists and rows are the primary UI pattern.
-- Cards are reserved mainly for Dashboard summary tiles.
-- Chips are used sparingly: Planned, Attended, Ranked, Verify.
+- Visual cards for primary sections (Explore, Profile).
+- Journey stepper (not star rating) for progress.
+- Chips for status: Planned, Visited, Top‑N, Verify.
 
 ## Layout
 - Mobile padding: p-4
@@ -32,9 +32,9 @@ Style reference: iOS Settings / Apple Health (calm, list-first).
 - Informal and fun for kids where appropriate (tutorial content), while keeping dates/facts accurate.
 - Setup/tutorial copy should be light and encouraging, but explicit about what each step is for.
 
-## Progress bar (Dashboard)
-- Show completion % and a short “recently completed” list (e.g., Profile done, Invite sent, Tutorial completed).
-- Use the recent list to explain early % values so the progress feels grounded.
+## Progress (Profile / Dashboard hub)
+- Journey stepper with connected nodes (Start → Discover → List → Days → Choice).
+- Avoid star‑rating UI.
 
 ---
 
@@ -85,3 +85,10 @@ Create a more engaging, Airbnb‑style experience while preserving all MVP funct
 7) My List (drag + top‑N highlight)
 8) Profile (Dashboard hub)
 9) Setup wizard restyle
+
+## Implementation Status (Design Refresh)
+- Explore / Home: done (public hero + list).
+- Open days: done (public view; login‑gated planner actions).
+- My List: done (single list + top‑N highlight).
+- Profile: done (matches UI kit layout).
+- Setup: in progress (step pills added; further restyle pending).

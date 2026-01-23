@@ -46,15 +46,12 @@ Read `AGENTS.md` and `docs/00_PROJECT_BRIEF.md`, then confirm the next step from
 Note: `next build` may fail in constrained environments due to Turbopack port binding. If so, report it and continue.
 
 ## Current State Summary
-- Phases 0–3 complete; Phase 4 items are implemented through 4.5.
-- Setup gate + dashboard content live; setup required for child name + address + advies.
-- Planned open days: workspace-specific planned toggle, with missing-planned highlight on schools.
-- Workspace sharing: invite link joins workspace directly; members list in Settings (owners only).
-- Visit notes are per member; shared rating/attended remain.
-- Admin hub exists; admin routes require allowlist + token; admin menu only for allowlisted users.
-- Language toggle is in the top-right menu; Dutch default, English optional, live updates without refresh.
-- Shortlist export lives at `/shortlist/print`; print/export moved to top menu.
-- Commute compute is user-safe, scoped to workspace, and Settings can batch compute all schools.
+- Core MVP complete; design refresh in progress on `design/airbnb-refresh`.
+- Explore is public at `/` (hero + schools list); login required for save/plan actions.
+- Dashboard content now lives in `/profile` (Profile hub layout).
+- Open days list is public; planner actions are login‑gated.
+- My List is a single list with top‑N highlight (cap by advice).
+- Admin hub exists; admin routes require allowlist + token.
 
 ## Design Refresh Branch
 - Active redesign branch: `design/airbnb-refresh`
@@ -62,22 +59,15 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Design plan + decisions are in `docs/DESIGN.md` (Design Refresh Plan section).
 
 ## Open Items
-- Confirm docs align with latest UI copy/flow after changes.
-- Optional: decide whether open days list should be filtered by shortlist by default.
-## Design Refresh Next Steps
-- Phase 1: theme + shared components
-- Phase 2: Explore/Home + Login
-- Phase 3: Schools list + School detail
-- Phase 4: Open days
-- Phase 5: My List (single list + top‑N highlight + drag)
-- Phase 6: Profile (Dashboard hub) + Setup wizard
+- Finish setup wizard restyle (copy + visuals).
+- Confirm desktop top‑right menu and mobile bottom‑nav parity.
 
 ## Suggested Session Prompt (Redesign Work)
 “Switch to `design/airbnb-refresh`. Read `docs/DESIGN.md` (Design Refresh Plan). Implement Phase 1 only (theme + shared components), no functional changes.”
 
 ## UX Decisions to Keep
-- Bottom nav always visible (main screens)
-- Dashboard is default landing after login
+- Bottom nav is **mobile only**; desktop uses top‑right menu.
+- Profile is default landing after login (Dashboard content lives there).
 - Setup gating until child name + address + advies are set
 - Planner route is `/planner` (with `/open-days` redirect)
 - Shortlist is one list with Top 12 subset
@@ -104,8 +94,8 @@ supabase db push --local
 - Use TypeScript and App Router conventions.
 
 ## Manual Checks to Mention
-- Setup wizard completes and redirects to Dashboard.
-- Bottom nav visible on main screens, hidden on login/auth/admin/setup/print.
-- Top menu shows Settings/Print/Sign out and closes on selection.
-- Commutes compute after setup/Settings change and show on Schools.
-- Admin routes blocked for non-allowlisted users.
+- Setup wizard completes and redirects to `/profile`.
+- Bottom nav only on mobile; desktop shows top‑right menu.
+- Explore `/` works logged out; save/plan actions redirect to login.
+- Open days list loads logged out; planner actions gated.
+- Admin routes blocked for non‑allowlisted users.

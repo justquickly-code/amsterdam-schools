@@ -21,11 +21,13 @@ Source of truth:
 | Save visit notes + 1–5 rating | ✅ | Visits + rating implemented; notes are per member. |
 | Ranked subset view + ranked order (cap by advice) | ✅ | Ranking implemented. |
 | Planned open days | ✅ | Workspace-specific planned toggle implemented (CL-065). |
-| Dashboard landing | ✅ | Dashboard content + setup nudges implemented (CL-063/064). |
+| Dashboard landing | ✅ | Dashboard content now lives in /profile (Profile hub). |
+| Public Explore entry | ✅ | Explore (/), schools list, and open days support public view; auth required for save/plan actions. |
 
 ## UX/navigation decisions (locked)
-- Mobile bottom nav (CL-101)
-- Dashboard default after login (CL-063)
+- Mobile bottom nav (mobile only)
+- Profile is default post-login hub (Dashboard content lives in /profile)
 - First-run setup gating (CL-064)
 - Language setting NL default + EN optional (CL-104)
 - One list + ranked subset view (cap by advice) (CL-107)
+- /schools deprecated (Explore lives at /)

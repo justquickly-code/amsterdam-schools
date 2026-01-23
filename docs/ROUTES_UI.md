@@ -1,16 +1,17 @@
 # Routes & UI
 
 ## Pages (MVP)
-- / (Dashboard)
-  - upcoming open days (next 30 days)
-  - reminders to add notes after attended visits
-  - quick link to ranked list
+- / (Explore / public landing)
+  - public hero search (postcode + advies)
+  - public list of schools (minimal filters)
+  - logged-in view adds search + sort + advice badge
+  - save/heart/notes actions require login
 
-- /schools (Schools list)
-  - default filtered by advies
-  - search + basic filters
-  - shows bike time/distance when home location is set
-  - highlight schools missing a planned open day
+- /profile (Dashboard hub)
+  - child name + address + advies badge
+  - journey progress (stepper, not stars)
+  - quick stats: My list / Planned / Visited
+  - menu links (settings, language, how-it-works, feedback, admin if allowlisted, about, invite, logout)
 
 - /schools/[id] (School detail)
   - school info + website link
@@ -22,13 +23,12 @@
 - /planner (Open Days)
   - chronological list
   - filters: event type, date range, shortlist-only
-  - planned status toggle
+  - planned status toggle (login required)
 
-- /shortlist (Ranked list)
-  - add/remove
-  - rankable cap depends on advice (4/6/12)
-  - drag/drop ranking 1–N (N = cap)
-  - export/print view
+- /shortlist (My List)
+  - single list of saved schools
+  - top‑N ranked highlight (cap depends on advice: 4/6/12)
+  - reorder ranked items; remove from top without deleting
 
 - /shortlist/print (Print export)
   - printable ranked list
@@ -61,9 +61,14 @@
 - Error state (what happened + retry)
 
 ## Global UI
-- Bottom nav (Dashboard, Schools, Open Days, Shortlist).
-- Top-right menu: Settings, Print/Export, Language toggle, Sign out, How it works.
-- Admin entry appears in top-right menu for allowlisted users.
+- Bottom nav (mobile only):
+  - Logged out: Explore / My List / Login
+  - Logged in: Explore / My List / Open Days / Profile
+- Top-right menu (desktop only):
+  - Language toggle
+  - Login/Signup when logged out
+  - Profile, Feedback, Print/Export, Admin (allowlisted), Logout when logged in
+  - About + How it works always visible
 
 ## Setup flow (first login)
 - Step 1: Profile details (mandatory). Explain why (advies filtering + commute times).
@@ -74,4 +79,5 @@
 ## Routing note
 - /planner is the canonical route.
 - /open-days should redirect to /planner to preserve old links.
+- /schools is deprecated (Explore now lives at /).
 - User-facing wording should say “Open Days” (avoid “planner”).

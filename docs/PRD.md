@@ -15,7 +15,7 @@ Help a family plan Amsterdam secondary school open days, capture notes + a 1–5
 - Save many schools; the ranked subset cap depends on advice (4/6/12). The saved list never shrinks if advice changes.
 - Scope: focus on schools in the **central lottery/matching** system. Exclude praktijkonderwijs, voortgezet speciaal onderwijs (VSO), kopklas, kleinschalig ondersteunend voortgezet onderwijs (kovo), and internationale schakelklassen.
 - Tutorial: an optional, kid-friendly “How it works” walkthrough based on Keuzegids dates. Accessible from setup and from the top-right menu.
-- Dashboard: show the next important date(s) from the lottery timeline.
+- Profile (Dashboard hub): show the next important date(s) from the lottery timeline.
 - Setup flow: Profile details (mandatory) → Invite family (optional) → “How it works” tutorial (optional).
   - Explain why profile data is needed (advies filtering + commute times).
   - Invite step explains shared workspace and per-member notes.
