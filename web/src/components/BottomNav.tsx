@@ -135,7 +135,6 @@ export default function BottomNav() {
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
         { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-8 w-8" },
         { href: "/planner", label: t(language, "nav.open_days"), icon: CalendarIcon },
-        { href: "/schools", label: t(language, "nav.schools"), icon: ListIcon },
         { href: "/profile", label: t(language, "nav.profile"), icon: UserIcon },
       ]
     : [
@@ -147,7 +146,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-card/95 backdrop-blur md:hidden">
       <div className="mx-auto max-w-3xl px-4 pb-[env(safe-area-inset-bottom)] pt-2">
-        <div className={`grid gap-2 text-center text-[11px] ${items.length === 5 ? "grid-cols-5" : "grid-cols-3"}`}>
+        <div className={`grid gap-2 text-center text-[11px] ${items.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}>
           {items.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
