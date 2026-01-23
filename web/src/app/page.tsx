@@ -115,9 +115,7 @@ export default function ExploreHome() {
         </div>
         <div className="relative px-5 pt-6 pb-12">
           <div className="flex items-center justify-between">
-            <Link href="/" className="inline-flex items-center">
-              <Wordmark className="h-9" />
-            </Link>
+            <Wordmark className="h-9" />
             <Link
               className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow-sm"
               href={hasSession ? "/profile" : "/login"}
