@@ -48,12 +48,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     const envOrigin = process.env.NEXT_PUBLIC_SITE_URL;
-    const origin =
-      envOrigin && envOrigin.length > 0
+    const windowOrigin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    const isVercelPreview = typeof window !== "undefined" && window.location.hostname.endsWith("vercel.app");
+    const origin = isVercelPreview
+      ? windowOrigin
+      : envOrigin && envOrigin.length > 0
         ? envOrigin.replace(/\/$/, "")
-        : typeof window !== "undefined"
-          ? window.location.origin
-          : "http://localhost:3000";
+        : windowOrigin;
     setResolvedOrigin(origin);
   }, []);
 
@@ -89,12 +90,13 @@ export default function LoginPage() {
       window.localStorage.setItem("last_login_email", trimmed);
 
       const envOrigin = process.env.NEXT_PUBLIC_SITE_URL;
-      const origin =
-        envOrigin && envOrigin.length > 0
+      const windowOrigin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+      const isVercelPreview = typeof window !== "undefined" && window.location.hostname.endsWith("vercel.app");
+      const origin = isVercelPreview
+        ? windowOrigin
+        : envOrigin && envOrigin.length > 0
           ? envOrigin.replace(/\/$/, "")
-          : typeof window !== "undefined"
-            ? window.location.origin
-            : "http://localhost:3000";
+          : windowOrigin;
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
