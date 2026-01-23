@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Nav: normalize mobile icon alignment and spacing to match VO bottom bar layout.
 - Explore: add light pill background behind wordmark for readability on hero image.
 - Nav: switch heart tab to My list and increase heart icon size.
 - Explore: move language toggle to top-right on the hero screen; remove login button there.

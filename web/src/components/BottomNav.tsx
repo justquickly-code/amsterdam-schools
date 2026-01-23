@@ -17,8 +17,17 @@ function SearchIcon({ className }: NavIconProps) {
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <path d="M21 21l-4.35-4.35" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M21 21l-4.35-4.35"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -147,11 +156,13 @@ export default function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-colors ${
+                className={`flex h-14 flex-col items-center justify-center gap-1 px-2 py-2 transition-colors ${
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className={iconClass} />
+                <span className="flex h-6 w-6 items-center justify-center">
+                  <Icon className={`${iconClass} block`} />
+                </span>
                 <span className={`text-[11px] font-medium leading-none ${active ? "text-primary" : ""}`}>
                   {item.label}
                 </span>
