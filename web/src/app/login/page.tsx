@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [hydrated, setHydrated] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [resolvedOrigin, setResolvedOrigin] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -44,6 +45,17 @@ export default function LoginPage() {
     window.localStorage.setItem("schools_language", language);
     emitLanguageChanged(language);
   }, [language, hydrated]);
+
+  useEffect(() => {
+    const envOrigin = process.env.NEXT_PUBLIC_SITE_URL;
+    const origin =
+      envOrigin && envOrigin.length > 0
+        ? envOrigin.replace(/\/$/, "")
+        : typeof window !== "undefined"
+          ? window.location.origin
+          : "http://localhost:3000";
+    setResolvedOrigin(origin);
+  }, []);
 
   const toggleLanguage = () => {
     const next = language === "nl" ? "en" : "nl";
@@ -167,6 +179,11 @@ export default function LoginPage() {
         {status === "sent" && (
           <p className="text-xs text-muted-foreground">{t(language, "login.spam_hint")}</p>
         )}
+        {resolvedOrigin ? (
+          <p className="text-xs text-muted-foreground">
+            Debug redirect: <span className="font-semibold">{resolvedOrigin}</span>
+          </p>
+        ) : null}
         </div>
       </div>
     </main>
