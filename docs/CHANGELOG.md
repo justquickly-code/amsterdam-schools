@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Nav: show 3-item bottom nav when logged out (Explore/Schools/Sign in); full 5-item nav after login.
 - Explore: add public hero landing page with search + featured schools; move dashboard to /profile and update bottom nav labels.
 - Dashboard: align header layout and unify planner list (timeline + planned open days) with clickable items.
 - Planner: normalize open-day school join shape to keep advies filtering working reliably.

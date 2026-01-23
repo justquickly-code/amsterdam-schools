@@ -143,6 +143,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "nav.shortlist": "Shortlist",
     "nav.my_list": "Mijn lijst",
     "nav.profile": "Profiel",
+    "nav.login": "Inloggen",
 
     "schools.title": "Scholen",
     "schools.count": "#{count} scholen",
@@ -429,6 +430,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "nav.shortlist": "Shortlist",
     "nav.my_list": "My list",
     "nav.profile": "Profile",
+    "nav.login": "Sign in",
 
     "schools.title": "Schools",
     "schools.count": "#{count} schools",
