@@ -343,18 +343,6 @@ export default function ExploreHome() {
   }, [adviesKey]);
 
   const sectionTitle = searchStarted ? t(language, "explore.nearby") : t(language, "explore.popular");
-  const featuredSchools = useMemo(() => {
-    if (sorted.length === 0) return [];
-    return sorted.slice(0, 4).map((s) => ({
-      id: s.id,
-      name: s.name,
-      image: pickSchoolImage(s.id),
-      tags: (s.supported_levels ?? []).slice(0, 2).map(friendlyLevel),
-      address: s.address ?? "",
-      commute: s.commute ?? null,
-      rating: s.visits?.[0]?.rating_stars ?? null,
-    }));
-  }, [sorted]);
 
   const toggleFavorite = (id: string) => {
     if (!hasSession) {
@@ -387,6 +375,19 @@ export default function ExploreHome() {
     );
     return withCommute.concat(withoutCommute);
   }, [filtered, sortMode, hasSession]);
+
+  const featuredSchools = useMemo(() => {
+    if (sorted.length === 0) return [];
+    return sorted.slice(0, 4).map((s) => ({
+      id: s.id,
+      name: s.name,
+      image: pickSchoolImage(s.id),
+      tags: (s.supported_levels ?? []).slice(0, 2).map(friendlyLevel),
+      address: s.address ?? "",
+      commute: s.commute ?? null,
+      rating: s.visits?.[0]?.rating_stars ?? null,
+    }));
+  }, [sorted]);
 
   async function addSchoolToShortlist(schoolId: string) {
     if (!hasSession) {
