@@ -577,7 +577,7 @@ export default function Home() {
             className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-destructive transition-colors"
           >
             <LogoutIcon />
-            <span className="text-sm font-medium">{t(language, "menu.logout")}</span>
+            <span className="text-sm font-medium">{t(language, "menu.signout")}</span>
           </button>
         </section>
       </div>
