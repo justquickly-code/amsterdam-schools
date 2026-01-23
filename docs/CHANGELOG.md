@@ -150,3 +150,4 @@
 - Profile: new header + quick links; progress actions point to Explore.
 - Setup: added step pills + updated setup header copy.
 - Profile: journey-style progress + stats cards + menu ordering refresh.
+- Profile: fix hook order to avoid hydration warnings.

@@ -431,6 +431,17 @@ export default function Home() {
     return { timeline, planned: plannedDisplay };
   }, [language, nextDates, plannedOpenDays]);
 
+  const adviceLabel = useMemo(() => {
+    const levels = workspace?.advies_levels ?? [];
+    if (!levels.length) return "";
+    return levels.map(friendlyLevel).join(" / ");
+  }, [workspace]);
+
+  const addressLabel = useMemo(() => {
+    if (!workspace?.home_postcode || !workspace?.home_house_number) return "";
+    return `${workspace.home_postcode} ${workspace.home_house_number}`;
+  }, [workspace]);
+
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">
@@ -446,17 +457,6 @@ export default function Home() {
       </main>
     );
   }
-
-  const adviceLabel = useMemo(() => {
-    const levels = workspace?.advies_levels ?? [];
-    if (!levels.length) return "";
-    return levels.map(friendlyLevel).join(" / ");
-  }, [workspace]);
-
-  const addressLabel = useMemo(() => {
-    if (!workspace?.home_postcode || !workspace?.home_house_number) return "";
-    return `${workspace.home_postcode} ${workspace.home_house_number}`;
-  }, [workspace]);
 
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
