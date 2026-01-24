@@ -41,12 +41,13 @@ const FALLBACK_IMAGES = [
   "/branding/hero/school-4.jpg",
 ];
 
-function pickSchoolImage(name: string, fallbackKey: string) {
+function pickSchoolImage(name: string, fallbackKey?: string) {
   const mapped = schoolImageForName(name);
   if (mapped) return mapped;
+  const key = fallbackKey ?? name;
   let hash = 0;
-  for (let i = 0; i < fallbackKey.length; i += 1) {
-    hash = (hash + fallbackKey.charCodeAt(i) * (i + 1)) % FALLBACK_IMAGES.length;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash + key.charCodeAt(i) * (i + 1)) % FALLBACK_IMAGES.length;
   }
   return FALLBACK_IMAGES[hash] ?? FALLBACK_IMAGES[0];
 }
@@ -140,7 +141,8 @@ function levelsForAdviesKey(key: string) {
 
 export default function ExploreHome() {
   const router = useRouter();
-  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
+  const [language, setLanguage] = useState<Language>("nl");
+  const [hydrated, setHydrated] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [searchStarted, setSearchStarted] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -162,6 +164,8 @@ export default function ExploreHome() {
   const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
 
   useEffect(() => {
+    setHydrated(true);
+    setLanguage(readStoredLanguage());
     const onLang = (event: Event) => {
       const next = (event as CustomEvent<Language>).detail;
       if (next) setLanguage(next);
@@ -431,7 +435,24 @@ export default function ExploreHome() {
 
   const featuredSchools = useMemo(() => {
     if (sorted.length === 0) return [];
-    return sorted.slice(0, 4).map((s) => ({
+    const base =
+      hasSession
+        ? sorted
+        : searchStarted
+          ? sorted
+          : [...schools].sort((a, b) => {
+              const seed = "public-hero";
+              const hash = (value: string) => {
+                let acc = 0;
+                for (let i = 0; i < value.length; i += 1) {
+                  acc = (acc * 31 + value.charCodeAt(i)) % 100000;
+                }
+                return acc;
+              };
+              return hash(`${seed}:${a.id}`) - hash(`${seed}:${b.id}`);
+            });
+
+    return base.slice(0, hasSession ? 4 : 5).map((s) => ({
       id: s.id,
       name: s.name,
       image: pickSchoolImage(s.id),
@@ -440,7 +461,7 @@ export default function ExploreHome() {
       commute: s.commute ?? null,
       rating: s.visits?.[0]?.rating_stars ?? null,
     }));
-  }, [sorted]);
+  }, [sorted, schools, hasSession, searchStarted]);
 
   async function addSchoolToShortlist(schoolId: string) {
     if (!hasSession) {
@@ -537,13 +558,15 @@ export default function ExploreHome() {
         <div className="relative px-5 pt-6 pb-12">
           <div className="flex items-center justify-between">
             <Wordmark variant="white" />
-            <button
-              className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm md:hidden"
-              type="button"
-              onClick={toggleLanguage}
-            >
-              {language === "nl" ? "NL" : "EN"}
-            </button>
+            {hydrated ? (
+              <button
+                className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm md:hidden"
+                type="button"
+                onClick={toggleLanguage}
+              >
+                {language === "nl" ? "NL" : "EN"}
+              </button>
+            ) : null}
           </div>
 
           <div className="mt-10 max-w-xl">
@@ -612,14 +635,14 @@ export default function ExploreHome() {
           <h2 className="font-serif text-xl font-semibold text-foreground">{sectionTitle}</h2>
           <Link
             className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
-            href="/setup"
+            href="/login"
           >
             {t(language, "explore.cta_start_list")}
           </Link>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {(featuredSchools.length > 0 ? featuredSchools : HERO_SCHOOLS).map((school, idx) => {
+          {featuredSchools.map((school, idx) => {
             const isFavorite = favorites.includes(school.id);
             const hasLink = "address" in school;
             const schoolHref = hasLink ? `/schools/${school.id}` : "#school-list";
@@ -663,12 +686,17 @@ export default function ExploreHome() {
                     ) : (
                       <h3 className="text-base font-semibold text-foreground">{school.name}</h3>
                     )}
+                    {"address" in school && school.address ? (
+                      <div className="mt-1 text-xs text-muted-foreground">{school.address}</div>
+                    ) : null}
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      {"address" in school ? (
-                        <>
-                          {school.address ? <span>{school.address}</span> : null}
-                        </>
+                      {"commute" in school && school.commute?.duration_minutes ? (
+                        <span>🚲 {school.commute.duration_minutes} min</span>
                       ) : null}
+                      {"commute" in school && school.commute?.distance_km ? (
+                        <span>{school.commute.distance_km} km</span>
+                      ) : null}
+                      {"rating" in school && school.rating ? <span>⭐ {school.rating}/5</span> : null}
                     </div>
                   </div>
                   {"tags" in school && school.tags?.length ? (

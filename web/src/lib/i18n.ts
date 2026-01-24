@@ -161,7 +161,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.continue": "Doorgaan",
     "setup.tutorial_intro": "Wil je weten hoe de Amsterdamse procedure werkt?",
     "setup.tutorial_body":
-      "Dit is geen app‑uitleg, maar een korte, kindvriendelijke uitleg van het proces in 2025/26.",
+      "Dit is geen app‑uitleg, maar een korte uitleg van het proces in 2025/26.",
     "setup.tutorial_start": "Start uitleg",
     "setup.tutorial_later": "Je kunt dit later altijd terugvinden in het menu.",
 
@@ -359,7 +359,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
 
     "how.title": "Hoe werkt het?",
     "how.subtitle":
-      "Een korte, kindvriendelijke uitleg van de Amsterdamse stap‑voor‑stap procedure voor 2025/26.",
+      "Een korte uitleg van de Amsterdamse stap‑voor‑stap procedure voor 2025/26.",
     "how.next_title": "Eerstvolgende momenten",
     "how.complete_cta": "Ik heb dit gelezen",
     "how.completed": "Gelezen ✓",
@@ -769,7 +769,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
 
     "how.title": "How it works",
     "how.subtitle":
-      "A quick, kid‑friendly overview of the Amsterdam step‑by‑step process for 2025/26.",
+      "A quick overview of the Amsterdam step‑by‑step process for 2025/26.",
     "how.next_title": "Next moments",
     "how.complete_cta": "I’ve read this",
     "how.completed": "Read ✓",

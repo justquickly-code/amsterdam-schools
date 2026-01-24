@@ -137,24 +137,15 @@ export default function HowItWorksPage() {
           <button
             className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
             type="button"
-            onClick={markComplete}
+            onClick={async () => {
+              if (!completedAt) await markComplete();
+              if (fromSetup) router.replace("/profile?setup=done");
+              else router.push("/");
+            }}
             disabled={saving}
           >
             {completedAt ? t(language, "how.completed") : t(language, "how.complete_cta")}
           </button>
-          {fromSetup ? (
-            <button
-              className="rounded-full border px-4 py-2 text-xs font-semibold"
-              type="button"
-              onClick={() => router.replace("/profile?setup=done")}
-            >
-              {t(language, "how.finish_setup")}
-            </button>
-          ) : (
-            <Link className="rounded-full border px-4 py-2 text-xs font-semibold" href="/">
-              {t(language, "how.to_dashboard")}
-            </Link>
-          )}
         </div>
       </div>
     </main>
