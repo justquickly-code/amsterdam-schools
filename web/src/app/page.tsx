@@ -121,6 +121,16 @@ type School = {
   has_planned_open_day?: boolean;
 };
 
+type FeaturedSchool = {
+  id: string;
+  name: string;
+  image: string;
+  tags: string[];
+  address: string;
+  commute: School["commute"];
+  rating: number | null;
+};
+
 type SortMode = "name" | "bike";
 
 function matchesAdvies(
@@ -433,7 +443,7 @@ export default function ExploreHome() {
     return withCommute.concat(withoutCommute);
   }, [filtered, sortMode, hasSession]);
 
-  const featuredSchools = useMemo(() => {
+  const featuredSchools = useMemo<FeaturedSchool[]>(() => {
     if (sorted.length === 0) return [];
     const base =
       hasSession
