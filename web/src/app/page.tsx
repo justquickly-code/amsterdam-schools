@@ -7,65 +7,48 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { ADVIES_OPTIONS, friendlyLevel } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, t } from "@/lib/i18n";
+import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
+import { schoolImageForName } from "@/lib/schoolImages";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 const HERO_SCHOOLS = [
   {
     id: "hero-1",
     name: "Het Amsterdams Lyceum",
-    image: "/branding/hero/school-1.jpg",
-    distance: "1.2 km",
-    students: "1.250",
-    rating: "8.4",
-    tags: ["Creatief", "Internationaal"],
-    openDay: "15 januari",
+    image: "",
   },
   {
     id: "hero-2",
     name: "Montessori Lyceum",
-    image: "/branding/hero/school-2.jpg",
-    distance: "2.1 km",
-    students: "890",
-    rating: "8.1",
-    tags: ["Zelfstandig", "Kleinschalig"],
-    openDay: "22 januari",
+    image: "",
   },
   {
     id: "hero-3",
     name: "Barlaeus Gymnasium",
-    image: "/branding/hero/school-3.jpg",
-    distance: "0.8 km",
-    students: "1.100",
-    rating: "8.7",
-    tags: ["Academisch", "Klassiek"],
-    openDay: "18 januari",
+    image: "",
   },
   {
     id: "hero-4",
     name: "IJburg College",
-    image: "/branding/hero/school-4.jpg",
-    distance: "3.5 km",
-    students: "1.450",
-    rating: "7.9",
-    tags: ["Sportief", "Modern"],
-    openDay: "20 januari",
+    image: "",
   },
 ];
 
-const SCHOOL_IMAGES = [
+const FALLBACK_IMAGES = [
   "/branding/hero/school-1.jpg",
   "/branding/hero/school-2.jpg",
   "/branding/hero/school-3.jpg",
   "/branding/hero/school-4.jpg",
 ];
 
-function pickSchoolImage(id: string) {
+function pickSchoolImage(name: string, fallbackKey: string) {
+  const mapped = schoolImageForName(name);
+  if (mapped) return mapped;
   let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash + id.charCodeAt(i) * (i + 1)) % SCHOOL_IMAGES.length;
+  for (let i = 0; i < fallbackKey.length; i += 1) {
+    hash = (hash + fallbackKey.charCodeAt(i) * (i + 1)) % FALLBACK_IMAGES.length;
   }
-  return SCHOOL_IMAGES[hash] ?? SCHOOL_IMAGES[0];
+  return FALLBACK_IMAGES[hash] ?? FALLBACK_IMAGES[0];
 }
 
 type WorkspaceRow = {
@@ -90,6 +73,7 @@ type SchoolRow = {
   supported_levels: string[];
   address: string | null;
   website_url: string | null;
+  image_url?: string | null;
   visits?: VisitRow[] | null;
 };
 
@@ -196,6 +180,19 @@ export default function ExploreHome() {
     window.localStorage.setItem("prefill_advies", adviesKey);
   }, [adviesKey]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("schools_sort_mode");
+    if (stored === "name" || stored === "bike") {
+      setSortMode(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("schools_sort_mode", sortMode);
+  }, [sortMode]);
+
   const toggleLanguage = async () => {
     const next = language === "nl" ? "en" : "nl";
     if (hasSession && ws?.id) {
@@ -203,7 +200,7 @@ export default function ExploreHome() {
     }
     setLanguage(next);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("schools_language", next);
+      setStoredLanguage(next);
       emitLanguageChanged(next);
     }
   };
@@ -262,6 +259,12 @@ export default function ExploreHome() {
           })?.key;
           if (key) setAdviesKey(key);
         }
+        if (workspaceRow?.home_postcode && workspaceRow?.home_house_number) {
+          const storedSort = typeof window !== "undefined" ? window.localStorage.getItem("schools_sort_mode") : null;
+          if (!storedSort || storedSort === "name") {
+            setSortMode("bike");
+          }
+        }
       } else {
         setWs(null);
       }
@@ -271,14 +274,14 @@ export default function ExploreHome() {
       if (authed) {
         const { data, error } = await supabase
           .from("schools")
-          .select("id,name,supported_levels,address,website_url")
+          .select("id,name,supported_levels,address,website_url,image_url")
           .order("name", { ascending: true });
         schoolsData = data;
         sErr = error;
       } else {
         const { data, error } = await supabase
           .from("schools")
-          .select("id,name,supported_levels,address,website_url")
+          .select("id,name,supported_levels,address,website_url,image_url")
           .order("name", { ascending: true });
         schoolsData = data;
         sErr = error;
@@ -533,7 +536,7 @@ export default function ExploreHome() {
         </div>
         <div className="relative px-5 pt-6 pb-12">
           <div className="flex items-center justify-between">
-            <Wordmark className="rounded-xl bg-white/90 px-3 py-2 shadow-sm backdrop-blur" />
+            <Wordmark variant="white" />
             <button
               className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm md:hidden"
               type="button"
@@ -551,39 +554,55 @@ export default function ExploreHome() {
           </div>
 
           <div className="mt-8 rounded-3xl border border-white/30 bg-white/95 p-4 shadow-lg backdrop-blur">
-            <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr_auto]">
-              <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
-                {t(language, "explore.search_postcode")}
-                <input
-                  className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
-                  placeholder="1011 AB"
-                  value={postcode}
-                  onChange={(event) => setPostcode(event.target.value)}
-                />
-              </label>
-              <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
-                {t(language, "explore.search_advice")}
-                <select
-                  className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
-                  value={adviesKey}
-                  onChange={(event) => setAdviesKey(event.target.value)}
+            {hasSession ? (
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                  {t(language, "schools.sort")}
+                  <select
+                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
+                    value={sortMode}
+                    onChange={(event) => setSortMode(event.target.value as SortMode)}
+                  >
+                    <option value="name">{t(language, "schools.sort_name")}</option>
+                    <option value="bike">{t(language, "schools.sort_bike")}</option>
+                  </select>
+                </label>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr_auto]">
+                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                  {t(language, "explore.search_postcode")}
+                  <input
+                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
+                    placeholder="1011 AB"
+                    value={postcode}
+                    onChange={(event) => setPostcode(event.target.value)}
+                  />
+                </label>
+                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                  {t(language, "explore.search_advice")}
+                  <select
+                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
+                    value={adviesKey}
+                    onChange={(event) => setAdviesKey(event.target.value)}
+                  >
+                    <option value="">{t(language, "settings.advies_select")}</option>
+                    {ADVIES_OPTIONS.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  className="h-11 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
+                  type="button"
+                  onClick={() => setSearchStarted(true)}
                 >
-                  <option value="">{t(language, "settings.advies_select")}</option>
-                  {ADVIES_OPTIONS.map((option) => (
-                    <option key={option.key} value={option.key}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                className="h-11 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
-                type="button"
-                onClick={() => setSearchStarted(true)}
-              >
-                {t(language, "explore.search_cta")}
-              </button>
-            </div>
+                  {t(language, "explore.search_cta")}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -591,13 +610,16 @@ export default function ExploreHome() {
       <section className="px-5 py-8">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-serif text-xl font-semibold text-foreground">{sectionTitle}</h2>
-          <Link className="text-sm font-semibold text-primary hover:underline" href="#school-list">
-            {t(language, "explore.browse_all")}
+          <Link
+            className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
+            href="/setup"
+          >
+            {t(language, "explore.cta_start_list")}
           </Link>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {(featuredSchools.length > 0 ? featuredSchools : HERO_SCHOOLS).map((school) => {
+          {(featuredSchools.length > 0 ? featuredSchools : HERO_SCHOOLS).map((school, idx) => {
             const isFavorite = favorites.includes(school.id);
             const hasLink = "address" in school;
             const schoolHref = hasLink ? `/schools/${school.id}` : "#school-list";
@@ -606,10 +628,20 @@ export default function ExploreHome() {
                 <div className="relative h-40">
                   {hasLink ? (
                     <Link href={schoolHref} className="absolute inset-0">
-                      <Image src={school.image} alt={school.name} fill className="object-cover" />
+                      <Image
+                        src={pickSchoolImage(school.name, school.id ?? `hero-${idx}`)}
+                        alt={school.name}
+                        fill
+                        className="object-cover"
+                      />
                     </Link>
                   ) : (
-                    <Image src={school.image} alt={school.name} fill className="object-cover" />
+                    <Image
+                      src={pickSchoolImage(school.name, school.id ?? `hero-${idx}`)}
+                      alt={school.name}
+                      fill
+                      className="object-cover"
+                    />
                   )}
                   <button
                     className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
@@ -634,30 +666,19 @@ export default function ExploreHome() {
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                       {"address" in school ? (
                         <>
-                          {school.commute?.duration_minutes ? (
-                            <span>🚲 {school.commute.duration_minutes} min</span>
-                          ) : null}
                           {school.address ? <span>{school.address}</span> : null}
-                          {school.rating ? <span>⭐ {school.rating}/5</span> : null}
                         </>
-                      ) : (
-                        <>
-                          <span>📍 {school.distance}</span>
-                          <span>👥 {school.students} leerlingen</span>
-                          <span>⭐ {school.rating}</span>
-                        </>
-                      )}
+                      ) : null}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {school.tags.map((tag) => (
-                      <span key={tag} className="rounded-full bg-secondary/70 px-3 py-1 text-xs font-semibold text-foreground">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  {"openDay" in school ? (
-                    <div className="text-xs text-muted-foreground">Open dag: {school.openDay}</div>
+                  {"tags" in school && school.tags?.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {school.tags.map((tag) => (
+                        <span key={tag} className="rounded-full bg-secondary/70 px-3 py-1 text-xs font-semibold text-foreground">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   ) : null}
                 </div>
               </div>
@@ -677,28 +698,12 @@ export default function ExploreHome() {
                 </span>
               ) : undefined}
             >
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    {t(language, "schools.sort")}
-                  </label>
-                  <select
-                    className="rounded-full border bg-background px-4 py-2 text-sm"
-                    value={sortMode}
-                    onChange={(e) => setSortMode(e.target.value as SortMode)}
-                  >
-                    <option value="name">{t(language, "schools.sort_name")}</option>
-                    <option value="bike">{t(language, "schools.sort_bike")}</option>
-                  </select>
-                </div>
-
-                <input
-                  className="w-full rounded-2xl border bg-background px-4 py-3 text-sm"
-                  placeholder={t(language, "schools.search")}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-              </div>
+              <input
+                className="w-full rounded-2xl border bg-background px-4 py-3 text-sm"
+                placeholder={t(language, "schools.search")}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
             </InfoCard>
           ) : null}
 
@@ -726,7 +731,7 @@ export default function ExploreHome() {
                   (s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
                   t(language, "schools.levels_empty");
                 const hasBadges = Boolean(s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended);
-                const image = pickSchoolImage(s.id);
+                const image = s.image_url || pickSchoolImage(s.name, s.id);
                 return (
                   <div key={s.id} className="flex flex-col overflow-hidden rounded-3xl border bg-card shadow-md">
                     <Link href={`/schools/${s.id}`} className="block">
