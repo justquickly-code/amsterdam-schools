@@ -174,24 +174,24 @@ export default function SetupPage() {
     const house = homeHouseNumber.trim();
 
     if (!name) {
-      setError("Please enter a child name.");
+      setError(t(language, "setup.error_child_required"));
       setSaving(false);
       return;
     }
     if (!postcode || !house) {
-      setError("Postcode and house number are required.");
+      setError(t(language, "setup.error_postcode_house_required"));
       setSaving(false);
       return;
     }
     if (!/^\d{4}[A-Z]{2}$/.test(postcode)) {
-      setError("Postcode must look like 1234AB.");
+      setError(t(language, "setup.error_postcode_format"));
       setSaving(false);
       return;
     }
     const option = ADVIES_OPTIONS.find((opt) => opt.key === adviesOption);
     const levels = option?.levels ?? [];
     if (!levels.length) {
-      setError("Please choose at least one advies level.");
+      setError(t(language, "setup.error_advies_required"));
       setSaving(false);
       return;
     }
@@ -263,7 +263,7 @@ export default function SetupPage() {
     return (
       <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center">
-          <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">{t(language, "setup.loading")}</p>
         </div>
       </main>
     );
@@ -341,7 +341,7 @@ export default function SetupPage() {
 
           {error && (
             <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              Error: {error}
+              {t(language, "setup.error_prefix")} {error}
             </div>
           )}
 

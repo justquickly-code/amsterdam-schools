@@ -78,6 +78,7 @@ type WorkspaceRow = {
 };
 
 type VisitRow = {
+  school_id: string;
   workspace_id: string;
   attended: boolean;
   rating_stars: number | null;
@@ -254,7 +255,7 @@ export default function ExploreHome() {
       if (authed) {
         const { data, error } = await supabase
           .from("schools")
-          .select("id,name,supported_levels,address,website_url,visits(id,workspace_id,attended,rating_stars)")
+          .select("id,name,supported_levels,address,website_url")
           .order("name", { ascending: true });
         schoolsData = data;
         sErr = error;
@@ -277,6 +278,7 @@ export default function ExploreHome() {
 
       const schoolList = (schoolsData ?? []) as SchoolRow[];
       const commuteMap = new Map<string, { duration_minutes: number | null; distance_km: number }>();
+      const visitsMap = new Map<string, VisitRow[]>();
       let openDaySchoolIds = new Set<string>();
       let plannedSchoolIds = new Set<string>();
 
@@ -293,6 +295,18 @@ export default function ExploreHome() {
             duration_minutes: c.duration_minutes,
             distance_km: Number(c.distance_km),
           });
+        }
+
+        const { data: visitRows } = await supabase
+          .from("visits")
+          .select("school_id,workspace_id,attended,rating_stars")
+          .eq("workspace_id", workspaceRow.id);
+
+        const visits = (visitRows ?? []) as VisitRow[];
+        for (const v of visits) {
+          const list = visitsMap.get(v.school_id) ?? [];
+          list.push(v);
+          visitsMap.set(v.school_id, list);
         }
 
         const { data: openDays } = await supabase
@@ -341,11 +355,10 @@ export default function ExploreHome() {
         );
       }
 
-      const workspaceId = workspaceRow?.id ?? "";
       const merged = schoolList.map((s) => ({
         ...s,
         commute: commuteMap.get(s.id) ?? null,
-        visits: authed ? s.visits?.filter((v) => v.workspace_id === workspaceId) ?? s.visits ?? null : null,
+        visits: authed ? visitsMap.get(s.id) ?? null : null,
         has_open_day: authed ? openDaySchoolIds.has(s.id) : false,
         has_planned_open_day: authed ? plannedSchoolIds.has(s.id) : false,
       }));
@@ -506,7 +519,7 @@ export default function ExploreHome() {
           <div className="flex items-center justify-between">
             <Wordmark className="rounded-xl bg-white/90 px-3 py-2 shadow-sm backdrop-blur" />
             <button
-              className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm"
+              className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm md:hidden"
               type="button"
               onClick={toggleLanguage}
             >

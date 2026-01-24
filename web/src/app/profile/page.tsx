@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
@@ -322,6 +323,10 @@ export default function Home() {
       if (error) return;
     }
     setLanguage(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("schools_language", next);
+      emitLanguageChanged(next);
+    }
   }
 
   const journeySteps = useMemo(() => {
@@ -421,9 +426,9 @@ export default function Home() {
             {t(language, "profile.list_count").replace("{count}", String(shortlistIds.length))}
           </div>
           <div className="relative mt-4">
-            <div className="absolute left-5 right-5 top-6 h-0.5 bg-border" />
+            <div className="absolute left-5 right-5 top-5 h-0.5 bg-border" />
             <div
-              className="absolute left-5 top-6 h-0.5 bg-primary"
+              className="absolute left-5 top-5 h-0.5 bg-primary"
               style={{ width: `${Math.min(100, journeyProgress.pct)}%` }}
             />
             <div className="flex justify-between">
@@ -540,7 +545,7 @@ export default function Home() {
           ]
             .filter(Boolean)
             .map((item) => {
-              const icon = (item as { icon: () => JSX.Element }).icon;
+              const icon = (item as { icon: () => ReactNode }).icon;
               return (
                 <button
                   key={(item as { label: string }).label}
@@ -569,13 +574,13 @@ export default function Home() {
             })}
         </section>
 
-        <section className="px-4 py-2">
+        <section className="rounded-2xl border bg-card">
           <button
             onClick={() => supabase.auth.signOut()}
-            className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-destructive transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-muted-foreground hover:text-destructive transition-colors"
           >
             <LogoutIcon />
-            <span className="text-sm font-medium">{t(language, "menu.signout")}</span>
+            {t(language, "menu.signout")}
           </button>
         </section>
       </div>

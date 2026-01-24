@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 export default function InviteStatusPage() {
@@ -15,6 +16,7 @@ export default function InviteStatusPage() {
   const [existingWorkspaces, setExistingWorkspaces] = useState<Array<{ id: string; name: string }>>([]);
   const [readyToChoose, setReadyToChoose] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
   const acceptInvite = useCallback(async (mode: "switch" | "keep") => {
     if (!workspaceId) return;
@@ -61,6 +63,7 @@ export default function InviteStatusPage() {
 
   useEffect(() => {
     (async () => {
+      setLanguage(readStoredLanguage());
       if (!workspaceId) {
         setStatus("error");
         setReason("missing_workspace_id");
@@ -91,7 +94,7 @@ export default function InviteStatusPage() {
           .map((row) => {
             const ws = Array.isArray(row.workspace) ? row.workspace[0] : row.workspace;
             if (!ws) return null;
-            return { id: ws.id as string, name: (ws.name as string) || "Workspace" };
+            return { id: ws.id as string, name: (ws.name as string) || t(language, "invite.workspace_fallback") };
           })
           .filter(Boolean) as Array<{ id: string; name: string }>;
 
@@ -108,29 +111,48 @@ export default function InviteStatusPage() {
       setExistingWorkspaces(list);
       setReadyToChoose(true);
     })().catch((err: unknown) => {
-      const msg = err instanceof Error ? err.message : "Invite failed";
+      const msg = err instanceof Error ? err.message : t(language, "settings.invite_failed");
       setStatus("error");
       setReason(msg);
     });
-  }, [workspaceId, acceptInvite]);
+  }, [workspaceId, acceptInvite, language]);
 
   const ok = status === "ok";
+  const reasonLabel =
+    reason === "not_signed_in"
+      ? t(language, "invite.reason_not_signed_in")
+      : reason === "missing_workspace_id"
+      ? t(language, "invite.reason_missing_workspace")
+      : reason;
+
+  useEffect(() => {
+    function onLang(e: Event) {
+      const next = (e as CustomEvent<Language>).detail;
+      if (next) setLanguage(next);
+    }
+    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
+    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
+  }, []);
 
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-xl space-y-6">
         <Wordmark />
         <InfoCard
-          title={status === "idle" ? "Joining workspace..." : ok ? "Workspace joined" : "Invite issue"}
+          title={
+            status === "idle"
+              ? t(language, "invite.title_joining")
+              : ok
+              ? t(language, "invite.title_joined")
+              : t(language, "invite.title_issue")
+          }
         >
           {readyToChoose ? (
             <div className="space-y-3 text-sm text-muted-foreground">
-              <p>You already have a workspace.</p>
-              <p>
-                Joining this family workspace will switch your active workspace. Your existing workspace stays intact.
-              </p>
+              <p>{t(language, "invite.already_have")}</p>
+              <p>{t(language, "invite.switch_desc")}</p>
               <div className="text-xs">
-                Current workspace: {existingWorkspaces[0]?.name ?? "Workspace"}
+                {t(language, "invite.current_workspace")}: {existingWorkspaces[0]?.name ?? t(language, "invite.workspace_fallback")}
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -139,7 +161,7 @@ export default function InviteStatusPage() {
                   onClick={() => acceptInvite("switch")}
                   disabled={joining}
                 >
-                  {joining ? "Joining..." : "Join and switch"}
+                  {joining ? t(language, "invite.joining") : t(language, "invite.join_switch")}
                 </button>
                 <button
                   className="rounded-full border px-4 py-2 text-xs font-semibold"
@@ -147,31 +169,25 @@ export default function InviteStatusPage() {
                   onClick={() => acceptInvite("keep")}
                   disabled={joining}
                 >
-                  Keep my current workspace
+                  {t(language, "invite.keep_current")}
                 </button>
               </div>
             </div>
           ) : status === "idle" ? (
-            <p className="text-sm text-muted-foreground">Finalizing your invite…</p>
+            <p className="text-sm text-muted-foreground">{t(language, "invite.finalizing")}</p>
           ) : ok ? (
-            <p className="text-sm text-muted-foreground">
-              You’re now part of the shared workspace. You can go to the dashboard.
-            </p>
+            <p className="text-sm text-muted-foreground">{t(language, "invite.joined_body")}</p>
           ) : (
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>
-                We couldn’t finish joining the workspace from the invite link.
-              </p>
-              {reason ? <p className="text-xs">Reason: {reason}</p> : null}
-              <p>
-                Ask the workspace owner to resend the invite after they restart the app.
-              </p>
+              <p>{t(language, "invite.error_body")}</p>
+              {reason ? <p className="text-xs">{t(language, "invite.error_reason")} {reasonLabel}</p> : null}
+              <p>{t(language, "invite.error_help")}</p>
             </div>
           )}
 
           <div className="flex flex-wrap gap-2 pt-2">
             <Link className="rounded-full border px-4 py-2 text-xs font-semibold" href="/">
-              Go to Dashboard
+              {t(language, "invite.go_dashboard")}
             </Link>
             <button
               className="rounded-full border px-4 py-2 text-xs font-semibold"
@@ -181,7 +197,7 @@ export default function InviteStatusPage() {
                 router.replace("/login");
               }}
             >
-              Sign out
+              {t(language, "menu.signout")}
             </button>
           </div>
         </InfoCard>

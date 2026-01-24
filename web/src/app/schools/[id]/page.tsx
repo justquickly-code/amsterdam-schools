@@ -630,9 +630,9 @@ export default function SchoolDetailPage() {
                     <Link
                         className="text-sm font-semibold text-primary hover:underline"
                         href={backHref}
-                        aria-label="Back"
+                        aria-label={t(language, "about.back")}
                     >
-                        ← Back
+                        ← {t(language, "about.back")}
                     </Link>
                     <h1 className="text-3xl font-semibold text-foreground">{school?.name ?? "School"}</h1>
                 </header>
@@ -644,13 +644,13 @@ export default function SchoolDetailPage() {
                 )}
 
                 {school && (
-                    <InfoCard title="Overview">
+                    <InfoCard title={t(language, "school.detail_overview")}>
                         <div className="space-y-2 text-sm text-muted-foreground">
                             <div>{(school.supported_levels ?? []).join(", ")}</div>
                             {school.address && <div>{school.address}</div>}
                             {school.website_url && (
                                 <a className="text-sm text-primary underline" href={school.website_url} target="_blank" rel="noreferrer">
-                                    Website
+                                    {t(language, "schools.website")}
                                 </a>
                             )}
                         </div>
@@ -658,18 +658,18 @@ export default function SchoolDetailPage() {
                 )}
 
                 <InfoCard
-                    title="Open days"
-                    action={<span className="text-xs text-muted-foreground">Verify details on the school website.</span>}
+                    title={t(language, "open_days.title")}
+                    action={<span className="text-xs text-muted-foreground">{t(language, "school.detail_verify")}</span>}
                 >
                     {openDays.length === 0 ? (
-                        <div className="text-sm text-muted-foreground">No open days available yet.</div>
+                        <div className="text-sm text-muted-foreground">{t(language, "school.detail_no_open_days")}</div>
                     ) : (
                         <ul className="divide-y rounded-2xl border bg-card">
                             {openDays.map((r) => {
                                 const label = eventTypeLabel(r.event_type);
                                 const location = stripAnyUrlLabel(r.location_text);
                                 const planned = plannedOpenDayIds.has(r.id);
-                                const dateLabel = r.starts_at ? fmtDate(r.starts_at, locale) : "Unknown date";
+                                const dateLabel = r.starts_at ? fmtDate(r.starts_at, locale) : t(language, "school.detail_unknown_date");
                                 return (
                                     <li key={r.id} className="p-4">
                                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -726,7 +726,7 @@ export default function SchoolDetailPage() {
                 </InfoCard>
 
                 {hasSession ? (
-                    <InfoCard title="Your visit notes">
+                    <InfoCard title={t(language, "school.notes_title")}>
                         <div className="space-y-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <label className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -735,24 +735,28 @@ export default function SchoolDetailPage() {
                                         checked={attended}
                                         onChange={(e) => setAttended(e.target.checked)}
                                     />
-                                    <span>Visited</span>
+                                    <span>{t(language, "school.notes_visited")}</span>
                                 </label>
                                 <StarRating value={rating} onChange={setRating} />
                             </div>
 
                             <label className="space-y-2 block">
-                                <div className="text-sm font-medium text-foreground">Your notes</div>
+                                <div className="text-sm font-medium text-foreground">
+                                    {t(language, "school.notes_your_notes")}
+                                </div>
                                 <textarea
                                     className="w-full rounded-2xl border bg-background px-4 py-3 min-h-28 text-sm"
                                     value={noteText}
                                     onChange={(e) => setNoteText(e.target.value)}
-                                    placeholder="What stood out? Atmosphere, teachers, vibe…"
+                                    placeholder={t(language, "school.notes_placeholder")}
                                 />
                             </label>
 
                             {otherNotes.length > 0 && (
                                 <div className="space-y-2">
-                                    <div className="text-sm font-medium text-foreground">Notes from others</div>
+                                    <div className="text-sm font-medium text-foreground">
+                                        {t(language, "school.notes_others")}
+                                    </div>
                                     <ul className="divide-y rounded-2xl border bg-card">
                                         {otherNotes.map((n) => (
                                             <li key={n.user_id} className="p-4">

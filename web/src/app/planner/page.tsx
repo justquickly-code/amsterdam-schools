@@ -93,7 +93,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   open_avond: "Open avond",
   informatieavond: "Info-avond",
   proefles: "Proefles",
-  other: "Other",
+  other: "Overig",
 };
 
 function normalizeEventType(t: string | null) {
@@ -526,7 +526,16 @@ export default function OpenDaysPage() {
           <p className="text-sm text-muted-foreground">{t(language, "open_days.important_body")}</p>
         </InfoCard>
 
-        <InfoCard title={t(language, "open_days.filters_title")}>
+        <InfoCard
+          title={t(language, "open_days.filters_title")}
+          action={
+            adviesLabel ? (
+              <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                {t(language, "open_days.filters_advies")} {adviesLabel}
+              </div>
+            ) : undefined
+          }
+        >
           <div className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-muted-foreground">
@@ -544,14 +553,6 @@ export default function OpenDaysPage() {
                   </>
                 ) : null}
               </div>
-              {adviesLabel ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-                  {t(language, "open_days.filters_advies")} {adviesLabel}
-                </div>
-              ) : (
-                <span />
-              )}
-
               <div className="flex flex-wrap items-center gap-4">
                 {yearOptions.length > 1 && (
                   <label className="flex items-center gap-2 text-sm">
@@ -592,12 +593,12 @@ export default function OpenDaysPage() {
                   value={eventTypeFilter}
                   onChange={(e) => setEventTypeFilter(e.target.value)}
                 >
-                  <option value="all">All</option>
+                  <option value="all">{t(language, "open_days.all")}</option>
                   <option value="open_dag">Open dag</option>
                   <option value="open_avond">Open avond</option>
                   <option value="informatieavond">Info-avond</option>
                   <option value="proefles">Proefles</option>
-                  <option value="other">Other</option>
+                  <option value="other">{t(language, "open_days.other")}</option>
                 </select>
               </label>
 

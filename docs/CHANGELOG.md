@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- Explore: load visit stats via separate query to avoid Supabase select parser errors in builds.
+- Profile: persist language changes across sessions (local storage + global event).
+- Profile: adjust journey progress line alignment and logout styling for VO consistency.
+- Planner: move advice badge into the filters header action slot (right-aligned).
 - Explore: make featured card image/title clickable when real school data is loaded.
 - School detail: allow public read of overview + open days; notes/ratings/planning only when logged in.
 - Explore: remove duplicate filters card for logged-out view (hero search only).

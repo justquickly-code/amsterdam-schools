@@ -140,12 +140,22 @@ export default function TopMenu() {
       if (error) return;
     }
     setLanguage(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("schools_language", next);
+    }
     emitLanguageChanged(next);
   }
 
   return (
     <div className="fixed right-6 top-6 z-50 hidden md:block" ref={menuRef}>
-      <div className="relative">
+      <div className="relative flex items-center gap-2">
+        <button
+          className="rounded-full border bg-white/90 px-3 py-1 text-xs font-semibold text-foreground shadow-sm"
+          type="button"
+          onClick={() => updateLanguage(language === "nl" ? "en" : "nl")}
+        >
+          {language === "nl" ? "NL" : "EN"}
+        </button>
         <button
           className="flex h-9 w-9 items-center justify-center rounded-xl border text-sm"
           type="button"

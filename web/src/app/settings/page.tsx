@@ -70,7 +70,7 @@ export default function SettingsPage() {
 
             const { data: session } = await supabase.auth.getSession();
             if (!session.session) {
-                setError("Not signed in.");
+                setError(t(language, "settings.error_not_signed_in"));
                 setLoading(false);
                 return;
             }
@@ -117,7 +117,7 @@ export default function SettingsPage() {
                     .map((row) => {
                         const ws = Array.isArray(row.workspace) ? row.workspace[0] : row.workspace;
                         if (!ws) return null;
-                        return { id: ws.id as string, name: (ws.name as string) || "Workspace" };
+                        return { id: ws.id as string, name: (ws.name as string) || t(language, "settings.workspace_fallback") };
                     })
                     .filter(Boolean) as Array<{ id: string; name: string }>;
 
@@ -153,12 +153,12 @@ export default function SettingsPage() {
             mounted = false;
             window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
         };
-    }, []);
+    }, [language]);
 
     async function saveSettings() {
         if (!workspace) return;
         if (!isOwner) {
-            setError("Only the workspace owner can edit settings.");
+            setError(t(language, "settings.error_owner_only"));
             return;
         }
 
@@ -175,17 +175,17 @@ export default function SettingsPage() {
 
         // basic validation (MVP)
         if (!name) {
-            setError("Child name is required.");
+            setError(t(language, "settings.error_child_required"));
             setSaving(false);
             return;
         }
         if (postcode && !/^\d{4}[A-Z]{2}$/.test(postcode)) {
-            setError("Postcode must look like 1234AB.");
+            setError(t(language, "settings.error_postcode_format"));
             setSaving(false);
             return;
         }
         if ((postcode && !house) || (!postcode && house)) {
-            setError("Postcode and house number must be provided together.");
+            setError(t(language, "settings.error_postcode_house_together"));
             setSaving(false);
             return;
         }
@@ -193,7 +193,7 @@ export default function SettingsPage() {
         const option = ADVIES_OPTIONS.find((opt) => opt.key === adviesOption);
         const levels = option?.levels ?? [];
         if (!levels.length) {
-            setError("Please choose at least one advies level.");
+            setError(t(language, "settings.error_advies_required"));
             setSaving(false);
             return;
         }
@@ -217,7 +217,7 @@ export default function SettingsPage() {
         if (error) {
             setError(error.message);
         } else {
-            setSavedMsg("Saved.");
+            setSavedMsg(t(language, "settings.saved"));
             setCommuteMsg("");
             // Reload workspace to reflect saved values
             const { data: refreshed } = await supabase
@@ -233,12 +233,12 @@ export default function SettingsPage() {
                     .delete()
                     .eq("workspace_id", workspace.id);
                 if (delErr) {
-                    setCommuteMsg("Could not clear old commutes. Recomputing...");
+                    setCommuteMsg(t(language, "settings.commute_clear_fail"));
                 }
             }
 
             if (postcode && house) {
-                setCommuteMsg("Updating commute times in the background...");
+                setCommuteMsg(t(language, "settings.commute_updating"));
                 (async () => {
                     const { data: session } = await supabase.auth.getSession();
                     const token = session.session?.access_token ?? "";
@@ -266,7 +266,7 @@ export default function SettingsPage() {
                         .filter((id) => !existingSet.has(id));
 
                     if (schoolIds.length === 0) {
-                        setCommuteMsg("Commute times are already up to date.");
+                        setCommuteMsg(t(language, "settings.commute_up_to_date"));
                         return;
                     }
 
@@ -290,14 +290,14 @@ export default function SettingsPage() {
                         if (!res.ok || json?.upsert_failed > 0) {
                             setCommuteMsg(
                                 json?.sample_errors?.[0]?.error
-                                    ? `Commute update issue: ${json.sample_errors[0].error}`
-                                    : "Commute update issue while updating."
+                                    ? t(language, "settings.commute_update_issue").replace("{error}", String(json.sample_errors[0].error))
+                                    : t(language, "settings.commute_update_issue_generic")
                             );
                             return;
                         }
                     }
 
-                    setCommuteMsg("Commute times updated.");
+                    setCommuteMsg(t(language, "settings.commute_updated"));
                 })().catch(() => null);
             }
         }
@@ -313,7 +313,7 @@ export default function SettingsPage() {
 
         const email = inviteEmail.trim().toLowerCase();
         if (!email || !email.includes("@")) {
-            setInviteMsg("Enter a valid email address.");
+            setInviteMsg(t(language, "settings.invite_invalid_email"));
             setInviteBusy(false);
             return;
         }
@@ -321,7 +321,7 @@ export default function SettingsPage() {
         const { data: session } = await supabase.auth.getSession();
         const token = session.session?.access_token ?? "";
         if (!token) {
-            setInviteMsg("You must be signed in.");
+            setInviteMsg(t(language, "settings.invite_auth_required"));
             setInviteBusy(false);
             return;
         }
@@ -342,15 +342,15 @@ export default function SettingsPage() {
 
             const json = await res.json().catch(() => null);
             if (!res.ok) {
-                setInviteMsg(json?.error ?? "Invite failed.");
+                setInviteMsg(json?.error ?? t(language, "settings.invite_failed"));
                 setInviteBusy(false);
                 return;
             }
 
             if (json?.already_invited) {
-                setInviteMsg("Invite already sent.");
+                setInviteMsg(t(language, "settings.invite_already_sent"));
             } else {
-                setInviteMsg("Invite sent.");
+                setInviteMsg(t(language, "settings.invite_sent"));
             }
             setInviteEmail("");
 
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                 .order("created_at", { ascending: true });
             setMembers((memberRows ?? []) as WorkspaceMemberRow[]);
         } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : "Invite failed.";
+            const msg = e instanceof Error ? e.message : t(language, "settings.invite_failed");
             setInviteMsg(msg);
         }
 
@@ -378,17 +378,17 @@ export default function SettingsPage() {
                     <h1 className="text-3xl font-semibold text-foreground">{t(language, "settings.title")}</h1>
                 </header>
 
-                {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+                {loading && <p className="text-sm text-muted-foreground">{t(language, "settings.loading")}</p>}
 
                 {!loading && error && (
                     <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                        Error: {error}
+                        {t(language, "settings.error_prefix")} {error}
                     </div>
                 )}
 
                 {!loading && !error && !workspace && (
                     <InfoCard title={t(language, "settings.title")}>
-                        <p className="text-sm text-muted-foreground">No workspace found.</p>
+                        <p className="text-sm text-muted-foreground">{t(language, "settings.no_workspace")}</p>
                     </InfoCard>
                 )}
 
@@ -403,7 +403,7 @@ export default function SettingsPage() {
                                             className="w-full rounded-2xl border bg-background px-4 py-2"
                                             value={childName}
                                             onChange={(e) => setChildName(e.target.value)}
-                                            placeholder="Sam (child)"
+                                            placeholder={t(language, "settings.child_placeholder")}
                                             disabled={!isOwner}
                                         />
                                     </label>
@@ -414,7 +414,7 @@ export default function SettingsPage() {
                                             className="w-full rounded-2xl border bg-background px-4 py-2"
                                             value={homePostcode}
                                             onChange={(e) => setHomePostcode(e.target.value)}
-                                            placeholder="1234 AB"
+                                            placeholder={t(language, "settings.postcode_placeholder")}
                                             disabled={!isOwner}
                                         />
                                     </label>
@@ -425,7 +425,7 @@ export default function SettingsPage() {
                                             className="w-full rounded-2xl border bg-background px-4 py-2"
                                             value={homeHouseNumber}
                                             onChange={(e) => setHomeHouseNumber(e.target.value)}
-                                            placeholder="10"
+                                            placeholder={t(language, "settings.house_placeholder")}
                                             disabled={!isOwner}
                                         />
                                     </label>
@@ -463,17 +463,16 @@ export default function SettingsPage() {
                                 </div>
 
                                 <p className="text-sm text-muted-foreground">
-                                    Next: we’ll use these settings to filter schools and calculate cycling
-                                    time/distance.
+                                    {t(language, "settings.next_tip")}
                                 </p>
                             </div>
                         </InfoCard>
 
-                        <InfoCard title="Workspace members">
+                        <InfoCard title={t(language, "settings.members_title")}>
                             <div className="space-y-4 text-sm">
                                 {availableWorkspaces.length > 1 && (
                                     <div className="space-y-1">
-                                        <div className="text-xs text-muted-foreground">Current workspace</div>
+                                        <div className="text-xs text-muted-foreground">{t(language, "settings.current_workspace")}</div>
                                         <select
                                             className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
                                             value={activeWorkspaceId}
@@ -496,15 +495,15 @@ export default function SettingsPage() {
                                 )}
 
                                 {members.length === 0 ? (
-                                    <p className="text-muted-foreground">No members found.</p>
+                                    <p className="text-muted-foreground">{t(language, "settings.no_members")}</p>
                                 ) : (
                                     <ul className="divide-y rounded-2xl border bg-card">
                                         {members.map((m) => (
                                             <li key={m.user_id} className="flex items-center justify-between p-4">
                                                 <div>
                                                     <div className="font-medium text-foreground">
-                                                        {m.member_email ?? "Member"}
-                                                        {m.user_id === currentUserId ? " (you)" : ""}
+                                                        {m.member_email ?? t(language, "settings.member_fallback")}
+                                                        {m.user_id === currentUserId ? ` ${t(language, "settings.member_you")}` : ""}
                                                     </div>
                                                     <div className="text-xs text-muted-foreground">{m.role}</div>
                                                 </div>
@@ -515,31 +514,31 @@ export default function SettingsPage() {
 
                                 {isOwner ? (
                                     <div className="space-y-2">
-                                        <div className="text-sm font-medium">Invite a member</div>
+                                        <div className="text-sm font-medium">{t(language, "settings.invite_title")}</div>
                                         <input
                                             className="w-full rounded-2xl border bg-background px-4 py-2"
                                             value={inviteEmail}
                                             onChange={(e) => setInviteEmail(e.target.value)}
-                                            placeholder="parent@example.com"
+                                            placeholder={t(language, "settings.invite_placeholder")}
                                         />
                                         <div className="text-xs text-muted-foreground">
-                                            New family members join as editors.
+                                            {t(language, "settings.invite_role")}
                                         </div>
                                         <button
                                             className="rounded-full border px-4 py-2 text-xs font-semibold"
                                             onClick={inviteMember}
                                             disabled={inviteBusy || !inviteEmail.trim()}
                                         >
-                                            {inviteBusy ? "Inviting..." : "Invite"}
+                                            {inviteBusy ? t(language, "settings.invite_busy") : t(language, "settings.invite_button")}
                                         </button>
                                         {inviteMsg && <div className="text-sm text-muted-foreground">{inviteMsg}</div>}
                                         <div className="text-xs text-muted-foreground">
-                                            We’ll email a link to join this workspace.
+                                            {t(language, "settings.invite_info")}
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="text-xs text-muted-foreground">
-                                        Only workspace owners can edit settings or invite members.
+                                        {t(language, "settings.invite_owner_only")}
                                     </div>
                                 )}
                             </div>
