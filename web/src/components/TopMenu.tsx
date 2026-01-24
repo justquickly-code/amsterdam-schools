@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import {
+  DEFAULT_LANGUAGE,
+  Language,
+  emitLanguageChanged,
+  LANGUAGE_EVENT,
+  readStoredLanguage,
+  setStoredLanguage,
+  t,
+} from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 
 export default function TopMenu() {
@@ -141,7 +149,7 @@ export default function TopMenu() {
     }
     setLanguage(next);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("schools_language", next);
+      setStoredLanguage(next);
     }
     emitLanguageChanged(next);
   }

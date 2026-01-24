@@ -5,7 +5,15 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, t } from "@/lib/i18n";
+import {
+  DEFAULT_LANGUAGE,
+  Language,
+  LANGUAGE_EVENT,
+  emitLanguageChanged,
+  readStoredLanguage,
+  setStoredLanguage,
+  t,
+} from "@/lib/i18n";
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
 import { InfoCard } from "@/components/schoolkeuze";
@@ -120,11 +128,7 @@ export default function Home() {
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [dashError, setDashError] = useState<string>("");
-  const [language, setLanguage] = useState<Language>(() => {
-    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
-    const stored = window.localStorage.getItem("schools_language");
-    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
-  });
+  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
   const [hasAttended, setHasAttended] = useState(false);
   const [hasCompleteShortlist, setHasCompleteShortlist] = useState(false);
   const [visitedCount, setVisitedCount] = useState(0);
@@ -283,7 +287,7 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem("schools_language", language);
+    setStoredLanguage(language);
     emitLanguageChanged(language);
   }, [language]);
 
@@ -324,7 +328,7 @@ export default function Home() {
     }
     setLanguage(next);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("schools_language", next);
+      setStoredLanguage(next);
       emitLanguageChanged(next);
     }
   }

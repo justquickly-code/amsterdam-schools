@@ -4,17 +4,34 @@ export type Language = "nl" | "en";
 
 export const DEFAULT_LANGUAGE: Language = "nl";
 export const LANGUAGE_EVENT = "language-changed";
+export const LANGUAGE_COOKIE = "schools_lang";
+
+function readCookieLanguage(): Language | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${LANGUAGE_COOKIE}=([^;]+)`));
+  const value = match ? decodeURIComponent(match[1]) : "";
+  return value === "en" || value === "nl" ? value : null;
+}
 
 export function readStoredLanguage(): Language {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+  const cookieLang = readCookieLanguage();
+  if (cookieLang) return cookieLang;
   const stored = window.localStorage.getItem("schools_language");
   return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+}
+
+export function setStoredLanguage(lang: Language) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem("schools_language", lang);
+  const maxAge = 60 * 60 * 24 * 365;
+  document.cookie = `${LANGUAGE_COOKIE}=${encodeURIComponent(lang)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
 }
 
 const STRINGS: Record<Language, Record<string, string>> = {
   nl: {
     "login.title": "Inloggen",
-    "login.subtitle": "Gebruik een e‑mail van een familielid. Je blijft ingelogd op dit apparaat.",
+    "login.subtitle": "Vul je e‑mailadres in. We sturen je een link — geen wachtwoord nodig.",
     "login.use_last": "Gebruik laatste e‑mail",
     "login.email": "E‑mail",
     "login.send_link": "Stuur inloglink",
@@ -48,6 +65,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "explore.search_postcode": "Postcode",
     "explore.search_advice": "Advies",
     "explore.search_cta": "Bekijk scholen",
+    "explore.cta_start_list": "Start je lijst",
     "explore.popular": "Populaire scholen in Amsterdam",
     "explore.nearby": "Scholen bij jou in de buurt",
     "explore.browse_all": "Bekijk alle scholen",
@@ -108,9 +126,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.step_profile_title": "Profiel instellen",
     "setup.step_invite_title": "Nodig familie uit",
     "setup.step_tutorial_title": "Amsterdamse uitleg",
-    "setup.intro": "Laten we het even instellen. Dit duurt ongeveer een minuut.",
+    "setup.intro": "Je reis start hier. Dit kost ongeveer een minuut.",
     "setup.profile_why":
-      "We gebruiken dit om scholen te filteren op advies en om reistijden te berekenen.",
+      "We gebruiken dit om scholen te filteren en om reistijden te berekenen.",
     "setup.prefill_hint": "We hebben je postcode en advies alvast ingevuld vanuit Ontdek.",
     "setup.finish": "Setup afronden",
     "setup.next": "Volgende",
@@ -121,9 +139,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.required_title": "Setup vereist",
     "setup.required_body":
       "Alleen de eigenaar kan de setup afronden. Vraag de eigenaar om het profiel af te maken.",
-    "setup.invite_intro": "Wil je samen plannen? Nodig een familielid uit.",
+    "setup.invite_intro": "Samen kiezen werkt beter. Nodig een ouder of verzorger uit.",
     "setup.invite_shared":
-      "Familieleden zien dezelfde scholen, shortlist en open dagen. Notities zijn per persoon en voor iedereen zichtbaar.",
+      "Jullie delen dezelfde scholen en lijst. Notities zijn per persoon, maar iedereen kan ze zien.",
     "setup.invite_label": "E-mailadres familielid",
     "setup.invite_send": "Stuur uitnodiging",
     "setup.invite_sending": "Versturen...",
@@ -425,7 +443,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
   },
   en: {
     "login.title": "Sign in",
-    "login.subtitle": "Use a family member email. The app stays signed in on this device.",
+    "login.subtitle": "Enter your email address. We’ll send you a link — no password needed.",
     "login.use_last": "Use last email",
     "login.email": "Email",
     "login.send_link": "Send sign-in link",
@@ -459,6 +477,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "explore.search_postcode": "Postcode",
     "explore.search_advice": "Advice",
     "explore.search_cta": "See schools",
+    "explore.cta_start_list": "Start your list",
     "explore.popular": "Popular schools in Amsterdam",
     "explore.nearby": "Schools near you",
     "explore.browse_all": "Browse all schools",

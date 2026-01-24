@@ -139,7 +139,7 @@ export default function ShortlistPage() {
       // Load items with school names
       const { data: rows, error: iErr } = await supabase
         .from("shortlist_items")
-        .select("school_id,rank,school:schools(id,name)")
+        .select("school_id,rank,school:schools(id,name,image_url)")
         .eq("shortlist_id", sid)
         .order("rank", { ascending: true });
 
@@ -371,7 +371,7 @@ export default function ShortlistPage() {
         // Retry once: refresh list and attempt update again.
         const { data: rows } = await supabase
           .from("shortlist_items")
-          .select("school_id,rank,school:schools(id,name)")
+          .select("school_id,rank,school:schools(id,name,image_url)")
           .eq("shortlist_id", shortlistId)
           .order("rank", { ascending: true });
 
@@ -534,12 +534,23 @@ export default function ShortlistPage() {
                             </span>
                           )}
                         </div>
-                        <Link
-                          className="mt-2 block truncate text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
-                          href={`/schools/${it.school_id}?from=shortlist`}
-                        >
-                          {it.school?.name ?? it.school_id}
-                        </Link>
+                        <div className="mt-2 flex items-start gap-3">
+                          {it.school?.image_url ? (
+                            <Link href={`/schools/${it.school_id}?from=shortlist`} className="shrink-0">
+                              <img
+                                src={it.school.image_url}
+                                alt={it.school?.name ?? "School"}
+                                className="h-12 w-12 rounded-xl object-cover"
+                              />
+                            </Link>
+                          ) : null}
+                          <Link
+                            className="block min-w-0 truncate text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
+                            href={`/schools/${it.school_id}?from=shortlist`}
+                          >
+                            {it.school?.name ?? it.school_id}
+                          </Link>
+                        </div>
                         {(it.rating_stars || commuteLabel(it.commute)) && (
                           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             {it.rating_stars ? (

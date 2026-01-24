@@ -14,6 +14,7 @@ export async function GET(request: Request) {
   const invite = requestUrl.searchParams.get("invite");
   const workspaceId = requestUrl.searchParams.get("workspace_id");
   const lang = requestUrl.searchParams.get("lang");
+  const setup = requestUrl.searchParams.get("setup");
 
   // Local client is fine here; for production you may prefer server-side auth helpers later.
   const supabase = createClient(
@@ -109,8 +110,8 @@ export async function GET(request: Request) {
     }
   }
 
-  // After successful exchange, redirect home.
-  const homeUrl = new URL("/profile", redirectOrigin);
+  // After successful exchange, redirect home (or setup if requested).
+  const homeUrl = new URL(setup ? "/setup" : "/profile", redirectOrigin);
   if (lang === "en" || lang === "nl") homeUrl.searchParams.set("lang", lang);
   return NextResponse.redirect(homeUrl);
 }

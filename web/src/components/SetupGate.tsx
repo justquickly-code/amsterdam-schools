@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 
 type WorkspaceRow = {
   child_name: string | null;
@@ -31,11 +31,7 @@ export default function SetupGate({
   const [loading, setLoading] = useState(true);
   const [gate, setGate] = useState(false);
   const [role, setRole] = useState<WorkspaceRole | null>(null);
-  const [language, setLanguage] = useState<Language>(() => {
-    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
-    const stored = window.localStorage.getItem("schools_language");
-    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
-  });
+  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
 
   useEffect(() => {
     let mounted = true;
@@ -65,10 +61,7 @@ export default function SetupGate({
       }
 
       setRole(role ?? null);
-      const stored =
-        typeof window !== "undefined" ? window.localStorage.getItem("schools_language") : null;
-      const fallback = stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
-      setLanguage((workspace?.language as Language) ?? (fallback as Language));
+      setLanguage((workspace?.language as Language) ?? readStoredLanguage());
       const ws = (workspace ?? null) as WorkspaceRow | null;
       const hasChild = Boolean((ws?.child_name ?? "").trim());
       const hasAddress = Boolean(ws?.home_postcode && ws?.home_house_number);
@@ -86,7 +79,10 @@ export default function SetupGate({
   useEffect(() => {
     const onLang = (event: Event) => {
       const next = (event as CustomEvent<Language>).detail;
-      if (next) setLanguage(next);
+      if (next) {
+        setLanguage(next);
+        setStoredLanguage(next);
+      }
     };
     window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, t } from "@/lib/i18n";
+import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 import { Wordmark } from "@/components/schoolkeuze";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -18,10 +18,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("schools_language");
-    if (stored === "en" || stored === "nl") {
-      setLanguage(stored);
-    }
+    setLanguage(readStoredLanguage());
     setHydrated(true);
   }, []);
 
@@ -42,7 +39,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem("schools_language", language);
+    setStoredLanguage(language);
     emitLanguageChanged(language);
   }, [language, hydrated]);
 
@@ -62,7 +59,7 @@ export default function LoginPage() {
     const next = language === "nl" ? "en" : "nl";
     setLanguage(next);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("schools_language", next);
+      setStoredLanguage(next);
       emitLanguageChanged(next);
     }
   };
@@ -97,11 +94,16 @@ export default function LoginPage() {
         : envOrigin && envOrigin.length > 0
           ? envOrigin.replace(/\/$/, "")
           : windowOrigin;
+      const setupFlag =
+        typeof window !== "undefined" &&
+        (window.localStorage.getItem("prefill_postcode") || window.localStorage.getItem("prefill_advies"))
+          ? "&setup=1"
+          : "";
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
           // After clicking the email link, user returns to the app
-          emailRedirectTo: `${origin}/auth/callback?lang=${language}`,
+          emailRedirectTo: `${origin}/auth/callback?lang=${language}${setupFlag}`,
         },
       });
 
@@ -127,23 +129,18 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-        <div className="mx-auto w-full max-w-md space-y-4">
-          <div className="flex items-center justify-center">
-            <Wordmark className="h-10" />
-          </div>
-          <div className="rounded-2xl border bg-card p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                {t(hydrated ? language : DEFAULT_LANGUAGE, "settings.language")}
-              </div>
-              <button
-                className="rounded-full border px-3 py-1 text-xs"
-                type="button"
-                onClick={toggleLanguage}
-              >
-                {language === "nl" ? "NL" : "EN"}
-              </button>
-            </div>
+      <div className="mx-auto w-full max-w-md space-y-4">
+        <div className="flex items-center justify-between">
+          <Wordmark className="h-10" />
+          <button
+            className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm backdrop-blur"
+            type="button"
+            onClick={toggleLanguage}
+          >
+            {language === "nl" ? "NL" : "EN"}
+          </button>
+        </div>
+        <div className="space-y-4 rounded-2xl border bg-card p-6 shadow-sm">
             <h1 className="text-2xl font-semibold">{t(language, "login.title")}</h1>
             <p className="text-sm text-muted-foreground">{t(language, "login.subtitle")}</p>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
@@ -20,6 +21,7 @@ type School = {
     supported_levels: string[];
     address: string | null;
     website_url: string | null;
+    image_url?: string | null;
 };
 
 type SchoolRow = {
@@ -28,6 +30,7 @@ type SchoolRow = {
     supported_levels: string[];
     address: string | null;
     website_url: string | null;
+    image_url?: string | null;
 };
 
 type Visit = {
@@ -242,7 +245,7 @@ export default function SchoolDetailPage() {
 
             const { data: sch, error: sErr } = await supabase
                 .from("schools")
-                .select("id,name,supported_levels,address,website_url")
+                .select("id,name,supported_levels,address,website_url,image_url")
                 .eq("id", schoolId)
                 .maybeSingle();
 
@@ -645,6 +648,12 @@ export default function SchoolDetailPage() {
 
                 {school && (
                     <InfoCard title={t(language, "school.detail_overview")}>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                            {school.image_url ? (
+                                <div className="relative h-32 w-full overflow-hidden rounded-2xl sm:h-40 sm:w-56">
+                                    <Image src={school.image_url} alt={school.name} fill className="object-cover" />
+                                </div>
+                            ) : null}
                         <div className="space-y-2 text-sm text-muted-foreground">
                             <div>{(school.supported_levels ?? []).join(", ")}</div>
                             {school.address && <div>{school.address}</div>}
@@ -653,6 +662,7 @@ export default function SchoolDetailPage() {
                                     {t(language, "schools.website")}
                                 </a>
                             )}
+                        </div>
                         </div>
                     </InfoCard>
                 )}

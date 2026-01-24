@@ -5,7 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, emitLanguageChanged, t } from "@/lib/i18n";
+import {
+  DEFAULT_LANGUAGE,
+  Language,
+  LANGUAGE_EVENT,
+  emitLanguageChanged,
+  readStoredLanguage,
+  setStoredLanguage,
+  t,
+} from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
@@ -26,6 +34,7 @@ function normalizePostcode(input: string) {
 export default function SetupPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [error, setError] = useState<string>("");
   const [saving, setSaving] = useState(false);
@@ -35,8 +44,7 @@ export default function SetupPage() {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get("lang");
     if (fromUrl === "en" || fromUrl === "nl") return fromUrl;
-    const stored = window.localStorage.getItem("schools_language");
-    return stored === "en" || stored === "nl" ? stored : DEFAULT_LANGUAGE;
+    return readStoredLanguage();
   });
   const [step, setStep] = useState<"profile" | "invite" | "tutorial">("profile");
   const [inviteEmail, setInviteEmail] = useState("");
@@ -52,6 +60,7 @@ export default function SetupPage() {
 
   useEffect(() => {
     let mounted = true;
+    setHydrated(true);
 
     async function load() {
       setLoading(true);
@@ -105,7 +114,7 @@ export default function SetupPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem("schools_language", language);
+    setStoredLanguage(language);
     emitLanguageChanged(language);
   }, [language]);
 
@@ -270,7 +279,9 @@ export default function SetupPage() {
     return (
       <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center">
-        <p className="text-sm text-muted-foreground">{t(language, "setup.loading")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t(hydrated ? language : DEFAULT_LANGUAGE, "setup.loading")}
+        </p>
         </div>
       </main>
     );
