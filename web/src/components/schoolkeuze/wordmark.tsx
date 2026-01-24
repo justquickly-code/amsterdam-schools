@@ -18,6 +18,7 @@ function Wordmark({ className }: WordmarkProps) {
         width={180}
         height={36}
         className="h-9 w-auto object-contain"
+        style={{ width: "auto", height: "auto" }}
         priority
       />
     </Link>

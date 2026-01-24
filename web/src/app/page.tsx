@@ -160,8 +160,14 @@ export default function ExploreHome() {
   const [hasSession, setHasSession] = useState(false);
   const [searchStarted, setSearchStarted] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [postcode, setPostcode] = useState("");
-  const [adviesKey, setAdviesKey] = useState("");
+  const [postcode, setPostcode] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("prefill_postcode") ?? "";
+  });
+  const [adviesKey, setAdviesKey] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("prefill_advies") ?? "";
+  });
   const [loading, setLoading] = useState(true);
   const [ws, setWs] = useState<WorkspaceRow | null>(null);
   const [schools, setSchools] = useState<School[]>([]);
@@ -179,6 +185,16 @@ export default function ExploreHome() {
     window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
     return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("prefill_postcode", postcode);
+  }, [postcode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("prefill_advies", adviesKey);
+  }, [adviesKey]);
 
   const toggleLanguage = async () => {
     const next = language === "nl" ? "en" : "nl";
@@ -239,7 +255,7 @@ export default function ExploreHome() {
         } else {
           setLanguage(wsLang ?? storedLang);
         }
-        if (!adviesKey && (workspaceRow?.advies_levels ?? []).length > 0) {
+        if ((workspaceRow?.advies_levels ?? []).length > 0) {
           const key = ADVIES_OPTIONS.find((opt) => {
             const levels = opt.levels.join("|");
             return levels === (workspaceRow?.advies_levels ?? []).join("|");

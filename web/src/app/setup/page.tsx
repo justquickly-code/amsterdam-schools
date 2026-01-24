@@ -76,9 +76,14 @@ export default function SetupPage() {
         setLanguage(ws.language as Language);
       }
       setChildName(ws?.child_name ?? "");
-      setHomePostcode(ws?.home_postcode ?? "");
+      const storedPostcode =
+        typeof window !== "undefined" ? window.localStorage.getItem("prefill_postcode") ?? "" : "";
+      const storedAdvies =
+        typeof window !== "undefined" ? window.localStorage.getItem("prefill_advies") ?? "" : "";
+      setHomePostcode(ws?.home_postcode ?? storedPostcode);
       setHomeHouseNumber(ws?.home_house_number ?? "");
-      setAdviesOption(adviesOptionFromLevels(ws?.advies_levels ?? []));
+      const wsAdvies = adviesOptionFromLevels(ws?.advies_levels ?? []);
+      setAdviesOption(wsAdvies || storedAdvies);
 
       setLoading(false);
     }
@@ -218,6 +223,8 @@ export default function SetupPage() {
 
     if (typeof window !== "undefined") {
       window.localStorage.setItem("setup_completed_at", new Date().toISOString());
+      window.localStorage.removeItem("prefill_postcode");
+      window.localStorage.removeItem("prefill_advies");
     }
 
     // Kick off commute compute in background
@@ -318,24 +325,49 @@ export default function SetupPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {["profile", "invite", "tutorial"].map((key, idx) => (
+        <div className="space-y-2">
+          <div className="text-xs text-muted-foreground">
+            {t(language, "setup.step_count").replace("{current}", String(stepIndex + 1)).replace("{total}", "3")}
+          </div>
+          <div className="relative">
+            <div className="absolute left-4 right-4 top-5 h-0.5 bg-border" />
             <div
-              key={key}
-              className={`rounded-full border px-3 py-1 ${
-                idx === stepIndex ? "bg-secondary text-foreground" : ""
-              }`}
-            >
-              {t(language, `setup.step_${key}`)}
+              className="absolute left-4 top-5 h-0.5 bg-primary"
+              style={{ width: `${(stepIndex / 2) * 100}%` }}
+            />
+            <div className="flex justify-between text-xs">
+              {["profile", "invite", "tutorial"].map((key, idx) => (
+                <div key={key} className="flex flex-col items-center gap-2 w-full">
+                  <div
+                    className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] ${
+                      idx <= stepIndex ? "border-primary bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {idx + 1}
+                  </div>
+                  <span className={idx <= stepIndex ? "text-primary" : "text-muted-foreground"}>
+                    {t(language, `setup.step_${key}`)}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
-        <InfoCard title={t(language, "setup.title")}>
+        <InfoCard
+          title={
+            step === "profile"
+              ? t(language, "setup.step_profile_title")
+              : step === "invite"
+              ? t(language, "setup.step_invite_title")
+              : t(language, "setup.step_tutorial_title")
+          }
+        >
           {step === "profile" && (
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>{t(language, "setup.intro")}</p>
               <p>{t(language, "setup.profile_why")}</p>
+              <p className="text-xs">{t(language, "setup.prefill_hint")}</p>
             </div>
           )}
 
@@ -359,7 +391,7 @@ export default function SetupPage() {
                     className="w-full rounded-2xl border bg-background px-4 py-2"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="parent@example.com"
+                    placeholder={t(language, "settings.invite_placeholder")}
                   />
                 </label>
                 <button
