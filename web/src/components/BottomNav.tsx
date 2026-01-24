@@ -122,13 +122,13 @@ export default function BottomNav() {
   const items = isAuthed
     ? [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-8 w-8" },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-7 w-7" },
         { href: "/planner", label: t(language, "nav.open_days"), icon: CalendarIcon },
         { href: "/profile", label: t(language, "nav.profile"), icon: UserIcon },
       ]
     : [
         { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-8 w-8" },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-7 w-7" },
         { href: "/login", label: t(language, "nav.login"), icon: LoginIcon },
       ];
 
@@ -140,6 +140,7 @@ export default function BottomNav() {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
             const iconClass = item.iconSize ?? "h-6 w-6";
+            const wrapperClass = item.iconSize ?? "h-6 w-6";
             return (
               <Link
                 key={item.href}
@@ -148,7 +149,7 @@ export default function BottomNav() {
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <span className="flex h-6 w-6 items-center justify-center">
+                <span className={`flex items-center justify-center ${wrapperClass}`}>
                   <Icon className={`${iconClass} block`} />
                 </span>
                 <span className={`text-[11px] font-medium leading-none ${active ? "text-primary" : ""}`}>

@@ -186,7 +186,7 @@ export default function FeedbackPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto w-full max-w-4xl space-y-6">
-        <header className="space-y-2">
+        <header className="flex flex-col gap-2">
           <Wordmark />
           <h1 className="text-3xl font-semibold text-foreground">{t(language, "feedback.title")}</h1>
           <p className="text-sm text-muted-foreground">{t(language, "feedback.subtitle")}</p>
