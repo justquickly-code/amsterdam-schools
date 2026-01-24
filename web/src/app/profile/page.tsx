@@ -426,9 +426,57 @@ export default function Home() {
         {dashError && <p className="text-sm text-red-600">Error: {dashError}</p>}
 
         <InfoCard title={t(language, "profile.journey_title")}>
-          <div className="text-center text-sm text-muted-foreground">
-            {t(language, "profile.list_count").replace("{count}", String(shortlistIds.length))}
-          </div>
+          {(() => {
+            const suggestions = [
+              {
+                show: shortlistIds.length === 0,
+                label: t(language, "profile.suggest_add_school"),
+                href: "/",
+              },
+              {
+                show: !hasCompleteShortlist,
+                label: t(language, "profile.suggest_finish_list"),
+                href: "/shortlist",
+              },
+              {
+                show: plannedCount === 0,
+                label: t(language, "profile.suggest_plan_day"),
+                href: "/planner",
+              },
+              {
+                show: !hasAttended,
+                label: t(language, "profile.suggest_mark_visit"),
+                href: "/planner",
+              },
+            ].filter((item) => item.show);
+
+            if (suggestions.length === 0) {
+              return (
+                <div className="text-center text-sm text-muted-foreground">
+                  {t(language, "profile.list_count").replace("{count}", String(shortlistIds.length))}
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {t(language, "profile.next_steps")}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.slice(0, 3).map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="rounded-full border px-3 py-1 text-xs font-semibold text-foreground"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           <div className="relative mt-4">
             <div className="absolute left-5 right-5 top-5 h-0.5 bg-border" />
             <div

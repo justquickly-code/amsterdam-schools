@@ -73,6 +73,8 @@ const candidatesForName = (name) => {
   return Array.from(candidates);
 };
 
+const FALLBACK_IMAGE_URL = "/branding/hero/school-1.jpg";
+
 const imageForName = (name) => {
   const alias = {
     "Amsterdams Beroepscollege Noorderlicht": "abc-noorderlicht",
@@ -110,19 +112,23 @@ let matched = 0;
 let skipped = 0;
 const unmatched = [];
 for (const school of schools ?? []) {
-  if (school.image_url) {
-    skipped += 1;
-    continue;
-  }
   const imageUrl = imageForName(school.name);
   if (!imageUrl) {
     unmatched.push(school.name);
+  } else {
+    matched += 1;
+  }
+
+  const nextUrl = imageUrl ?? FALLBACK_IMAGE_URL;
+
+  if (school.image_url === nextUrl) {
+    skipped += 1;
     continue;
   }
-  matched += 1;
+
   const { error: updErr } = await supabase
     .from("schools")
-    .update({ image_url: imageUrl })
+    .update({ image_url: nextUrl })
     .eq("id", school.id);
   if (updErr) {
     console.error("Failed to update", school.name, updErr.message);
