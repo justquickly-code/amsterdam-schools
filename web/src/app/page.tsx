@@ -109,8 +109,9 @@ function matchesAdvies(
   const a = (adviesLevels || []).filter(Boolean);
   if (a.length === 0) return true; // no advies set => show all
   if (a.length === 1) return schoolLevels.includes(a[0]);
+  // Dual advice should require both levels.
   if (matchMode === "both") return a.every((lvl) => schoolLevels.includes(lvl));
-  return a.some((lvl) => schoolLevels.includes(lvl));
+  return a.every((lvl) => schoolLevels.includes(lvl));
 }
 
 function levelsForAdviesKey(key: string) {
