@@ -39,13 +39,7 @@ export default function SetupPage() {
   const [error, setError] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [role, setRole] = useState<WorkspaceRole | null>(null);
-  const [language, setLanguage] = useState<Language>(() => {
-    if (typeof window === "undefined") return DEFAULT_LANGUAGE;
-    const params = new URLSearchParams(window.location.search);
-    const fromUrl = params.get("lang");
-    if (fromUrl === "en" || fromUrl === "nl") return fromUrl;
-    return readStoredLanguage();
-  });
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [step, setStep] = useState<"profile" | "invite" | "tutorial">("profile");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteBusy, setInviteBusy] = useState(false);
@@ -65,6 +59,15 @@ export default function SetupPage() {
     async function load() {
       setLoading(true);
       setError("");
+
+      const params = new URLSearchParams(window.location.search);
+      const fromUrl = params.get("lang");
+      if (fromUrl === "en" || fromUrl === "nl") {
+        setLanguage(fromUrl);
+        setStoredLanguage(fromUrl);
+      } else {
+        setLanguage(readStoredLanguage());
+      }
 
       const { workspace: data, role, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
         "id,child_name,home_postcode,home_house_number,advies_levels,advies_match_mode,language"

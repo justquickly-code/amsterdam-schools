@@ -171,3 +171,7 @@
 - Auth: /shortlist redirects to login when logged out.
 - UI: school list buttons now say “My list” consistently.
 - Build: swap Google Fonts for locally hosted DM Sans + Fraunces to avoid network fetch during build.
+- Explore: public cards now show address + levels only (no placeholder stats).
+- Explore: “Start je lijst” CTA routes to login; setup prefill reads postcode + advice from Explore.
+- Schools: added image_url column and seeded school images from local branding set.
+- i18n: language preference persisted via cookie + localStorage (hydration-safe toggles).

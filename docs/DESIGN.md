@@ -55,6 +55,8 @@ Create a more engaging, Airbnb‑style experience while preserving all MVP funct
 - **Profile replaces Dashboard in nav** (Dashboard content lives inside Profile).
 - **Shortlist UI label becomes “My List.”**
 - **Advice is set in setup and only editable in Settings.** Show it as a badge.
+- **Language persists via cookie + localStorage**, and toggles render only after hydration to avoid SSR mismatch.
+- **Setup prefill**: Explore stores postcode + advice to prefill setup after login.
 
 ## Screen Plan (approved)
 1) **Explore / Home (Public)**

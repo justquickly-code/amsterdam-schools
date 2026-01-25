@@ -99,13 +99,10 @@ type School = {
   has_planned_open_day?: boolean;
 };
 
-type FeaturedSchool = {
-  id: string;
-  name: string;
+type FeaturedSchool = School & {
   image: string;
   tags: string[];
   address: string;
-  commute: School["commute"];
   rating: number | null;
 };
 
@@ -421,7 +418,7 @@ export default function ExploreHome() {
     return withCommute.concat(withoutCommute);
   }, [filtered, sortMode, hasSession]);
 
-  const featuredSchools = useMemo<FeaturedSchool[]>(() => {
+  const featuredSchools: FeaturedSchool[] = useMemo(() => {
     if (sorted.length === 0) return [];
     const base =
       hasSession
@@ -441,8 +438,7 @@ export default function ExploreHome() {
             });
 
     return base.slice(0, hasSession ? 4 : 5).map((s) => ({
-      id: s.id,
-      name: s.name,
+      ...s,
       image: s.image_url || pickSchoolImage(s.name, s.id),
       tags: (s.supported_levels ?? []).slice(0, 2).map(friendlyLevel),
       address: s.address ?? "",
@@ -630,25 +626,20 @@ export default function ExploreHome() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {featuredSchools.map((school, idx) => {
-            const isFavorite = favorites.includes(school.id);
-            const hasLink = "address" in school;
-            const schoolHref = hasLink ? `/schools/${school.id}` : "#school-list";
+          {featuredSchools.map((item, idx: number) => {
+            const isFavorite = favorites.includes(item.id);
+            const schoolHref = `/schools/${item.id}`;
             return (
-              <div key={school.id} className="overflow-hidden rounded-3xl border bg-card shadow-md">
+              <div key={item.id} className="overflow-hidden rounded-3xl border bg-card shadow-md">
                 <div className="relative h-40">
-                  {hasLink ? (
-                    <Link href={schoolHref} className="absolute inset-0">
-                      <Image src={school.image} alt={school.name} fill className="object-cover" />
-                    </Link>
-                  ) : (
-                    <Image src={school.image} alt={school.name} fill className="object-cover" />
-                  )}
+                  <Link href={schoolHref} className="absolute inset-0">
+                    <Image src={item.image} alt={item.name} fill className="object-cover" />
+                  </Link>
                   <button
                     className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
                       isFavorite ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
                     }`}
-                    onClick={() => toggleFavorite(school.id)}
+                    onClick={() => toggleFavorite(item.id)}
                     type="button"
                     aria-label="Toggle favorite"
                   >
@@ -657,29 +648,25 @@ export default function ExploreHome() {
                 </div>
                 <div className="space-y-3 p-4">
                   <div>
-                    {hasLink ? (
-                      <Link className="text-base font-semibold text-primary underline underline-offset-2" href={schoolHref}>
-                        {school.name}
-                      </Link>
-                    ) : (
-                      <h3 className="text-base font-semibold text-foreground">{school.name}</h3>
-                    )}
-                    {"address" in school && school.address ? (
-                      <div className="mt-1 text-xs text-muted-foreground">{school.address}</div>
+                    <Link className="text-base font-semibold text-primary underline underline-offset-2" href={schoolHref}>
+                      {item.name}
+                    </Link>
+                    {item.address ? (
+                      <div className="mt-1 text-xs text-muted-foreground">{item.address}</div>
                     ) : null}
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      {"commute" in school && school.commute?.duration_minutes ? (
-                        <span>🚲 {school.commute.duration_minutes} min</span>
+                      {item.commute?.duration_minutes ? (
+                        <span>🚲 {item.commute.duration_minutes} min</span>
                       ) : null}
-                      {"commute" in school && school.commute?.distance_km ? (
-                        <span>{school.commute.distance_km} km</span>
+                      {item.commute?.distance_km ? (
+                        <span>{item.commute.distance_km} km</span>
                       ) : null}
-                      {"rating" in school && school.rating ? <span>⭐ {school.rating}/5</span> : null}
+                      {item.rating ? <span>⭐ {item.rating}/5</span> : null}
                     </div>
                   </div>
-                  {"tags" in school && school.tags?.length ? (
+                  {item.tags?.length ? (
                     <div className="flex flex-wrap gap-2">
-                      {school.tags.map((tag) => (
+                      {item.tags.map((tag) => (
                         <span key={tag} className="rounded-full bg-secondary/70 px-3 py-1 text-xs font-semibold text-foreground">
                           {tag}
                         </span>

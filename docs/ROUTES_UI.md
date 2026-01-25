@@ -76,6 +76,7 @@
 - Step 2: Invite family (optional). Explain shared workspace + per‑member notes.
 - Step 3: How it works tutorial (optional). Emphasize it’s the Amsterdam 2025/26 process.
 - Invited users (new accounts) can start tutorial or skip to Dashboard.
+- Explore stores postcode + advice locally so setup can prefill after login.
 
 ## Routing note
 - /planner is the canonical route.

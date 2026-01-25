@@ -13,18 +13,22 @@ type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: st
 
 type ShortlistRow = { id: string; workspace_id: string };
 
-type ShortlistItemRow = { school_id: string; rank: number | null; school?: { id: string; name: string } | null };
+type ShortlistItemRow = {
+  school_id: string;
+  rank: number | null;
+  school?: { id: string; name: string; image_url?: string | null } | null;
+};
 
 type ShortlistItemRowRaw = {
   school_id: string;
   rank: number | null;
-  school?: { id: string; name: string } | Array<{ id: string; name: string }> | null;
+  school?: { id: string; name: string; image_url?: string | null } | Array<{ id: string; name: string; image_url?: string | null }> | null;
 };
 
 type ShortlistItem = {
   school_id: string;
   rank: number | null;
-  school?: { id: string; name: string } | null;
+  school?: { id: string; name: string; image_url?: string | null } | null;
   rating_stars?: number | null;
   attended?: boolean;
   commute?: { duration_minutes: number | null; distance_km: number | null } | null;
