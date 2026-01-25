@@ -99,13 +99,6 @@ type School = {
   has_planned_open_day?: boolean;
 };
 
-type FeaturedSchool = School & {
-  image: string;
-  tags: string[];
-  address: string;
-  rating: number | null;
-};
-
 type SortMode = "name" | "bike";
 
 function matchesAdvies(
@@ -430,11 +423,11 @@ export default function ExploreHome() {
   const matchMode = ws?.advies_match_mode ?? "either";
 
   const filtered = useMemo(() => {
-    const q = hasSession ? query.trim().toLowerCase() : "";
+    const q = query.trim().toLowerCase();
     return schools
       .filter((s) => (q ? s.name.toLowerCase().includes(q) : true))
       .filter((s) => matchesAdvies(s.supported_levels ?? [], activeAdviesLevels, matchMode));
-  }, [schools, query, activeAdviesLevels, matchMode, hasSession]);
+  }, [schools, query, activeAdviesLevels, matchMode]);
 
   const sorted = useMemo(() => {
     if (!hasSession || sortMode === "name") {
@@ -449,35 +442,6 @@ export default function ExploreHome() {
     );
     return withCommute.concat(withoutCommute);
   }, [filtered, sortMode, hasSession]);
-
-  const featuredSchools: FeaturedSchool[] = useMemo(() => {
-    if (sorted.length === 0) return [];
-    const base =
-      hasSession
-        ? sorted
-        : searchStarted
-          ? sorted
-          : [...schools].sort((a, b) => {
-              const seed = "public-hero";
-              const hash = (value: string) => {
-                let acc = 0;
-                for (let i = 0; i < value.length; i += 1) {
-                  acc = (acc * 31 + value.charCodeAt(i)) % 100000;
-                }
-                return acc;
-              };
-              return hash(`${seed}:${a.id}`) - hash(`${seed}:${b.id}`);
-            });
-
-    return base.slice(0, hasSession ? 4 : 5).map((s) => ({
-      ...s,
-      image: s.image_url || pickSchoolImage(s.name, s.id),
-      tags: (s.supported_levels ?? []).slice(0, 2).map(friendlyLevel),
-      address: s.address ?? "",
-      commute: s.commute ?? null,
-      rating: s.visits?.[0]?.rating_stars ?? null,
-    }));
-  }, [sorted, schools, hasSession, searchStarted]);
 
   async function addSchoolToShortlist(schoolId: string) {
     if (!hasSession) {
@@ -709,9 +673,9 @@ export default function ExploreHome() {
         </div>
       </header>
 
-      <section className="px-5 py-8">
-        <div className="mx-auto w-full max-w-5xl">
-          <div className="mb-4 flex items-center justify-between">
+      <section id="school-list" className="bg-background px-5 py-8">
+        <div className="mx-auto w-full max-w-5xl space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-serif text-xl font-semibold text-foreground">{sectionTitle}</h2>
             <Link
               className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
@@ -731,81 +695,39 @@ export default function ExploreHome() {
             </Link>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {featuredSchools.map((item) => {
-              const isFavorite = shortlistIds.includes(item.id);
-              const schoolHref = `/schools/${item.id}`;
-              return (
-                <div key={item.id} className="overflow-hidden rounded-3xl border bg-card shadow-md">
-                  <div className="relative h-40">
-                    <Link href={schoolHref} className="absolute inset-0">
-                      <Image src={item.image} alt={item.name} fill className="object-cover" />
-                    </Link>
-                    <button
-                      className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
-                        isFavorite ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
-                      }`}
-                      onClick={() => toggleFavorite(item.id)}
-                      type="button"
-                      aria-label="Add to my list"
-                    >
-                      {isFavorite ? "♥" : "♡"}
-                    </button>
-                  </div>
-                  <div className="space-y-3 p-4">
-                    <div>
-                      <Link className="text-base font-semibold text-primary underline underline-offset-2" href={schoolHref}>
-                        {item.name}
-                      </Link>
-                      {item.address ? (
-                        <div className="mt-1 text-xs text-muted-foreground">{item.address}</div>
-                      ) : null}
-                      <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        {item.commute?.duration_minutes ? (
-                          <span>🚲 {item.commute.duration_minutes} min</span>
-                        ) : null}
-                        {item.commute?.distance_km ? (
-                          <span>{item.commute.distance_km} km</span>
-                        ) : null}
-                        {item.rating ? <span>⭐ {item.rating}/5</span> : null}
-                      </div>
-                    </div>
-                    {item.tags?.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {item.tags.map((tag) => (
-                          <span key={tag} className="rounded-full bg-secondary/70 px-3 py-1 text-xs font-semibold text-foreground">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section id="school-list" className="bg-background px-5 pb-12">
-        <div className="mx-auto w-full max-w-5xl space-y-6">
-          {hasSession ? (
-            <InfoCard
-              title={t(language, "schools.filters_title")}
-              action={activeAdviesLevels.length ? (
-                <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-                  {t(language, "schools.filters_advies")} {activeAdviesLevels.join(" / ")}
+          <div className="rounded-3xl border bg-white/95 p-4 shadow-sm">
+            <div className="grid gap-3 md:grid-cols-[1.2fr_auto] md:items-end">
+              <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                {t(language, "schools.search")}
+                <input
+                  className="h-11 rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
+                  placeholder={t(language, "schools.search")}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </label>
+              {hasSession ? (
+                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                  {t(language, "schools.sort")}
+                  <select
+                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
+                    value={sortMode}
+                    onChange={(event) => setStoredSortMode(event.target.value as SortMode)}
+                  >
+                    <option value="name">{t(language, "schools.sort_name")}</option>
+                    <option value="bike">{t(language, "schools.sort_bike")}</option>
+                  </select>
+                </label>
+              ) : null}
+            </div>
+            {adviesPill ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-foreground">
+                <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
+                  {t(language, "schools.filters_advies")} {adviesPill}
                 </span>
-              ) : undefined}
-            >
-              <input
-                className="w-full rounded-2xl border bg-background px-4 py-3 text-sm"
-                placeholder={t(language, "schools.search")}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </InfoCard>
-          ) : null}
+              </div>
+            ) : null}
+          </div>
 
           {shortlistMsg && (
             <div className="rounded-2xl border border-info-muted bg-info-muted px-4 py-3 text-sm text-foreground">
