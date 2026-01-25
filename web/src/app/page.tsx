@@ -86,6 +86,7 @@ type School = {
   supported_levels: string[];
   address: string | null;
   website_url: string | null;
+  image_url?: string | null;
   commute?: {
     duration_minutes: number | null;
     distance_km: number;
