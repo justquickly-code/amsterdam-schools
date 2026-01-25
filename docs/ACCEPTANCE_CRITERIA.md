@@ -3,13 +3,11 @@
 ## Workspace settings
 - User can set postcode + house number
 - User can set advies levels (single or combined)
-- User can set match mode: either/both (only relevant for combined)
 - Settings persist and validate
 
 ## Schools list
 - Shows only schools matching advies by default
-- If match mode = either: show schools with either level
-- If match mode = both: show schools that offer both levels
+- If advies is combined (e.g., HAVO/VWO), show only schools that offer both levels
 - If home location is set: shows cycling time (min) + distance (km)
 - Can sort by cycling time (ascending)
 

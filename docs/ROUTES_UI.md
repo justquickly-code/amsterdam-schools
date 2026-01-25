@@ -28,8 +28,8 @@
 
 - /shortlist (My List)
   - single list of saved schools
-  - top‑N ranked highlight (cap depends on advice: 4/6/12)
-  - reorder ranked items; remove from top without deleting
+  - ranked subset (cap depends on advice: 4/6/12)
+  - reorder ranked items with up/down controls
 
 - /shortlist/print (Print export)
   - printable ranked list
@@ -45,7 +45,7 @@
 - /settings
   - workspace name
   - home location: postcode + house number
-  - advies: single or combined + match mode either/both
+  - advies: single or combined (combined requires both levels)
   - workspace members (invite/add)
 
 - /admin (Admin hub, allowlisted only)

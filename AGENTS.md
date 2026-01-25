@@ -48,11 +48,13 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 ## Current State Summary
 - Core MVP complete; Airbnb-style design refresh merged into `main`.
 - Explore is public at `/` (hero + schools list); login required for save/plan actions.
-- Explore shows advice pill when filters are applied; hearts add to My List.
+- Explore shows a single continuous list with combined search + sort controls.
+- Combined advice (e.g., HAVO/VWO) requires schools that offer both levels.
+- Advice pill shows when filters are applied; hearts add to My List.
 - Dashboard content now lives in `/profile` (Profile hub layout).
 - Open days list is public; planner actions are login‑gated.
-- My List is a single list with top‑N highlight (cap by advice).
-- Setup wizard restyle (copy + visuals) completed.
+- My List is a single list with ranked subset controls (cap by advice).
+- Setup wizard restyle (copy + visuals) in progress.
 - Open days now show upcoming dates only (labeled as remaining).
 - Admin hub exists; admin routes require allowlist + token.
 
@@ -73,7 +75,7 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Profile is default landing after login (Dashboard content lives there).
 - Setup gating until child name + address + advies are set
 - Planner route is `/planner` (with `/open-days` redirect)
-- Shortlist is one list with Top 12 subset
+- Shortlist is one list with ranked subset
 - Open days are best-effort with verify message
 
 ## Security & Admin Rules

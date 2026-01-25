@@ -161,6 +161,6 @@ Remaining Open Decisions (to resolve when needed)
 [Constraint] Do not remove or weaken:
 	•	Shortlist hard cap = 12
 	•	Single 1–5 rating
-	•	Advies combined either/both toggle
+	•	Combined advice requires schools to offer both levels
 	•	Open days warning + last synced
 	•	Workspace isolation (multi-tenant)

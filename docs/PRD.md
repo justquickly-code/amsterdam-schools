@@ -7,7 +7,7 @@ Help a family plan Amsterdam secondary school open days, capture notes + a 1–5
 - Accounts + Workspace (shareable with friends)
 - Home address: NL postcode + house number
 - Cycling time + distance to each school (bike)
-- Advies filtering (single dropdown with combined options; matching is “either”)
+- Advies filtering (single dropdown with combined options; combined advice requires schools that offer both levels)
 - Open days are “best effort”: show last synced + warn users to verify on school websites
 - One saved list of schools with a ranked subset (cap depends on advice)
 - One rating only (1–5 stars)

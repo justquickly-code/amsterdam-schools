@@ -16,7 +16,7 @@ Source of truth:
 | Accounts + Workspace model | ✅ | Workspace sharing + invite/join flow implemented (CL-062). |
 | Home address (postcode + house number) | ✅ | Settings exists; used for commute compute. |
 | Cycling time + distance (bike) | ✅ | Cached compute exists; user-safe on-demand compute implemented. |
-| Advies filtering + Either/Both toggle | ✅ | Implemented per acceptance criteria. |
+| Advies filtering (combined requires both levels) | ✅ | Combined advice filters to schools that offer all selected levels. |
 | Open days best-effort with “verify” + last synced | ✅ | Implemented warning + ICS; year/event_type handling completed. User-facing wording should say “Open Days”. |
 | Save visit notes + 1–5 rating | ✅ | Visits + rating implemented; notes are per member. |
 | Ranked subset view + ranked order (cap by advice) | ✅ | Ranking implemented. |

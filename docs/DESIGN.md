@@ -21,7 +21,7 @@ Style reference: Airbnb‑inspired (warm, visual, journey‑first).
 ## Controls
 - Segmented control for list scopes (All / My / Ranked)
 - One primary CTA per page (others are outline/link)
-- Sticky filters for long lists
+- Filters grouped above long lists
 
 ## Color
 - One accent color for active state + links
@@ -63,9 +63,9 @@ Create a more engaging, Airbnb‑style experience while preserving all MVP funct
    - Hero search (postcode + advice), preview cards, journey teaser.
    - Logged‑out bottom nav: Explore / My List / Login.
 2) **Explore / Schools List**
-   - Photo cards, heart save, advice badge.
+   - Photo cards, heart save, advice badge + combined filter/sort bar.
 3) **My List**
-   - Single list; top‑N ranked via drag; top‑N visually highlighted.
+   - Single list; ranked subset via up/down controls; ranked positions shown.
 4) **Open Days (Planner)**
    - Date‑grouped cards, collapsed filters, “Add to planner”.
 5) **Profile (Dashboard hub)**

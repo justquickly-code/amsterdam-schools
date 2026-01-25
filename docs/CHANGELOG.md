@@ -15,9 +15,9 @@
 - Profile: tighten next-step criteria (shortlist count, visit notes + rating).
 - School detail: move My List heart to the overview card.
 - Setup: update invite placeholder copy.
-- Nav: add desktop top bar with primary links; remove desktop language toggle from menu.
+- Nav: add desktop top bar with primary links; keep language toggle near menu.
 - Explore: adjust CTA once list is started; align hero filter button.
-- Explore: align featured schools width with main list.
+- Explore: show a single continuous schools list with a combined filter/sort bar.
 - Auth: improve language persistence fallback using cookies and query params.
 - Email: refresh magic-link and invite templates (single mixed-language email).
 - ICS: export open days in CET/Europe/Amsterdam timezone.
@@ -28,9 +28,9 @@
 - Explore: hide duplicate wordmark on desktop when top nav overlays hero.
 - Nav: add left logo + centered floating nav pills with language toggle near menu.
 - Setup gate: allow return to profile when setup already completed.
-- Explore: show 5 real schools before search (logged out), and no placeholder stats.
+- Filters: combined advice (e.g., HAVO/VWO) requires schools that offer both levels.
 - Explore: “Start je lijst” routes to /login.
-- Explore: fix hydration mismatch for language toggle on the hero.
+- Nav: align SSR language with cookies to avoid hydration mismatches.
 - How it works: remove patronizing copy; single CTA continues to next step.
 - Profile: replace journey counts with contextual “next steps” suggestions.
 - Explore: load visit stats via separate query to avoid Supabase select parser errors in builds.
@@ -124,7 +124,7 @@
 - Schools: persist sort mode via localStorage without initial overwrite.
 - Schools: persist sort mode between sessions.
 - Settings: invite flow now defaults all members to editor (no viewer option).
-- Settings: advies is a single dropdown with combined options (e.g., HAVO/VWO) using "either" matching.
+- Settings: advies is a single dropdown with combined options (e.g., HAVO/VWO) requiring both levels.
 - Docs: add future feature ideas pack (gamification, data quality, reporting, auth, monetisation).
 - Docs: mark RELEASE_PLAN complete through Phase 4 (Jan 18, 2026).
 - Schools detail: fix hook order error after language toggle changes.

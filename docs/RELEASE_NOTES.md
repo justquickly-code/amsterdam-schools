@@ -4,6 +4,8 @@ This is a lightweight summary of features per release. Keep it short and user-fa
 
 ## Unreleased
 - Known issue: Language selection may revert to Dutch after magic-link login.
+- Explore uses a single continuous list with combined search + sort controls.
+- Combined advice (e.g., HAVO/VWO) filters to schools offering both levels.
 
 ## 2026-01-25
 - Public Explore landing with hero search and featured schools.

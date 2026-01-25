@@ -59,7 +59,7 @@
 
 - AdviesProfile (workspace-specific)
   - advies_levels: array (e.g., ["havo"] or ["havo","vwo"])
-  - match_mode: either | both
+  - match_mode: either | both (deprecated; combined advice currently requires both levels)
 
 - Feedback (user-submitted)
   - workspace_id
@@ -74,4 +74,5 @@
 - Ranked cap depends on advice (4/6/12); saved list is not capped
 - One rating per school (1–5 stars)
 - Advies can be combined (two levels)
+- Combined advice filters to schools that offer both levels
 - Open days must show “verify on school website” + “last synced”

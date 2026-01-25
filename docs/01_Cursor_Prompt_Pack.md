@@ -77,19 +77,19 @@ Implement Workspace + WorkspaceMember tables and server logic so each user has a
 
 ⸻
 
-D) Workspace settings: home + advies + matching toggle
+D) Workspace settings: home + advies
 
 D1 — Workspace settings UI + persistence
 
 Prompt
 
-Implement workspace settings fields: home_postcode, home_house_number, advies_levels (single or combined), and match_mode (either/both). Add validation and persistence. UI must include loading/empty/error states. Use the domain constraints from docs.
+Implement workspace settings fields: home_postcode, home_house_number, and advies_levels (single or combined). Add validation and persistence. UI must include loading/empty/error states. Use the domain constraints from docs.
 
-D2 — Combined advice toggle behavior
+D2 — Combined advice behavior
 
 Prompt
 
-Implement the combined advice behavior: default match is EITHER, with a toggle to require BOTH. Ensure the UI only shows the toggle when two advies levels are selected. Add unit tests for the filter logic.
+Implement the combined advice behavior: when two advies levels are selected, only show schools that offer both levels. Add unit tests for the filter logic.
 
 ⸻
 
