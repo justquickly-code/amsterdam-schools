@@ -1,6 +1,14 @@
 # Changelog
 
 ## Unreleased
+- Data: add `schools.image_url` and seed image URLs from local assets.
+- Data: normalize school image folder names to match slugs; clear stale image URLs when missing.
+- Security: allow public read on `schools` for Explore (no PII).
+- Explore: show 5 real schools before search (logged out), and no placeholder stats.
+- Explore: “Start je lijst” routes to /login.
+- Explore: fix hydration mismatch for language toggle on the hero.
+- How it works: remove patronizing copy; single CTA continues to next step.
+- Profile: replace journey counts with contextual “next steps” suggestions.
 - Explore: load visit stats via separate query to avoid Supabase select parser errors in builds.
 - Profile: persist language changes across sessions (local storage + global event).
 - Profile: adjust journey progress line alignment and logout styling for VO consistency.

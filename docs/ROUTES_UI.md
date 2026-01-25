@@ -6,6 +6,7 @@
   - public list of schools (minimal filters)
   - logged-in view adds search + sort + advice badge
   - save/heart/notes actions require login
+  - “Start je lijst” CTA routes to /login
 
 - /profile (Dashboard hub)
   - child name + address + advies badge
@@ -79,5 +80,5 @@
 ## Routing note
 - /planner is the canonical route.
 - /open-days should redirect to /planner to preserve old links.
-- /schools is deprecated (Explore now lives at /).
+- /schools list view is removed; Explore now lives at /.
 - User-facing wording should say “Open Days” (avoid “planner”).

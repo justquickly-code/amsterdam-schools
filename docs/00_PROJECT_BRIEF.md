@@ -65,10 +65,11 @@ Cursor must treat these files as authoritative:
 ## 3) UX decisions locked so far
 
 ### 3.1 Navigation
-- Mobile should have a **bottom nav** (always visible).
-- Default landing after login: **Dashboard** (lightweight, high value).
-- Core screens remain simple: Dashboard, Schools, Open days, Shortlist.
-- Settings, Print/Export, Language toggle, and Sign out live in the top-right menu.
+- Mobile should have a **bottom nav** (mobile only).
+- Default landing after login: **Profile** (Dashboard content lives there).
+- Core screens: Explore (public), My List, Open days, Profile.
+- Settings, Print/Export, Language toggle, and Sign out live in the top-right menu (desktop).
+- Public Explore shows schools before login; save/plan actions require login.
 - Admin entry appears in the top-right menu only for allowlisted admin accounts.
 
 ### 3.2 Language

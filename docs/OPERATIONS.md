@@ -10,9 +10,10 @@ These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 - Purpose: fetch Schoolwijzer VO locations and upsert into `schools`
 - Supplement: adds a small manual list of regular VO schools from Keuzegids 2026 if they are missing from Schoolwijzer.
 - Writes:
-  - schools (source=schoolwijzer, source_id, name, address, supported_levels, website_url, lat/lng, last_synced_at)
+  - schools (source=schoolwijzer, source_id, name, address, supported_levels, website_url, image_url, lat/lng, last_synced_at)
   - data_sync_runs (source=schoolwijzer_schools)
  - Notes: supplemental schools are geocoded via Mapbox when `MAPBOX_ACCESS_TOKEN` is available.
+ - Images: school card images are stored in `web/public/branding/school_images_edited` and mapped to `schools.image_url` via `scripts/normalize-school-images.mjs` + `scripts/seed-school-images.mjs`.
 
 ### Sync Open Days
 - Endpoint: POST /api/admin/sync-open-days

@@ -73,8 +73,6 @@ const candidatesForName = (name) => {
   return Array.from(candidates);
 };
 
-const FALLBACK_IMAGE_URL = "/branding/hero/school-1.jpg";
-
 const imageForName = (name) => {
   const alias = {
     "Amsterdams Beroepscollege Noorderlicht": "abc-noorderlicht",
@@ -119,7 +117,7 @@ for (const school of schools ?? []) {
     matched += 1;
   }
 
-  const nextUrl = imageUrl ?? FALLBACK_IMAGE_URL;
+  const nextUrl = imageUrl ?? null;
 
   if (school.image_url === nextUrl) {
     skipped += 1;

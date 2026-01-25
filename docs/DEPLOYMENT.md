@@ -27,12 +27,14 @@ Use Supabase Cron (seasonal):
 ## Release checklist (minimum)
 - Admin endpoints token-gated and not exposed
 - RLS verified for workspace-owned tables
+- Public read policy for `schools` verified (Explore needs anon read)
 - No secrets committed
 - Basic error handling on core screens
 - Vercel build passes (`pnpm -C web build`)
 - Supabase Auth redirect URLs set for production domain
 - Admin allowlist configured (`ADMIN_ALLOWLIST_EMAILS`)
 - Run admin sync: schools + open days
+- Seed school images (image_url) if using local assets
 - Mapbox key set (geocoding + commutes)
 - Feedback + admin feedback console tested
 - Planner shows open days with advice filter applied

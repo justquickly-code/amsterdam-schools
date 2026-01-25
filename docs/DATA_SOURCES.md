@@ -16,6 +16,7 @@ We store:
 - supported levels (normalized)
 - website URL
 - coordinates (lat/lng) if available, otherwise derived via geocoding
+- image_url (optional, local asset path from `web/public/branding/school_images_edited`)
 
 ## Open days
 Source: Schoolkeuze020 open days list

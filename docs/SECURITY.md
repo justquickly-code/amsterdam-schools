@@ -17,6 +17,7 @@ Routes under /api/admin/*:
 ## RLS expectations
 - Workspace-scoped data must only be accessible to workspace members.
 - Shared reference data (schools, open_days) can be readable to all authenticated users.
+- Public Explore requires anon read on `schools` (no PII): policy `public read schools`.
 - Writes must be restricted to:
   - workspace owners/members for workspace-owned tables
   - service role only for ingestion tables if desired (schools/open_days)

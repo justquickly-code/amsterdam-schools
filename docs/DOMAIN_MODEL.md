@@ -17,6 +17,7 @@
   - address
   - supported_levels (internal enum list)
   - website_url
+  - image_url (optional, local asset path)
   - lat/lng (if available)
 
 - OpenDayEvent
@@ -37,13 +38,11 @@
   - user_id
   - notes
 
-- SavedSchool (workspace-specific)
+- Shortlist (workspace-specific)
+  - workspace_id
+- ShortlistItem (saved school; ranked subset via rank)
   - school_id
-  - saved_at
-
-- RankedItem (workspace-specific ranked subset; cap depends on advice)
-  - school_id
-  - rank: 1–12 (max 12)
+  - rank: 1–12 (nullable; cap depends on advice)
 
 - PlannedOpenDay (workspace-specific join)
   - open_day_id
@@ -65,7 +64,7 @@
 - Feedback (user-submitted)
   - workspace_id
   - user_id
-  - category: bug | idea | question | other
+  - category: bug | idea | question | compliment | general
   - title (optional)
   - body
   - status (admin only): open | in_review | resolved

@@ -11,29 +11,6 @@ import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setS
 import { schoolImageForName } from "@/lib/schoolImages";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
-const HERO_SCHOOLS = [
-  {
-    id: "hero-1",
-    name: "Het Amsterdams Lyceum",
-    image: "",
-  },
-  {
-    id: "hero-2",
-    name: "Montessori Lyceum",
-    image: "",
-  },
-  {
-    id: "hero-3",
-    name: "Barlaeus Gymnasium",
-    image: "",
-  },
-  {
-    id: "hero-4",
-    name: "IJburg College",
-    image: "",
-  },
-];
-
 const FALLBACK_IMAGES = [
   "/branding/hero/school-1.jpg",
   "/branding/hero/school-2.jpg",
@@ -465,7 +442,7 @@ export default function ExploreHome() {
     return base.slice(0, hasSession ? 4 : 5).map((s) => ({
       id: s.id,
       name: s.name,
-      image: pickSchoolImage(s.id),
+      image: s.image_url || pickSchoolImage(s.name, s.id),
       tags: (s.supported_levels ?? []).slice(0, 2).map(friendlyLevel),
       address: s.address ?? "",
       commute: s.commute ?? null,
@@ -661,20 +638,10 @@ export default function ExploreHome() {
                 <div className="relative h-40">
                   {hasLink ? (
                     <Link href={schoolHref} className="absolute inset-0">
-                      <Image
-                        src={pickSchoolImage(school.name, school.id ?? `hero-${idx}`)}
-                        alt={school.name}
-                        fill
-                        className="object-cover"
-                      />
+                      <Image src={school.image} alt={school.name} fill className="object-cover" />
                     </Link>
                   ) : (
-                    <Image
-                      src={pickSchoolImage(school.name, school.id ?? `hero-${idx}`)}
-                      alt={school.name}
-                      fill
-                      className="object-cover"
-                    />
+                    <Image src={school.image} alt={school.name} fill className="object-cover" />
                   )}
                   <button
                     className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${

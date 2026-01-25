@@ -81,6 +81,8 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 ## Migrations Required
 - `supabase/migrations/20260117123000_commute_cache_rls_member.sql` (RLS for commute cache)
 - `supabase/migrations/20260117140000_add_workspace_child_name.sql` (child_name field)
+- `supabase/migrations/20260124190000_add_school_image_url.sql` (schools.image_url)
+- `supabase/migrations/20260124220000_public_read_schools.sql` (anon read for schools)
 
 Apply locally with:
 ```
