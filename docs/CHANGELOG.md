@@ -25,6 +25,9 @@
 - Profile: refine “finish list” next-step copy and link to Explore.
 - Explore: adjust CTA once list is started.
 - Docs: add basic release notes file.
+- Explore: hide duplicate wordmark on desktop when top nav overlays hero.
+- Nav: replace desktop top bar with centered floating nav pills.
+- Setup gate: allow return to profile when setup already completed.
 - Explore: show 5 real schools before search (logged out), and no placeholder stats.
 - Explore: “Start je lijst” routes to /login.
 - Explore: fix hydration mismatch for language toggle on the hero.

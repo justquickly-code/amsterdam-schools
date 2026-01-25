@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { Wordmark } from "@/components/schoolkeuze";
 
 export default function TopMenu() {
   const [open, setOpen] = useState(false);
@@ -17,6 +17,8 @@ export default function TopMenu() {
   const adminFeedbackSeenEvent = "admin-feedback-seen";
   const menuRef = useRef<HTMLDivElement | null>(null);
   const isAuthed = Boolean(email);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -149,36 +151,32 @@ export default function TopMenu() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 hidden border-b bg-white/90 backdrop-blur md:block">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3">
-          <Link href="/" className="shrink-0">
-            <Wordmark />
-          </Link>
-          <nav className="flex items-center gap-5 text-sm font-semibold text-foreground">
+      <div className="fixed inset-x-0 top-4 z-50 hidden md:flex justify-center">
+        <div className="relative" ref={menuRef}>
+          <div className="flex items-center gap-3 rounded-full border bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow-md backdrop-blur">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className="hover:text-primary">
                 {link.label}
               </Link>
             ))}
-          </nav>
-          <div className="relative" ref={menuRef}>
             <button
-              className="flex h-9 w-9 items-center justify-center rounded-xl border text-sm"
+              className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border text-sm"
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-label="Open menu"
             >
               ☰
             </button>
-            {hasNewFeedback && (
-              <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500" aria-hidden="true" />
-            )}
+          </div>
+          {hasNewFeedback && (
+            <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500" aria-hidden="true" />
+          )}
 
-            {open && (
-              <div className="absolute right-0 top-full mt-3 w-56 max-h-[calc(100vh-6rem)] overflow-auto rounded-md border bg-white p-2 shadow-md">
-                {email ? (
-                  <div className="px-2 py-1 text-xs text-muted-foreground">{email}</div>
-                ) : null}
+          {open && (
+            <div className="absolute right-0 top-full mt-3 w-56 max-h-[calc(100vh-6rem)] overflow-auto rounded-md border bg-white p-2 shadow-md">
+              {email ? (
+                <div className="px-2 py-1 text-xs text-muted-foreground">{email}</div>
+              ) : null}
             {isAuthed ? (
               <Link
                 className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
@@ -254,12 +252,11 @@ export default function TopMenu() {
                 </button>
               </>
             ) : null}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-      </header>
-      <div className="hidden h-16 md:block" />
+      </div>
+      {!isHome && <div className="hidden h-16 md:block" />}
     </>
   );
 }

@@ -627,7 +627,9 @@ export default function ExploreHome() {
         </div>
         <div className="relative px-5 pt-6 pb-12">
           <div className="flex items-center justify-between">
-            <Wordmark variant="white" />
+            <div className="md:hidden">
+              <Wordmark variant="white" />
+            </div>
             {isClient ? (
               <button
                 className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm md:hidden"

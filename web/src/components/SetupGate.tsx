@@ -81,7 +81,9 @@ export default function SetupGate({
       const hasChild = Boolean((ws?.child_name ?? "").trim());
       const hasAddress = Boolean(ws?.home_postcode && ws?.home_house_number);
       const hasAdvies = (ws?.advies_levels ?? []).length > 0;
-      setGate(!(hasChild && hasAddress && hasAdvies));
+      const setupCompleted =
+        typeof window !== "undefined" && Boolean(window.localStorage.getItem("setup_completed_at"));
+      setGate(!(hasChild && hasAddress && hasAdvies) && !setupCompleted);
       setLoading(false);
     }
 
