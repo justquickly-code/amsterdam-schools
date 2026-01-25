@@ -509,17 +509,17 @@ export default function Home() {
             );
           })()}
           <div className="relative mt-4">
-            <div className="absolute left-5 right-5 top-5 h-0.5 bg-border" />
+            <div className="absolute left-[10%] right-[10%] top-5 h-0.5 bg-border" />
             <div
-              className="absolute left-5 top-5 h-0.5 bg-primary"
+              className="absolute left-[10%] top-5 h-0.5 bg-primary"
               style={{ width: `${Math.min(100, journeyProgress.pct)}%` }}
             />
-            <div className="flex justify-between">
+            <div className="grid grid-cols-5">
               {journeySteps.map((step) => {
                 const DoneIcon = step.Icon;
                 const done = step.done;
                 return (
-                  <div key={step.key} className="flex flex-col items-center gap-2 w-full">
+                  <div key={step.key} className="flex w-full flex-col items-center gap-2">
                     <div
                       className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border ${
                         done ? "border-primary bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
