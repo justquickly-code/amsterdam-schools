@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
+import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { Wordmark } from "@/components/schoolkeuze";
 
 export default function TopMenu() {
   const [open, setOpen] = useState(false);
@@ -133,6 +134,22 @@ export default function TopMenu() {
     await supabase.auth.signOut();
   }
 
+  async function updateLanguage(next: Language) {
+    if (next === language) return;
+    if (workspaceId) {
+      const { error } = await supabase
+        .from("workspaces")
+        .update({ language: next })
+        .eq("id", workspaceId);
+      if (error) return;
+    }
+    setLanguage(next);
+    if (typeof window !== "undefined") {
+      setStoredLanguage(next);
+    }
+    emitLanguageChanged(next);
+  }
+
   const navLinks = useMemo(() => {
     if (isAuthed) {
       return [
@@ -151,16 +168,31 @@ export default function TopMenu() {
 
   return (
     <>
-      <div className="fixed inset-x-0 top-4 z-50 hidden md:flex justify-center">
-        <div className="relative" ref={menuRef}>
-          <div className="flex items-center gap-3 rounded-full border bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow-md backdrop-blur">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-primary">
-                {link.label}
-              </Link>
-            ))}
+      <div className="fixed inset-x-0 top-4 z-50 hidden md:flex px-6">
+        <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between" ref={menuRef}>
+          <div className={isHome ? "" : "rounded-full bg-black/60 px-3 py-1"}>
+            <Wordmark variant="white" />
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <div className="flex items-center gap-3 rounded-full border bg-white/95 px-4 py-2 text-sm font-semibold text-foreground shadow-md backdrop-blur">
+              {navLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="hover:text-primary">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border text-sm"
+              className="rounded-full border bg-white/90 px-3 py-1 text-xs font-semibold text-foreground shadow-sm"
+              type="button"
+              onClick={() => updateLanguage(language === "nl" ? "en" : "nl")}
+              aria-label="Toggle language"
+            >
+              {language === "nl" ? "NL" : "EN"}
+            </button>
+            <button
+              className="flex h-9 w-9 items-center justify-center rounded-xl border bg-white/90 text-sm shadow-sm"
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-label="Open menu"

@@ -26,7 +26,7 @@
 - Explore: adjust CTA once list is started.
 - Docs: add basic release notes file.
 - Explore: hide duplicate wordmark on desktop when top nav overlays hero.
-- Nav: replace desktop top bar with centered floating nav pills.
+- Nav: add left logo + centered floating nav pills with language toggle near menu.
 - Setup gate: allow return to profile when setup already completed.
 - Explore: show 5 real schools before search (logged out), and no placeholder stats.
 - Explore: “Start je lijst” routes to /login.
