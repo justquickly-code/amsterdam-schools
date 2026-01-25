@@ -612,29 +612,8 @@ export default function ExploreHome() {
             <p className="mt-3 text-base text-white/90">{t(language, "explore.hero_subtitle")}</p>
           </div>
 
-          <div className="mt-8 rounded-3xl border border-white/30 bg-white/95 p-4 shadow-lg backdrop-blur">
-            {hasSession ? (
-              <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
-                  {t(language, "schools.sort")}
-                  <select
-                    className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
-                    value={sortMode}
-                    onChange={(event) => setStoredSortMode(event.target.value as SortMode)}
-                  >
-                    <option value="name">{t(language, "schools.sort_name")}</option>
-                    <option value="bike">{t(language, "schools.sort_bike")}</option>
-                  </select>
-                </label>
-                {adviesPill ? (
-                  <div className="flex items-end justify-start sm:justify-end">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-2 text-xs font-semibold text-foreground">
-                      {t(language, "schools.filters_advies")} {adviesPill}
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
+          {!hasSession ? (
+            <div className="mt-8 rounded-3xl border border-white/30 bg-white/95 p-4 shadow-lg backdrop-blur">
               <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr_auto] sm:items-end">
                 <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
                   {t(language, "explore.search_postcode")}
@@ -668,8 +647,8 @@ export default function ExploreHome() {
                   {t(language, "explore.search_cta")}
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          ) : null}
         </div>
       </header>
 
