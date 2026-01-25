@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
@@ -375,6 +376,9 @@ export default function SettingsPage() {
             <div className="mx-auto w-full max-w-4xl space-y-6">
                 <header className="flex flex-col gap-2">
                     <Wordmark />
+                    <Link className="text-sm font-semibold text-primary hover:underline" href="/profile">
+                        ← {t(language, "about.back")}
+                    </Link>
                     <h1 className="text-3xl font-semibold text-foreground">{t(language, "settings.title")}</h1>
                 </header>
 

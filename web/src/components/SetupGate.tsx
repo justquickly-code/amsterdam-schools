@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
-import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
+import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 
 type WorkspaceRow = {
+  id: string;
   child_name: string | null;
   home_postcode: string | null;
   home_house_number: string | null;
@@ -50,7 +51,7 @@ export default function SetupGate({
       }
 
       const { workspace, role, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-        "child_name,home_postcode,home_house_number,advies_levels,language"
+        "id,child_name,home_postcode,home_house_number,advies_levels,language"
       );
 
       if (!mounted) return;
@@ -60,8 +61,22 @@ export default function SetupGate({
         return;
       }
 
+      const langParam = searchParams.get("lang");
+      const nextLang = langParam === "en" || langParam === "nl" ? langParam : null;
+      if (nextLang) {
+        setStoredLanguage(nextLang);
+        emitLanguageChanged(nextLang);
+      }
+
       setRole(role ?? null);
-      setLanguage((workspace?.language as Language) ?? readStoredLanguage());
+      const storedLang = readStoredLanguage();
+      const wsLang = (workspace?.language as Language | null) ?? null;
+      if (storedLang && wsLang !== storedLang && workspace?.id) {
+        await supabase.from("workspaces").update({ language: storedLang }).eq("id", workspace.id);
+        setLanguage(storedLang);
+      } else {
+        setLanguage(wsLang ?? storedLang);
+      }
       const ws = (workspace ?? null) as WorkspaceRow | null;
       const hasChild = Boolean((ws?.child_name ?? "").trim());
       const hasAddress = Boolean(ws?.home_postcode && ws?.home_house_number);
@@ -74,7 +89,7 @@ export default function SetupGate({
     return () => {
       mounted = false;
     };
-  }, [bypass, router]);
+  }, [bypass, router, searchParams]);
 
   useEffect(() => {
     const onLang = (event: Event) => {

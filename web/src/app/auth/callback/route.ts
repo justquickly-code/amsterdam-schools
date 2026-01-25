@@ -14,7 +14,23 @@ export async function GET(request: Request) {
   const invite = requestUrl.searchParams.get("invite");
   const workspaceId = requestUrl.searchParams.get("workspace_id");
   const lang = requestUrl.searchParams.get("lang");
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const cookieLangMatch = cookieHeader.match(/(?:^|;\s*)schools_lang=([^;]+)/);
+  const cookieLang = cookieLangMatch ? decodeURIComponent(cookieLangMatch[1] ?? "") : "";
+  const fallbackLang = cookieLang === "en" || cookieLang === "nl" ? cookieLang : null;
   const setup = requestUrl.searchParams.get("setup");
+  const normalizedLang = lang === "en" || lang === "nl" ? lang : fallbackLang;
+
+  const attachLangCookie = (response: NextResponse) => {
+    if (normalizedLang) {
+      response.cookies.set("schools_lang", normalizedLang, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+      });
+    }
+    return response;
+  };
 
   // Local client is fine here; for production you may prefer server-side auth helpers later.
   const supabase = createClient(
@@ -95,23 +111,23 @@ export async function GET(request: Request) {
         }
       }
 
-      if (inviteStatus === "error") {
-        const errorUrl = new URL("/invite", redirectOrigin);
-        errorUrl.searchParams.set("status", "error");
+        if (inviteStatus === "error") {
+          const errorUrl = new URL("/invite", redirectOrigin);
+          errorUrl.searchParams.set("status", "error");
         if (inviteReason) errorUrl.searchParams.set("reason", inviteReason);
         if (lang === "en" || lang === "nl") errorUrl.searchParams.set("lang", lang);
-        return NextResponse.redirect(errorUrl);
-      }
+        return attachLangCookie(NextResponse.redirect(errorUrl));
+        }
 
       const okUrl = new URL("/invite", redirectOrigin);
       okUrl.searchParams.set("status", "ok");
       if (lang === "en" || lang === "nl") okUrl.searchParams.set("lang", lang);
-      return NextResponse.redirect(okUrl);
+      return attachLangCookie(NextResponse.redirect(okUrl));
     }
   }
 
   // After successful exchange, redirect home (or setup if requested).
   const homeUrl = new URL(setup ? "/setup" : "/profile", redirectOrigin);
   if (lang === "en" || lang === "nl") homeUrl.searchParams.set("lang", lang);
-  return NextResponse.redirect(homeUrl);
+  return attachLangCookie(NextResponse.redirect(homeUrl));
 }

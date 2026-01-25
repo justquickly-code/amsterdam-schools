@@ -13,6 +13,7 @@ import {
   readStoredLanguage,
   setStoredLanguage,
   t,
+  useIsClient,
 } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
@@ -34,7 +35,7 @@ function normalizePostcode(input: string) {
 export default function SetupPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [hydrated, setHydrated] = useState(false);
+  const isClient = useIsClient();
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [error, setError] = useState<string>("");
   const [saving, setSaving] = useState(false);
@@ -54,8 +55,6 @@ export default function SetupPage() {
 
   useEffect(() => {
     let mounted = true;
-    setHydrated(true);
-
     async function load() {
       setLoading(true);
       setError("");
@@ -84,8 +83,15 @@ export default function SetupPage() {
       setRole(role ?? null);
       const ws = (data ?? null) as WorkspaceRow | null;
       setWorkspace(ws);
-      if (ws?.language) {
-        setLanguage(ws.language as Language);
+      const storedLang = readStoredLanguage();
+      const wsLang = (ws?.language as Language | null) ?? null;
+      if (storedLang && wsLang !== storedLang && ws?.id) {
+        await supabase.from("workspaces").update({ language: storedLang }).eq("id", ws.id);
+        setLanguage(storedLang);
+      } else if (wsLang) {
+        setLanguage(wsLang);
+      } else {
+        setLanguage(storedLang);
       }
       setChildName(ws?.child_name ?? "");
       const storedPostcode =
@@ -280,11 +286,11 @@ export default function SetupPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+      <main className="min-h-screen bg-muted/20 px-4 py-8 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center">
-        <p className="text-sm text-muted-foreground">
-          {t(hydrated ? language : DEFAULT_LANGUAGE, "setup.loading")}
-        </p>
+          <p className="text-sm text-muted-foreground">
+            {t(isClient ? language : DEFAULT_LANGUAGE, "setup.loading")}
+          </p>
         </div>
       </main>
     );
@@ -322,53 +328,60 @@ export default function SetupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-2xl space-y-6">
-        <Wordmark />
+    <main className="min-h-screen bg-muted/20 px-4 py-8 sm:px-6">
+      <div className="mx-auto w-full max-w-3xl space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold text-foreground">{t(language, "setup.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t(language, "setup.subtitle")}</p>
-          </div>
-          <button
-            className="rounded-full border px-3 py-1 text-xs"
-            type="button"
-            onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
-          >
-            {language === "nl" ? "NL" : "EN"}
-          </button>
+          <Wordmark />
+          {isClient && (
+            <button
+              className="rounded-full border bg-background px-3 py-1 text-xs font-semibold"
+              type="button"
+              onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
+            >
+              {language === "nl" ? "NL" : "EN"}
+            </button>
+          )}
         </div>
 
-        <div className="space-y-2">
-          <div className="text-xs text-muted-foreground">
-            {t(language, "setup.step_count").replace("{current}", String(stepIndex + 1)).replace("{total}", "3")}
-          </div>
-          <div className="relative">
-            <div className="absolute left-4 right-4 top-5 h-0.5 bg-border" />
-            <div
-              className="absolute left-4 top-5 h-0.5 bg-primary"
-              style={{ width: `${(stepIndex / 2) * 100}%` }}
-            />
-            <div className="flex justify-between text-xs">
-              {["profile", "invite", "tutorial"].map((key, idx) => (
-                <div key={key} className="flex flex-col items-center gap-2 w-full">
-                  <div
-                    className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] ${
-                      idx <= stepIndex ? "border-primary bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {idx + 1}
-                  </div>
-                  <span className={idx <= stepIndex ? "text-primary" : "text-muted-foreground"}>
-                    {t(language, `setup.step_${key}`)}
-                  </span>
-                </div>
-              ))}
+        <section className="rounded-3xl border bg-card p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t(language, "setup.step_count").replace("{current}", String(stepIndex + 1)).replace("{total}", "3")}
+              </div>
+              <h1 className="text-3xl font-semibold text-foreground">{t(language, "setup.title")}</h1>
+              <p className="text-sm text-muted-foreground">{t(language, "setup.subtitle")}</p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
+              {stepIndex + 1}/3
             </div>
           </div>
-        </div>
+
+          <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+            {["profile", "invite", "tutorial"].map((key, idx) => (
+              <span
+                key={key}
+                className={`rounded-full border px-3 py-1 ${
+                  idx <= stepIndex
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
+                {t(language, `setup.step_${key}`)}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-4 h-1 w-full rounded-full bg-muted">
+            <div
+              className="h-1 rounded-full bg-primary transition-all"
+              style={{ width: `${((stepIndex + 1) / 3) * 100}%` }}
+            />
+          </div>
+        </section>
 
         <InfoCard
+          className="rounded-3xl p-6 shadow-sm"
           title={
             step === "profile"
               ? t(language, "setup.step_profile_title")
@@ -398,7 +411,7 @@ export default function SetupPage() {
                 <p>{t(language, "setup.invite_shared")}</p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 rounded-2xl border bg-muted/30 p-4">
                 <label className="space-y-1">
                   <div className="text-sm font-medium">{t(language, "setup.invite_label")}</div>
                   <input
@@ -463,39 +476,39 @@ export default function SetupPage() {
             </div>
           ) : (
             <div className="space-y-4 text-sm">
-              <label className="block space-y-1">
-                <span className="text-sm font-medium">{t(language, "settings.child_name")}</span>
-                <input
-                  className="w-full rounded-2xl border bg-background px-4 py-2"
-                  value={childName}
-                  onChange={(e) => setChildName(e.target.value)}
-                  placeholder="Sam"
-                />
-              </label>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="space-y-1">
-                  <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
+              <div className="space-y-3 rounded-2xl border bg-muted/30 p-4">
+                <label className="block space-y-1">
+                  <span className="text-sm font-medium">{t(language, "settings.child_name")}</span>
                   <input
                     className="w-full rounded-2xl border bg-background px-4 py-2"
-                    value={homePostcode}
-                    onChange={(e) => setHomePostcode(e.target.value)}
-                    placeholder="1234 AB"
+                    value={childName}
+                    onChange={(e) => setChildName(e.target.value)}
+                    placeholder="Sam"
                   />
                 </label>
 
-                <label className="space-y-1">
-                  <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
-                  <input
-                    className="w-full rounded-2xl border bg-background px-4 py-2"
-                    value={homeHouseNumber}
-                    onChange={(e) => setHomeHouseNumber(e.target.value)}
-                    placeholder="10"
-                  />
-                </label>
-              </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <label className="space-y-1">
+                    <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
+                    <input
+                      className="w-full rounded-2xl border bg-background px-4 py-2"
+                      value={homePostcode}
+                      onChange={(e) => setHomePostcode(e.target.value)}
+                      placeholder="1234 AB"
+                    />
+                  </label>
 
-              <div className="space-y-2">
+                  <label className="space-y-1">
+                    <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
+                    <input
+                      className="w-full rounded-2xl border bg-background px-4 py-2"
+                      value={homeHouseNumber}
+                      onChange={(e) => setHomeHouseNumber(e.target.value)}
+                      placeholder="10"
+                    />
+                  </label>
+                </div>
+
                 <label className="space-y-1">
                   <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
                   <select

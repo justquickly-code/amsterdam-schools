@@ -11,7 +11,30 @@ function escapeIcsText(s: string) {
     .replace(/;/g, "\\;");
 }
 
-// YYYYMMDDTHHMMSSZ (UTC)
+// YYYYMMDDTHHMMSS in Europe/Amsterdam (CET/CEST)
+function toAmsterdamIcs(dtIso: string) {
+  const d = new Date(dtIso);
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Amsterdam",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
+  const yyyy = get("year");
+  const mm = get("month");
+  const dd = get("day");
+  const HH = get("hour");
+  const MM = get("minute");
+  const SS = get("second");
+  return `${yyyy}${mm}${dd}T${HH}${MM}${SS}`;
+}
+
 function toUtcIcs(dtIso: string) {
   const d = new Date(dtIso);
   const yyyy = String(d.getUTCFullYear()).padStart(4, "0");
@@ -105,8 +128,8 @@ export async function GET(
   const type = eventTypeLabel(data.event_type ?? null);
   const summary = `${type} — ${titleSchool}`;
 
-  const startUtc = toUtcIcs(data.starts_at);
-  const endUtc = data.ends_at ? toUtcIcs(data.ends_at) : null;
+  const startLocal = toAmsterdamIcs(data.starts_at);
+  const endLocal = data.ends_at ? toAmsterdamIcs(data.ends_at) : null;
 
   const location = escapeIcsText((data.location_text ?? "").toString());
   const url = (data.info_url ?? "").toString();
@@ -126,12 +149,30 @@ export async function GET(
     "PRODID:-//Amsterdam Schools//Open Days//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
+    "BEGIN:VTIMEZONE",
+    "TZID:Europe/Amsterdam",
+    "X-LIC-LOCATION:Europe/Amsterdam",
+    "BEGIN:DAYLIGHT",
+    "TZOFFSETFROM:+0100",
+    "TZOFFSETTO:+0200",
+    "TZNAME:CEST",
+    "DTSTART:19700329T020000",
+    "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU",
+    "END:DAYLIGHT",
+    "BEGIN:STANDARD",
+    "TZOFFSETFROM:+0200",
+    "TZOFFSETTO:+0100",
+    "TZNAME:CET",
+    "DTSTART:19701025T030000",
+    "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU",
+    "END:STANDARD",
+    "END:VTIMEZONE",
     "BEGIN:VEVENT",
     `UID:${uid}`,
     `DTSTAMP:${dtstamp}`,
     `SUMMARY:${escapeIcsText(summary)}`,
-    `DTSTART:${startUtc}`,
-    ...(endUtc ? [`DTEND:${endUtc}`] : []),
+    `DTSTART;TZID=Europe/Amsterdam:${startLocal}`,
+    ...(endLocal ? [`DTEND;TZID=Europe/Amsterdam:${endLocal}`] : []),
     ...(location ? [`LOCATION:${location}`] : []),
     ...(url ? [`URL:${escapeIcsText(url)}`] : []),
     `DESCRIPTION:${escapeIcsText(descriptionLines.join("\n"))}`,

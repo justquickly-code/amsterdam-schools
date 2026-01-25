@@ -4,6 +4,23 @@
 - Data: add `schools.image_url` and seed image URLs from local assets.
 - Data: normalize school image folder names to match slugs; clear stale image URLs when missing.
 - Security: allow public read on `schools` for Explore (no PII).
+- Setup: restyle wizard layout (header + progress) and refresh copy.
+- Auth: persist selected language across magic-link login.
+- Explore: show advice pill when list is filtered; heart toggles My List.
+- Profile: show a single, more descriptive next step.
+- My List: simplify copy and ranking UI (no top-pill or drag handle).
+- School detail: heart add-to-list and tighter notes layout.
+- Open Days: show only upcoming dates and label as remaining.
+- Settings: add back link to Profile.
+- Profile: tighten next-step criteria (shortlist count, visit notes + rating).
+- School detail: move My List heart to the overview card.
+- Setup: update invite placeholder copy.
+- Nav: add desktop top bar with primary links; remove desktop language toggle from menu.
+- Explore: adjust CTA once list is started; align hero filter button.
+- Explore: align featured schools width with main list.
+- Auth: improve language persistence fallback using cookies and query params.
+- Email: refresh magic-link and invite templates (single mixed-language email).
+- ICS: export open days in CET/Europe/Amsterdam timezone.
 - Explore: show 5 real schools before search (logged out), and no placeholder stats.
 - Explore: “Start je lijst” routes to /login.
 - Explore: fix hydration mismatch for language toggle on the hero.

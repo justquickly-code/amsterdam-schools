@@ -1,10 +1,13 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
 export type Language = "nl" | "en";
 
 export const DEFAULT_LANGUAGE: Language = "nl";
 export const LANGUAGE_EVENT = "language-changed";
 export const LANGUAGE_COOKIE = "schools_lang";
+const LANGUAGE_STORE_EVENT = LANGUAGE_EVENT;
 
 function readCookieLanguage(): Language | null {
   if (typeof document === "undefined") return null;
@@ -26,6 +29,25 @@ export function setStoredLanguage(lang: Language) {
   window.localStorage.setItem("schools_language", lang);
   const maxAge = 60 * 60 * 24 * 365;
   document.cookie = `${LANGUAGE_COOKIE}=${encodeURIComponent(lang)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
+}
+
+export function useLanguageStore(): Language {
+  const subscribe = (cb: () => void) => {
+    if (typeof window === "undefined") return () => {};
+    const handler = () => cb();
+    window.addEventListener(LANGUAGE_STORE_EVENT, handler);
+    return () => window.removeEventListener(LANGUAGE_STORE_EVENT, handler);
+  };
+  return useSyncExternalStore(subscribe, readStoredLanguage, () => DEFAULT_LANGUAGE);
+}
+
+export function useIsClient(): boolean {
+  const subscribe = (cb: () => void) => {
+    if (typeof window === "undefined") return () => {};
+    const id = window.requestAnimationFrame(cb);
+    return () => window.cancelAnimationFrame(id);
+  };
+  return useSyncExternalStore(subscribe, () => true, () => false);
 }
 
 const STRINGS: Record<Language, Record<string, string>> = {
@@ -66,6 +88,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "explore.search_advice": "Advies",
     "explore.search_cta": "Bekijk scholen",
     "explore.cta_start_list": "Start je lijst",
+    "explore.cta_add_school": "Voeg een school toe",
+    "explore.cta_my_list": "Mijn lijst",
     "explore.popular": "Populaire scholen in Amsterdam",
     "explore.nearby": "Scholen bij jou in de buurt",
     "explore.browse_all": "Bekijk alle scholen",
@@ -117,19 +141,19 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.signin_body":
       "Log in met een e‑mail van een familielid. Je blijft ingelogd op dit apparaat.",
 
-    "setup.title": "Instellen",
-    "setup.subtitle": "Een paar snelle stappen om te starten.",
+    "setup.title": "Aan de slag",
+    "setup.subtitle": "Een paar korte stappen om je lijst te starten.",
     "setup.step_count": "Stap {current} van {total}",
     "setup.step_profile": "Profiel",
     "setup.step_invite": "Uitnodigen",
     "setup.step_tutorial": "Uitleg",
-    "setup.step_profile_title": "Profiel instellen",
-    "setup.step_invite_title": "Nodig familie uit",
-    "setup.step_tutorial_title": "Amsterdamse uitleg",
-    "setup.intro": "Je reis start hier. Dit kost ongeveer een minuut.",
+    "setup.step_profile_title": "Profielgegevens",
+    "setup.step_invite_title": "Samen doen",
+    "setup.step_tutorial_title": "Zo werkt het in Amsterdam",
+    "setup.intro": "Welkom! Dit duurt ongeveer een minuut.",
     "setup.profile_why":
-      "We gebruiken dit om scholen te filteren en om reistijden te berekenen.",
-    "setup.prefill_hint": "We hebben je postcode en advies alvast ingevuld vanuit Ontdek.",
+      "Met deze gegevens tonen we passende scholen en kunnen we reistijden berekenen.",
+    "setup.prefill_hint": "Als je via Ontdek iets hebt ingevuld, staat het hier alvast klaar.",
     "setup.finish": "Setup afronden",
     "setup.next": "Volgende",
     "setup.saving": "Opslaan...",
@@ -139,7 +163,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.required_title": "Setup vereist",
     "setup.required_body":
       "Alleen de eigenaar kan de setup afronden. Vraag de eigenaar om het profiel af te maken.",
-    "setup.invite_intro": "Samen kiezen werkt beter. Nodig een ouder of verzorger uit.",
+    "setup.invite_intro": "Samen kiezen werkt beter. Nodig een familielid uit om mee te denken.",
     "setup.invite_shared":
       "Jullie delen dezelfde scholen en lijst. Notities zijn per persoon, maar iedereen kan ze zien.",
     "setup.invite_label": "E-mailadres familielid",
@@ -159,9 +183,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.error_advies_required": "Kies minimaal één adviesniveau.",
     "setup.skip": "Nu overslaan",
     "setup.continue": "Doorgaan",
-    "setup.tutorial_intro": "Wil je weten hoe de Amsterdamse procedure werkt?",
+    "setup.tutorial_intro": "Wil je een korte uitleg van de Amsterdamse procedure?",
     "setup.tutorial_body":
-      "Dit is geen app‑uitleg, maar een korte uitleg van het proces in 2025/26.",
+      "Dit is geen app‑uitleg. We leggen de overstap groep 8 → brugklas 2026 simpel uit.",
     "setup.tutorial_start": "Start uitleg",
     "setup.tutorial_later": "Je kunt dit later altijd terugvinden in het menu.",
 
@@ -179,6 +203,22 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "profile.journey_choice": "Keuze",
     "profile.list_count": "{count} scholen op je lijst",
     "profile.next_steps": "Volgende stappen",
+    "profile.next_step": "Volgende stap",
+    "profile.next_step_discover_title": "Ontdek een paar scholen",
+    "profile.next_step_discover_body":
+      "Bekijk scholen die passen bij het advies en voeg er minimaal één toe aan je lijst.",
+    "profile.next_step_discover_cta": "Ontdek scholen",
+    "profile.next_step_finish_title": "Maak je shortlist compleet",
+    "profile.next_step_finish_body": "Voeg minimaal {cap} scholen toe aan je lijst.",
+    "profile.next_step_finish_cta": "Ontdek scholen",
+    "profile.next_step_plan_title": "Plan een open dag",
+    "profile.next_step_plan_body":
+      "Kies een school en zet een open dag op je planner zodat je niets mist.",
+    "profile.next_step_plan_cta": "Bekijk open dagen",
+    "profile.next_step_visit_title": "Markeer een bezoek",
+    "profile.next_step_visit_body":
+      "Markeer bezocht, geef een rating en voeg een korte notitie toe.",
+    "profile.next_step_visit_cta": "Ga naar mijn lijst",
     "profile.suggest_add_school": "Ontdek scholen",
     "profile.suggest_finish_list": "Maak je lijst af",
     "profile.suggest_plan_day": "Plan een open dag",
@@ -206,8 +246,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "profile.desc_logout": "Log uit op dit apparaat",
     "school.detail_overview": "Overzicht",
     "school.detail_verify": "Check details op de schoolwebsite.",
-    "school.detail_no_open_days": "Nog geen open dagen beschikbaar.",
+    "school.detail_no_open_days": "Geen open dagen meer gepland.",
     "school.detail_unknown_date": "Onbekende datum",
+    "school.notes_rating_label": "Mijn beoordeling:",
 
     "settings.title": "Instellingen",
     "settings.edit": "Instellingen bewerken",
@@ -253,7 +294,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "settings.member_fallback": "Lid",
     "settings.member_you": "(jij)",
     "settings.invite_title": "Nodig iemand uit",
-    "settings.invite_placeholder": "ouder@example.com",
+    "settings.invite_placeholder": "email@example.com",
     "settings.invite_role": "Nieuwe familieleden worden editor.",
     "settings.invite_button": "Uitnodigen",
     "settings.invite_busy": "Uitnodigen…",
@@ -304,6 +345,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "schools.shortlist_added_ranked": "Toegevoegd aan ranglijst op #{rank}.",
     "schools.shortlist_added_unranked": "Toegevoegd aan mijn lijst (nog niet gerangschikt).",
     "schools.shortlist_already": "Staat al in je lijst.",
+    "schools.shortlist_removed": "Verwijderd uit mijn lijst.",
     "school.notes_title": "Bezoeknotities",
     "school.notes_visited": "Bezocht",
     "school.notes_your_notes": "Jouw notities",
@@ -315,6 +357,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "open_days.important_body":
       "Details kunnen veranderen. Controleer altijd de schoolwebsite voordat je gaat.",
     "open_days.count": "#{count} open dagen",
+    "open_days.remaining_label": "We tonen alleen open dagen vanaf vandaag.",
     "open_days.filters_title": "Filters",
     "open_days.filters_advies": "Advies:",
     "open_days.year_label": "Jaar",
@@ -345,7 +388,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "open_days.missing_since": "Ontbreekt sinds:",
 
     "shortlist.title": "Mijn lijst",
-    "shortlist.subtitle": "Bewaar zoveel scholen als je wilt, en rangschik je top.",
+    "shortlist.subtitle": "Bewaar zoveel scholen als je wilt, en rangschik je top {cap}.",
     "shortlist.empty_slot": "Leeg",
     "shortlist.empty_list": "Je hebt nog geen scholen gerangschikt.",
     "shortlist.save": "Opslaan",
@@ -357,7 +400,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "shortlist.saved_title": "Bewaard",
     "shortlist.rank_next": "Zet op volgende rang",
     "shortlist.add_to_ranked": "Zet in top",
-    "shortlist.unrank": "Haal uit top",
+    "shortlist.unrank": "Haal uit ranking",
     "shortlist.planned": "Gepland",
     "shortlist.no_plan": "Nog niet gepland",
     "shortlist.no_open_days": "Geen open dagen",
@@ -483,6 +526,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "explore.search_advice": "Advice",
     "explore.search_cta": "See schools",
     "explore.cta_start_list": "Start your list",
+    "explore.cta_add_school": "Add a school",
+    "explore.cta_my_list": "My list",
     "explore.popular": "Popular schools in Amsterdam",
     "explore.nearby": "Schools near you",
     "explore.browse_all": "Browse all schools",
@@ -534,18 +579,18 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "dashboard.signin_body":
       "Sign in with a family member email. The app stays signed in on this device.",
 
-    "setup.title": "Setup",
-    "setup.subtitle": "Just a few quick steps to get started.",
+    "setup.title": "Get started",
+    "setup.subtitle": "A few quick steps to start your list.",
     "setup.step_count": "Step {current} of {total}",
     "setup.step_profile": "Profile",
     "setup.step_invite": "Invite",
     "setup.step_tutorial": "Guide",
-    "setup.step_profile_title": "Set up your profile",
-    "setup.step_invite_title": "Invite family",
-    "setup.step_tutorial_title": "Amsterdam process",
-    "setup.intro": "Let’s set things up. It takes about a minute.",
-    "setup.profile_why": "We use this to filter by advice and calculate commute times.",
-    "setup.prefill_hint": "We prefilled your postcode and advice from Explore.",
+    "setup.step_profile_title": "Profile details",
+    "setup.step_invite_title": "Do it together",
+    "setup.step_tutorial_title": "How it works in Amsterdam",
+    "setup.intro": "Welcome! This takes about a minute.",
+    "setup.profile_why": "We use this to show the right schools and calculate bike times.",
+    "setup.prefill_hint": "If you entered details in Explore, they’ll be ready here.",
     "setup.finish": "Finish setup",
     "setup.next": "Next",
     "setup.saving": "Saving...",
@@ -554,7 +599,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.signout": "Sign out",
     "setup.required_title": "Setup required",
     "setup.required_body": "Only the workspace owner can complete setup. Ask them to finish the profile.",
-    "setup.invite_intro": "Plan together? Invite a family member.",
+    "setup.invite_intro": "Planning together helps. Invite a family member to collaborate.",
     "setup.invite_shared":
       "Family members share the same schools, shortlist, and open days. Notes are per person and visible to everyone.",
     "setup.invite_label": "Family member email",
@@ -576,7 +621,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "setup.continue": "Continue",
     "setup.tutorial_intro": "Want a quick overview of the Amsterdam process?",
     "setup.tutorial_body":
-      "This is not app training — it’s the 2025/26 Year‑8 process explained simply.",
+      "This isn’t app training — it’s the Year‑8 → secondary 2026 process, explained simply.",
     "setup.tutorial_start": "Start overview",
     "setup.tutorial_later": "You can always find this later in the menu.",
 
@@ -594,6 +639,22 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "profile.journey_choice": "Choice",
     "profile.list_count": "{count} schools on your list",
     "profile.next_steps": "Next steps",
+    "profile.next_step": "Next step",
+    "profile.next_step_discover_title": "Discover a few schools",
+    "profile.next_step_discover_body":
+      "Browse schools that match the advice and save at least one to your list.",
+    "profile.next_step_discover_cta": "Explore schools",
+    "profile.next_step_finish_title": "Finish your shortlist",
+    "profile.next_step_finish_body": "Add at least {cap} schools to your list.",
+    "profile.next_step_finish_cta": "Explore schools",
+    "profile.next_step_plan_title": "Plan an open day",
+    "profile.next_step_plan_body":
+      "Pick a school and add an open day to your planner so it’s on the radar.",
+    "profile.next_step_plan_cta": "View open days",
+    "profile.next_step_visit_title": "Mark a visit",
+    "profile.next_step_visit_body":
+      "Mark visited, add a rating, and leave a short note.",
+    "profile.next_step_visit_cta": "Go to my list",
     "profile.suggest_add_school": "Discover schools",
     "profile.suggest_finish_list": "Finish your list",
     "profile.suggest_plan_day": "Plan an open day",
@@ -621,8 +682,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "profile.desc_logout": "Sign out on this device",
     "school.detail_overview": "Overview",
     "school.detail_verify": "Verify details on the school website.",
-    "school.detail_no_open_days": "No open days available yet.",
+    "school.detail_no_open_days": "No remaining open days.",
     "school.detail_unknown_date": "Unknown date",
+    "school.notes_rating_label": "My rating:",
 
     "settings.title": "Settings",
     "settings.edit": "Edit settings",
@@ -668,7 +730,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "settings.member_fallback": "Member",
     "settings.member_you": "(you)",
     "settings.invite_title": "Invite a member",
-    "settings.invite_placeholder": "parent@example.com",
+    "settings.invite_placeholder": "email@example.com",
     "settings.invite_role": "New family members join as editors.",
     "settings.invite_button": "Invite",
     "settings.invite_busy": "Inviting…",
@@ -719,6 +781,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "schools.shortlist_added_ranked": "Added to ranked list at #{rank}.",
     "schools.shortlist_added_unranked": "Added to my list (not ranked yet).",
     "schools.shortlist_already": "Already in your list.",
+    "schools.shortlist_removed": "Removed from my list.",
     "school.notes_title": "Visit notes",
     "school.notes_visited": "Visited",
     "school.notes_your_notes": "Your notes",
@@ -730,6 +793,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "open_days.important_body":
       "Open day details can change. Always verify on the school website before you go.",
     "open_days.count": "#{count} open days",
+    "open_days.remaining_label": "We only show open days from today onwards.",
     "open_days.filters_title": "Filters",
     "open_days.filters_advies": "Advice:",
     "open_days.year_label": "Year",
@@ -760,7 +824,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "open_days.missing_since": "Missing since:",
 
     "shortlist.title": "My list",
-    "shortlist.subtitle": "Save as many schools as you like, then rank your top.",
+    "shortlist.subtitle": "Save as many schools as you like, then rank your top {cap}.",
     "shortlist.empty_slot": "Empty",
     "shortlist.empty_list": "No ranked schools yet.",
     "shortlist.save": "Save",
@@ -772,7 +836,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "shortlist.saved_title": "Saved",
     "shortlist.rank_next": "Put on next rank",
     "shortlist.add_to_ranked": "Add to top",
-    "shortlist.unrank": "Remove from top",
+    "shortlist.unrank": "Remove from ranking",
     "shortlist.planned": "Planned",
     "shortlist.no_plan": "Not planned yet",
     "shortlist.no_open_days": "No open days listed",

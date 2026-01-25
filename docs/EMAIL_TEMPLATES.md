@@ -7,7 +7,7 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
 
 ## Magic Link
 
-**Subject:** Log in bij Mijn Schoolkeuze / Sign in to Mijn Schoolkeuze
+**Subject:** Inloglink voor Mijn Schoolkeuze (Sign‑in link)
 
 ```html
 <table style="width:100%;background:#f7f7f7;padding:24px 0;font-family:Arial,Helvetica,sans-serif;">
@@ -22,14 +22,18 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
         <tr>
           <td>
             <h2 style="margin:0 0 6px 0;color:#111827;font-size:20px;">Je inloglink staat klaar</h2>
+            <p style="margin:0 0 6px 0;color:#6b7280;font-size:12px;">Your sign‑in link is ready</p>
             <p style="margin:0 0 14px 0;color:#374151;font-size:14px;line-height:1.5;">
               Klik op de knop hieronder om in te loggen. Je blijft ingelogd op dit apparaat.
+            </p>
+            <p style="margin:0 0 14px 0;color:#6b7280;font-size:12px;">
+              Click the button below to sign in.
             </p>
 
             <div style="text-align:center;margin:18px 0;">
               <a href="{{ .ConfirmationURL }}"
                  style="display:inline-block;background:#ef4444;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;">
-                Log in
+                Log in / Sign in
               </a>
             </div>
 
@@ -38,33 +42,12 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
               <br />
               <a href="{{ .ConfirmationURL }}" style="color:#ef4444;">{{ .ConfirmationURL }}</a>
             </p>
-
             <p style="margin:0 0 18px 0;color:#6b7280;font-size:12px;">
-              Geen mail? Check je spam of ongewenste e‑mail.
-            </p>
-
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:12px 0 16px 0;" />
-
-            <h2 style="margin:0 0 6px 0;color:#111827;font-size:20px;">Your sign‑in link is ready</h2>
-            <p style="margin:0 0 14px 0;color:#374151;font-size:14px;line-height:1.5;">
-              Click the button below to sign in. You’ll stay signed in on this device.
-            </p>
-
-            <div style="text-align:center;margin:18px 0;">
-              <a href="{{ .ConfirmationURL }}"
-                 style="display:inline-block;background:#ef4444;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;">
-                Sign in
-              </a>
-            </div>
-
-            <p style="margin:0 0 10px 0;color:#6b7280;font-size:12px;">
-              If the button doesn’t work, paste this link into your browser:
-              <br />
-              <a href="{{ .ConfirmationURL }}" style="color:#ef4444;">{{ .ConfirmationURL }}</a>
+              If the button doesn’t work, paste the link above in your browser.
             </p>
 
             <p style="margin:0;color:#6b7280;font-size:12px;">
-              No email? Check your spam or junk folder.
+              Geen mail? Check je spam of ongewenste e‑mail. (No email? Check spam.)
             </p>
           </td>
         </tr>
@@ -78,7 +61,7 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
 
 ## Invite User
 
-**Subject:** Uitnodiging voor Mijn Schoolkeuze / Invitation to Mijn Schoolkeuze
+**Subject:** Uitnodiging voor Mijn Schoolkeuze (Invitation)
 
 ```html
 <table style="width:100%;background:#f7f7f7;padding:24px 0;font-family:Arial,Helvetica,sans-serif;">
@@ -93,15 +76,19 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
         <tr>
           <td>
             <h2 style="margin:0 0 6px 0;color:#111827;font-size:20px;">Je bent uitgenodigd</h2>
+            <p style="margin:0 0 6px 0;color:#6b7280;font-size:12px;">You’ve been invited</p>
             <p style="margin:0 0 12px 0;color:#374151;font-size:14px;line-height:1.5;">
               Je bent uitgenodigd om samen een schoolkeuzelijst te maken in Mijn Schoolkeuze.
-              Je kunt open dagen bekijken, scholen bewaren en notities delen met je gezin.
+              Je kunt open dagen bekijken, scholen bewaren en notities delen.
+            </p>
+            <p style="margin:0 0 12px 0;color:#6b7280;font-size:12px;">
+              You can view open days, save schools, and share notes.
             </p>
 
             <div style="text-align:center;margin:18px 0;">
               <a href="{{ .ConfirmationURL }}"
                  style="display:inline-block;background:#ef4444;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;">
-                Accepteer uitnodiging
+                Accepteer uitnodiging / Accept invitation
               </a>
             </div>
 
@@ -110,30 +97,8 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
               <br />
               <a href="{{ .ConfirmationURL }}" style="color:#ef4444;">{{ .ConfirmationURL }}</a>
             </p>
-
-            <p style="margin:0 0 18px 0;color:#6b7280;font-size:12px;">
-              Geen mail? Check je spam of ongewenste e‑mail.
-            </p>
-
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:12px 0 16px 0;" />
-
-            <h2 style="margin:0 0 6px 0;color:#111827;font-size:20px;">You’ve been invited</h2>
-            <p style="margin:0 0 12px 0;color:#374151;font-size:14px;line-height:1.5;">
-              You’ve been invited to plan a school list together in Mijn Schoolkeuze.
-              You can view open days, save schools, and share notes with your family.
-            </p>
-
-            <div style="text-align:center;margin:18px 0;">
-              <a href="{{ .ConfirmationURL }}"
-                 style="display:inline-block;background:#ef4444;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;">
-                Accept invitation
-              </a>
-            </div>
-
             <p style="margin:0;color:#6b7280;font-size:12px;">
-              If the button doesn’t work, paste this link into your browser:
-              <br />
-              <a href="{{ .ConfirmationURL }}" style="color:#ef4444;">{{ .ConfirmationURL }}</a>
+              If the button doesn’t work, paste the link above in your browser.
             </p>
           </td>
         </tr>

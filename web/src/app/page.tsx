@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { ADVIES_OPTIONS, friendlyLevel } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
+import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t, useIsClient, useLanguageStore } from "@/lib/i18n";
 import { schoolImageForName } from "@/lib/schoolImages";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
@@ -126,11 +126,11 @@ function levelsForAdviesKey(key: string) {
 
 export default function ExploreHome() {
   const router = useRouter();
-  const [language, setLanguage] = useState<Language>("nl");
-  const [hydrated, setHydrated] = useState(false);
+  const language = useLanguageStore();
+  const isClient = useIsClient();
   const [hasSession, setHasSession] = useState(false);
   const [searchStarted, setSearchStarted] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [postcode, setPostcode] = useState(() => {
     if (typeof window === "undefined") return "";
     return window.localStorage.getItem("prefill_postcode") ?? "";
@@ -143,21 +143,22 @@ export default function ExploreHome() {
   const [ws, setWs] = useState<WorkspaceRow | null>(null);
   const [schools, setSchools] = useState<School[]>([]);
   const [query, setQuery] = useState("");
-  const [sortMode, setSortMode] = useState<SortMode>("name");
+  const sortMode = useSyncExternalStore(
+    (cb) => {
+      if (typeof window === "undefined") return () => {};
+      window.addEventListener("schools-sort-mode-changed", cb);
+      return () => window.removeEventListener("schools-sort-mode-changed", cb);
+    },
+    () => {
+      if (typeof window === "undefined") return "name";
+      const stored = window.localStorage.getItem("schools_sort_mode");
+      return stored === "bike" || stored === "name" ? stored : "name";
+    },
+    () => "name"
+  );
   const [error, setError] = useState("");
   const [shortlistMsg, setShortlistMsg] = useState<string>("");
   const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
-
-  useEffect(() => {
-    setHydrated(true);
-    setLanguage(readStoredLanguage());
-    const onLang = (event: Event) => {
-      const next = (event as CustomEvent<Language>).detail;
-      if (next) setLanguage(next);
-    };
-    window.addEventListener(LANGUAGE_EVENT, onLang as EventListener);
-    return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -168,29 +169,18 @@ export default function ExploreHome() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("prefill_advies", adviesKey);
   }, [adviesKey]);
-
-  useEffect(() => {
+  const setStoredSortMode = (next: SortMode) => {
     if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("schools_sort_mode");
-    if (stored === "name" || stored === "bike") {
-      setSortMode(stored);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("schools_sort_mode", sortMode);
-  }, [sortMode]);
+    window.localStorage.setItem("schools_sort_mode", next);
+    window.dispatchEvent(new Event("schools-sort-mode-changed"));
+  };
 
   const toggleLanguage = async () => {
     const next = language === "nl" ? "en" : "nl";
+    setStoredLanguage(next);
+    emitLanguageChanged(next);
     if (hasSession && ws?.id) {
       await supabase.from("workspaces").update({ language: next }).eq("id", ws.id);
-    }
-    setLanguage(next);
-    if (typeof window !== "undefined") {
-      setStoredLanguage(next);
-      emitLanguageChanged(next);
     }
   };
 
@@ -235,11 +225,12 @@ export default function ExploreHome() {
         setWs(workspaceRow);
         const storedLang = readStoredLanguage();
         const wsLang = (workspaceRow?.language as Language | null) ?? null;
-        if (storedLang && storedLang !== wsLang && workspaceRow?.id) {
+        if (storedLang && wsLang !== storedLang && workspaceRow?.id) {
           await supabase.from("workspaces").update({ language: storedLang }).eq("id", workspaceRow.id);
-          setLanguage(storedLang);
-        } else {
-          setLanguage(wsLang ?? storedLang);
+          emitLanguageChanged(storedLang);
+        } else if (wsLang && storedLang !== wsLang) {
+          setStoredLanguage(wsLang);
+          emitLanguageChanged(wsLang);
         }
         if ((workspaceRow?.advies_levels ?? []).length > 0) {
           const key = ADVIES_OPTIONS.find((opt) => {
@@ -251,7 +242,7 @@ export default function ExploreHome() {
         if (workspaceRow?.home_postcode && workspaceRow?.home_house_number) {
           const storedSort = typeof window !== "undefined" ? window.localStorage.getItem("schools_sort_mode") : null;
           if (!storedSort || storedSort === "name") {
-            setSortMode("bike");
+            setStoredSortMode("bike");
           }
         }
       } else {
@@ -289,6 +280,7 @@ export default function ExploreHome() {
       const visitsMap = new Map<string, VisitRow[]>();
       let openDaySchoolIds = new Set<string>();
       let plannedSchoolIds = new Set<string>();
+      let shortlistSchoolIds: string[] = [];
 
       if (authed && workspaceRow?.id) {
         const { data: commutes } = await supabase
@@ -361,6 +353,37 @@ export default function ExploreHome() {
             .map((row) => row?.school_id ?? "")
             .filter(Boolean)
         );
+
+        const { data: shortlistRow, error: shortlistErr } = await supabase
+          .from("shortlists")
+          .select("id")
+          .eq("workspace_id", workspaceRow.id)
+          .maybeSingle();
+
+        if (!mounted) return;
+        if (shortlistErr && shortlistErr.code !== "PGRST116") {
+          setError(shortlistErr.message);
+          setLoading(false);
+          return;
+        }
+
+        if (shortlistRow?.id) {
+          const { data: shortlistItems, error: itemsErr } = await supabase
+            .from("shortlist_items")
+            .select("school_id")
+            .eq("shortlist_id", shortlistRow.id);
+
+          if (!mounted) return;
+          if (itemsErr) {
+            setError(itemsErr.message);
+            setLoading(false);
+            return;
+          }
+
+          shortlistSchoolIds = (shortlistItems ?? [])
+            .map((row) => row.school_id as string)
+            .filter(Boolean);
+        }
       }
 
       const merged = schoolList.map((s) => ({
@@ -372,6 +395,7 @@ export default function ExploreHome() {
       }));
 
       setSchools(merged as School[]);
+      setShortlistIds(shortlistSchoolIds);
       setLoading(false);
     }
 
@@ -388,12 +412,20 @@ export default function ExploreHome() {
       router.push("/login");
       return;
     }
-    setFavorites((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
+    if (shortlistIds.includes(id)) {
+      removeSchoolFromShortlist(id);
+    } else {
+      addSchoolToShortlist(id);
+    }
   };
 
   const activeAdviesLevels = useMemo(
     () => (adviesKey ? levelsForAdviesKey(adviesKey) : ws?.advies_levels ?? []),
     [adviesKey, ws]
+  );
+  const adviesPill = useMemo(
+    () => (activeAdviesLevels.length ? activeAdviesLevels.map(friendlyLevel).join(" / ") : ""),
+    [activeAdviesLevels]
   );
   const matchMode = ws?.advies_match_mode ?? "either";
 
@@ -503,6 +535,7 @@ export default function ExploreHome() {
     const already = list.some((x) => x.school_id === schoolId);
     if (already) {
       setShortlistMsg(t(language, "schools.shortlist_already"));
+      setShortlistIds((prev) => (prev.includes(schoolId) ? prev : [...prev, schoolId]));
       setShortlistBusyId("");
       return;
     }
@@ -524,10 +557,63 @@ export default function ExploreHome() {
       rank,
     });
 
-    if (insErr) setError(insErr.message);
-    else if (rank) {
+    if (insErr) {
+      setError(insErr.message);
+    } else if (rank) {
       setShortlistMsg(t(language, "schools.shortlist_added_ranked").replace("#{rank}", String(rank)));
-    } else setShortlistMsg(t(language, "schools.shortlist_added_unranked"));
+    } else {
+      setShortlistMsg(t(language, "schools.shortlist_added_unranked"));
+    }
+    if (!insErr) {
+      setShortlistIds((prev) => (prev.includes(schoolId) ? prev : [...prev, schoolId]));
+    }
+
+    setShortlistBusyId("");
+  }
+
+  async function removeSchoolFromShortlist(schoolId: string) {
+    if (!hasSession) {
+      router.push("/login");
+      return;
+    }
+    if (!ws) return;
+
+    setError("");
+    setShortlistMsg("");
+    setShortlistBusyId(schoolId);
+
+    const { data: existing, error: sErr } = await supabase
+      .from("shortlists")
+      .select("id")
+      .eq("workspace_id", ws.id)
+      .maybeSingle();
+
+    if (sErr && sErr.code !== "PGRST116") {
+      setError(sErr.message);
+      setShortlistBusyId("");
+      return;
+    }
+
+    const shortlistId = (existing ?? null)?.id as string | undefined;
+    if (!shortlistId) {
+      setShortlistMsg(t(language, "schools.shortlist_removed"));
+      setShortlistIds((prev) => prev.filter((id) => id !== schoolId));
+      setShortlistBusyId("");
+      return;
+    }
+
+    const { error: delErr } = await supabase
+      .from("shortlist_items")
+      .delete()
+      .eq("shortlist_id", shortlistId)
+      .eq("school_id", schoolId);
+
+    if (delErr) {
+      setError(delErr.message);
+    } else {
+      setShortlistMsg(t(language, "schools.shortlist_removed"));
+      setShortlistIds((prev) => prev.filter((id) => id !== schoolId));
+    }
 
     setShortlistBusyId("");
   }
@@ -542,7 +628,7 @@ export default function ExploreHome() {
         <div className="relative px-5 pt-6 pb-12">
           <div className="flex items-center justify-between">
             <Wordmark variant="white" />
-            {hydrated ? (
+            {isClient ? (
               <button
                 className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm md:hidden"
                 type="button"
@@ -562,21 +648,28 @@ export default function ExploreHome() {
 
           <div className="mt-8 rounded-3xl border border-white/30 bg-white/95 p-4 shadow-lg backdrop-blur">
             {hasSession ? (
-              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                 <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
                   {t(language, "schools.sort")}
                   <select
                     className="h-11 rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                     value={sortMode}
-                    onChange={(event) => setSortMode(event.target.value as SortMode)}
+                    onChange={(event) => setStoredSortMode(event.target.value as SortMode)}
                   >
                     <option value="name">{t(language, "schools.sort_name")}</option>
                     <option value="bike">{t(language, "schools.sort_bike")}</option>
                   </select>
                 </label>
+                {adviesPill ? (
+                  <div className="flex items-end justify-start sm:justify-end">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-2 text-xs font-semibold text-foreground">
+                      {t(language, "schools.filters_advies")} {adviesPill}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr_auto]">
+              <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr_auto] sm:items-end">
                 <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
                   {t(language, "explore.search_postcode")}
                   <input
@@ -602,7 +695,7 @@ export default function ExploreHome() {
                   </select>
                 </label>
                 <button
-                  className="h-11 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
+                  className="h-11 self-end rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
                   type="button"
                   onClick={() => setSearchStarted(true)}
                 >
@@ -615,68 +708,80 @@ export default function ExploreHome() {
       </header>
 
       <section className="px-5 py-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-xl font-semibold text-foreground">{sectionTitle}</h2>
-          <Link
-            className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
-            href="/login"
-          >
-            {t(language, "explore.cta_start_list")}
-          </Link>
-        </div>
+        <div className="mx-auto w-full max-w-5xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-serif text-xl font-semibold text-foreground">{sectionTitle}</h2>
+            <Link
+              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
+              href={
+                hasSession
+                  ? shortlistIds.length > 0
+                    ? "/shortlist"
+                    : "#school-list"
+                  : "/login"
+              }
+            >
+              {hasSession
+                ? shortlistIds.length > 0
+                  ? t(language, "explore.cta_my_list")
+                  : t(language, "explore.cta_add_school")
+                : t(language, "explore.cta_start_list")}
+            </Link>
+          </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {featuredSchools.map((item, idx: number) => {
-            const isFavorite = favorites.includes(item.id);
-            const schoolHref = `/schools/${item.id}`;
-            return (
-              <div key={item.id} className="overflow-hidden rounded-3xl border bg-card shadow-md">
-                <div className="relative h-40">
-                  <Link href={schoolHref} className="absolute inset-0">
-                    <Image src={item.image} alt={item.name} fill className="object-cover" />
-                  </Link>
-                  <button
-                    className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
-                      isFavorite ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
-                    }`}
-                    onClick={() => toggleFavorite(item.id)}
-                    type="button"
-                    aria-label="Toggle favorite"
-                  >
-                    {isFavorite ? "♥" : "♡"}
-                  </button>
-                </div>
-                <div className="space-y-3 p-4">
-                  <div>
-                    <Link className="text-base font-semibold text-primary underline underline-offset-2" href={schoolHref}>
-                      {item.name}
+          <div className="grid gap-4 md:grid-cols-2">
+            {featuredSchools.map((item) => {
+              const isFavorite = shortlistIds.includes(item.id);
+              const schoolHref = `/schools/${item.id}`;
+              return (
+                <div key={item.id} className="overflow-hidden rounded-3xl border bg-card shadow-md">
+                  <div className="relative h-40">
+                    <Link href={schoolHref} className="absolute inset-0">
+                      <Image src={item.image} alt={item.name} fill className="object-cover" />
                     </Link>
-                    {item.address ? (
-                      <div className="mt-1 text-xs text-muted-foreground">{item.address}</div>
-                    ) : null}
-                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      {item.commute?.duration_minutes ? (
-                        <span>🚲 {item.commute.duration_minutes} min</span>
-                      ) : null}
-                      {item.commute?.distance_km ? (
-                        <span>{item.commute.distance_km} km</span>
-                      ) : null}
-                      {item.rating ? <span>⭐ {item.rating}/5</span> : null}
-                    </div>
+                    <button
+                      className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
+                        isFavorite ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
+                      }`}
+                      onClick={() => toggleFavorite(item.id)}
+                      type="button"
+                      aria-label="Add to my list"
+                    >
+                      {isFavorite ? "♥" : "♡"}
+                    </button>
                   </div>
-                  {item.tags?.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {item.tags.map((tag) => (
-                        <span key={tag} className="rounded-full bg-secondary/70 px-3 py-1 text-xs font-semibold text-foreground">
-                          {tag}
-                        </span>
-                      ))}
+                  <div className="space-y-3 p-4">
+                    <div>
+                      <Link className="text-base font-semibold text-primary underline underline-offset-2" href={schoolHref}>
+                        {item.name}
+                      </Link>
+                      {item.address ? (
+                        <div className="mt-1 text-xs text-muted-foreground">{item.address}</div>
+                      ) : null}
+                      <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        {item.commute?.duration_minutes ? (
+                          <span>🚲 {item.commute.duration_minutes} min</span>
+                        ) : null}
+                        {item.commute?.distance_km ? (
+                          <span>{item.commute.distance_km} km</span>
+                        ) : null}
+                        {item.rating ? <span>⭐ {item.rating}/5</span> : null}
+                      </div>
                     </div>
-                  ) : null}
+                    {item.tags?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {item.tags.map((tag) => (
+                          <span key={tag} className="rounded-full bg-secondary/70 px-3 py-1 text-xs font-semibold text-foreground">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -725,6 +830,7 @@ export default function ExploreHome() {
                   t(language, "schools.levels_empty");
                 const hasBadges = Boolean(s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended);
                 const image = s.image_url || pickSchoolImage(s.name, s.id);
+                const isShortlisted = shortlistIds.includes(s.id);
                 return (
                   <div key={s.id} className="flex flex-col overflow-hidden rounded-3xl border bg-card shadow-md">
                     <Link href={`/schools/${s.id}`} className="block">
@@ -783,11 +889,15 @@ export default function ExploreHome() {
                           </a>
                         ) : null}
                         <button
-                          className="ml-auto rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
-                          onClick={() => addSchoolToShortlist(s.id)}
+                          className={`ml-auto flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
+                            isShortlisted ? "bg-primary text-primary-foreground" : "border bg-white text-foreground"
+                          }`}
+                          onClick={() => toggleFavorite(s.id)}
+                          type="button"
+                          aria-label={t(language, "schools.shortlist_add")}
                           disabled={shortlistBusyId === s.id}
                         >
-                          {shortlistBusyId === s.id ? t(language, "schools.shortlist_adding") : t(language, "schools.shortlist_add")}
+                          {isShortlisted ? "♥" : "♡"}
                         </button>
                       </div>
                     </div>

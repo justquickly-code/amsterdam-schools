@@ -472,6 +472,13 @@ export default function OpenDaysPage() {
       });
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    list = list.filter((r) => {
+      if (!r.starts_at) return false;
+      return new Date(r.starts_at) >= today;
+    });
+
     if (eventTypeFilter !== "all") {
       list = list.filter((r) => normalizeEventType(r.event_type) === eventTypeFilter);
     }
@@ -520,6 +527,7 @@ export default function OpenDaysPage() {
               {t(language, "open_days.count").replace("#{count}", String(visibleRows.length))}
             </span>
           </div>
+          <p className="text-xs text-muted-foreground">{t(language, "open_days.remaining_label")}</p>
         </header>
 
         <InfoCard title={t(language, "open_days.important")}>

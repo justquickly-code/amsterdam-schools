@@ -270,32 +270,6 @@ export default function ShortlistPage() {
     return null;
   }
 
-  async function clearRank(rank: number) {
-    if (!shortlistId) return;
-    const existing = rankMap.get(rank);
-    if (!existing) return;
-
-    setSaving(true);
-    setError("");
-    setSavedMsg("");
-
-    const { error } = await supabase
-      .from("shortlist_items")
-      .update({ rank: null })
-      .eq("shortlist_id", shortlistId)
-      .eq("school_id", existing.school_id);
-
-    if (error) setError(error.message);
-    else {
-      setItems((prev) =>
-        sortItems(prev.map((x) => (x.school_id === existing.school_id ? { ...x, rank: null } : x)))
-      );
-      setSavedMsg(t(language, "shortlist.saved"));
-    }
-
-    setSaving(false);
-  }
-
   async function removeSchool(schoolId: string) {
     if (!shortlistId) return;
     setSaving(true);
@@ -482,10 +456,9 @@ export default function ShortlistPage() {
               <h1 className="text-3xl font-semibold text-foreground">
                 {t(language, "shortlist.title")}
               </h1>
-              <p className="text-sm text-muted-foreground">{t(language, "shortlist.subtitle")}</p>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t(language, "shortlist.rank_cap")}: <span className="font-semibold text-foreground">{rankCap}</span>
+              <p className="text-sm text-muted-foreground">
+                {t(language, "shortlist.subtitle").replace("{cap}", String(rankCap))}
+              </p>
             </div>
           </div>
         </header>
@@ -515,7 +488,6 @@ export default function ShortlistPage() {
                     className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between"
                   >
                     <div className="flex min-w-0 items-start gap-3">
-                      <div className="mt-1 select-none text-muted-foreground">⋮⋮</div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           {rankLabel ? (
@@ -525,11 +497,6 @@ export default function ShortlistPage() {
                           ) : (
                             <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
                               {t(language, "shortlist.saved_title")}
-                            </span>
-                          )}
-                          {isRanked && (
-                            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
-                              Top {rankCap}
                             </span>
                           )}
                           {(it.attended || it.has_planned || it.has_open_days) && (
@@ -584,13 +551,6 @@ export default function ShortlistPage() {
                             onClick={() => it.rank && move(it.rank, it.rank + 1)}
                           >
                             ↓
-                          </button>
-                          <button
-                            className="rounded-full border px-3 py-1 text-xs"
-                            disabled={saving || !it.rank}
-                            onClick={() => it.rank && clearRank(it.rank)}
-                          >
-                            {t(language, "shortlist.unrank")}
                           </button>
                         </>
                       ) : (

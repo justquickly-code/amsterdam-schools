@@ -46,20 +46,22 @@ Read `AGENTS.md` and `docs/00_PROJECT_BRIEF.md`, then confirm the next step from
 Note: `next build` may fail in constrained environments due to Turbopack port binding. If so, report it and continue.
 
 ## Current State Summary
-- Core MVP complete; design refresh in progress on `design/airbnb-refresh`.
+- Core MVP complete; Airbnb-style design refresh merged into `main`.
 - Explore is public at `/` (hero + schools list); login required for save/plan actions.
+- Explore shows advice pill when filters are applied; hearts add to My List.
 - Dashboard content now lives in `/profile` (Profile hub layout).
 - Open days list is public; planner actions are login‑gated.
 - My List is a single list with top‑N highlight (cap by advice).
+- Setup wizard restyle (copy + visuals) completed.
+- Open days now show upcoming dates only (labeled as remaining).
 - Admin hub exists; admin routes require allowlist + token.
 
 ## Design Refresh Branch
-- Active redesign branch: `design/airbnb-refresh`
+- Redesign merged into `main` (no active redesign branch).
 - Design reference kit: `docs/ui-kit/incoming/ux-design-feedback`
 - Design plan + decisions are in `docs/DESIGN.md` (Design Refresh Plan section).
 
 ## Open Items
-- Finish setup wizard restyle (copy + visuals).
 - Confirm desktop top‑right menu and mobile bottom‑nav parity.
 
 ## Suggested Session Prompt (Redesign Work)

@@ -6,7 +6,6 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import {
-  DEFAULT_LANGUAGE,
   Language,
   LANGUAGE_EVENT,
   emitLanguageChanged,
@@ -131,6 +130,8 @@ export default function Home() {
   const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
   const [hasAttended, setHasAttended] = useState(false);
   const [hasCompleteShortlist, setHasCompleteShortlist] = useState(false);
+  const [hasRatedVisit, setHasRatedVisit] = useState(false);
+  const [hasVisitNotes, setHasVisitNotes] = useState(false);
   const [visitedCount, setVisitedCount] = useState(0);
   const [plannedCount, setPlannedCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -174,7 +175,14 @@ export default function Home() {
 
       const wsRow = (ws ?? null) as WorkspaceRow | null;
       setWorkspace(wsRow);
-      setLanguage((wsRow?.language as Language) ?? readStoredLanguage());
+      const storedLang = readStoredLanguage();
+      const wsLang = (wsRow?.language as Language | null) ?? null;
+      if (storedLang && storedLang !== wsLang && wsRow?.id) {
+        await supabase.from("workspaces").update({ language: storedLang }).eq("id", wsRow.id);
+        setLanguage(storedLang);
+      } else {
+        setLanguage(wsLang ?? storedLang);
+      }
       const workspaceId = wsRow?.id ?? "";
       const rankCap = shortlistRankCapForLevels(wsRow?.advies_levels ?? []);
 
@@ -219,6 +227,8 @@ export default function Home() {
         const [
           { data: attendedRows },
           { data: attendedCountRows },
+          { data: ratingRows },
+          { data: notesRows },
         ] = await Promise.all([
           supabase
             .from("visits")
@@ -231,12 +241,26 @@ export default function Home() {
             .select("id")
             .eq("workspace_id", workspaceId)
             .eq("attended", true),
+          supabase
+            .from("visits")
+            .select("id,rating_stars")
+            .eq("workspace_id", workspaceId)
+            .not("rating_stars", "is", null)
+            .limit(1),
+          supabase
+            .from("visit_notes")
+            .select("id,notes,user_id")
+            .eq("workspace_id", workspaceId)
+            .not("notes", "is", null)
+            .limit(1),
         ]);
 
         if (!mounted) return;
 
         setHasAttended((attendedRows ?? []).length > 0);
         setVisitedCount((attendedCountRows ?? []).length);
+        setHasRatedVisit((ratingRows ?? []).length > 0);
+        setHasVisitNotes((notesRows ?? []).length > 0);
       }
 
       if (workspaceId) {
@@ -337,8 +361,8 @@ export default function Home() {
     const doneProfile = !setupNeeded;
     const doneDiscover = shortlistIds.length > 0;
     const doneList = hasCompleteShortlist;
-    const doneDays = plannedCount > 0 || hasAttended;
-    const doneChoice = false;
+    const doneDays = plannedCount > 0;
+    const doneChoice = hasCompleteShortlist && hasAttended && hasRatedVisit && hasVisitNotes;
     return [
       { key: "start", labelKey: "profile.journey_start", done: doneProfile, Icon: HomeIcon },
       { key: "discover", labelKey: "profile.journey_discover", done: doneDiscover, Icon: SearchIcon },
@@ -346,7 +370,7 @@ export default function Home() {
       { key: "days", labelKey: "profile.journey_days", done: doneDays, Icon: CalendarIcon },
       { key: "choice", labelKey: "profile.journey_choice", done: doneChoice, Icon: CheckIcon },
     ];
-  }, [setupNeeded, shortlistIds.length, hasCompleteShortlist, plannedCount, hasAttended]);
+  }, [setupNeeded, shortlistIds.length, hasCompleteShortlist, plannedCount, hasAttended, hasRatedVisit, hasVisitNotes]);
 
   const journeyProgress = useMemo(() => {
     const lastDoneIndex = [...journeySteps].reverse().findIndex((s) => s.done);
@@ -430,23 +454,31 @@ export default function Home() {
             const suggestions = [
               {
                 show: shortlistIds.length === 0,
-                label: t(language, "profile.suggest_add_school"),
+                title: t(language, "profile.next_step_discover_title"),
+                body: t(language, "profile.next_step_discover_body"),
+                cta: t(language, "profile.next_step_discover_cta"),
                 href: "/",
               },
               {
                 show: !hasCompleteShortlist,
-                label: t(language, "profile.suggest_finish_list"),
-                href: "/shortlist",
+                title: t(language, "profile.next_step_finish_title"),
+                body: t(language, "profile.next_step_finish_body").replace("{cap}", String(shortlistRankCapForLevels(workspace?.advies_levels ?? []))),
+                cta: t(language, "profile.next_step_finish_cta"),
+                href: "/",
               },
               {
                 show: plannedCount === 0,
-                label: t(language, "profile.suggest_plan_day"),
+                title: t(language, "profile.next_step_plan_title"),
+                body: t(language, "profile.next_step_plan_body"),
+                cta: t(language, "profile.next_step_plan_cta"),
                 href: "/planner",
               },
               {
-                show: !hasAttended,
-                label: t(language, "profile.suggest_mark_visit"),
-                href: "/planner",
+                show: !(hasAttended && hasRatedVisit && hasVisitNotes),
+                title: t(language, "profile.next_step_visit_title"),
+                body: t(language, "profile.next_step_visit_body"),
+                cta: t(language, "profile.next_step_visit_cta"),
+                href: "/shortlist",
               },
             ].filter((item) => item.show);
 
@@ -459,20 +491,19 @@ export default function Home() {
             }
 
             return (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t(language, "profile.next_steps")}
+                  {t(language, "profile.next_step")}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {suggestions.slice(0, 3).map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="rounded-full border px-3 py-1 text-xs font-semibold text-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-foreground">{suggestions[0].title}</div>
+                  <p className="text-sm text-muted-foreground">{suggestions[0].body}</p>
+                  <Link
+                    href={suggestions[0].href}
+                    className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold text-foreground"
+                  >
+                    {suggestions[0].cta}
+                  </Link>
                 </div>
               </div>
             );

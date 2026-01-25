@@ -1,24 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  DEFAULT_LANGUAGE,
-  Language,
-  emitLanguageChanged,
-  LANGUAGE_EVENT,
-  readStoredLanguage,
-  setStoredLanguage,
-  t,
-} from "@/lib/i18n";
+import { Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
+import { Wordmark } from "@/components/schoolkeuze";
 
 export default function TopMenu() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
   const [workspaceId, setWorkspaceId] = useState<string>("");
   const [hasNewFeedback, setHasNewFeedback] = useState(false);
   const adminFeedbackSeenEvent = "admin-feedback-seen";
@@ -138,72 +131,54 @@ export default function TopMenu() {
     await supabase.auth.signOut();
   }
 
-  async function updateLanguage(next: Language) {
-    if (next === language) return;
-    if (workspaceId) {
-      const { error } = await supabase
-        .from("workspaces")
-        .update({ language: next })
-        .eq("id", workspaceId);
-      if (error) return;
+  const navLinks = useMemo(() => {
+    if (isAuthed) {
+      return [
+        { href: "/", label: t(language, "nav.explore") },
+        { href: "/shortlist", label: t(language, "nav.my_list") },
+        { href: "/planner", label: t(language, "nav.open_days") },
+        { href: "/profile", label: t(language, "nav.profile") },
+      ];
     }
-    setLanguage(next);
-    if (typeof window !== "undefined") {
-      setStoredLanguage(next);
-    }
-    emitLanguageChanged(next);
-  }
+    return [
+      { href: "/", label: t(language, "nav.explore") },
+      { href: "/how-it-works", label: t(language, "menu.how_it_works") },
+      { href: "/login", label: t(language, "menu.login") },
+    ];
+  }, [isAuthed, language]);
 
   return (
-    <div className="fixed right-6 top-6 z-50 hidden md:block" ref={menuRef}>
-      <div className="relative flex items-center gap-2">
-        <button
-          className="rounded-full border bg-white/90 px-3 py-1 text-xs font-semibold text-foreground shadow-sm"
-          type="button"
-          onClick={() => updateLanguage(language === "nl" ? "en" : "nl")}
-        >
-          {language === "nl" ? "NL" : "EN"}
-        </button>
-        <button
-          className="flex h-9 w-9 items-center justify-center rounded-xl border text-sm"
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Open menu"
-        >
-          ☰
-        </button>
-        {hasNewFeedback && (
-          <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500" aria-hidden="true" />
-        )}
+    <>
+      <header className="fixed inset-x-0 top-0 z-50 hidden border-b bg-white/90 backdrop-blur md:block">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3">
+          <Link href="/" className="shrink-0">
+            <Wordmark />
+          </Link>
+          <nav className="flex items-center gap-5 text-sm font-semibold text-foreground">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="hover:text-primary">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="relative" ref={menuRef}>
+            <button
+              className="flex h-9 w-9 items-center justify-center rounded-xl border text-sm"
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+            {hasNewFeedback && (
+              <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500" aria-hidden="true" />
+            )}
 
-        {open && (
-          <div className="absolute right-0 mt-2 w-56 rounded-md border bg-white p-2 shadow-md">
-            {email ? (
-              <div className="px-2 py-1 text-xs text-muted-foreground">{email}</div>
-            ) : null}
-            <div className="px-2 py-1">
-              <div className="text-xs text-muted-foreground mb-1">
-                {t(language, "settings.language")}
-              </div>
-              <button
-                type="button"
-                className="relative inline-flex h-8 w-24 items-center rounded-full border bg-muted/30 px-1 text-[11px]"
-                onClick={() => updateLanguage(language === "nl" ? "en" : "nl")}
-                aria-label="Toggle language"
-              >
-                <span
-                  className={`absolute h-6 w-11 rounded-full bg-white shadow transition-transform ${
-                    language === "nl" ? "translate-x-0" : "translate-x-12"
-                  }`}
-                />
-                <span className={`relative z-10 w-11 text-center ${language === "nl" ? "" : "text-muted-foreground"}`}>
-                  NL
-                </span>
-                <span className={`relative z-10 w-11 text-center ${language === "en" ? "" : "text-muted-foreground"}`}>
-                  EN
-                </span>
-              </button>
-            </div>
+            {open && (
+              <div className="absolute right-0 top-full mt-3 w-56 max-h-[calc(100vh-6rem)] overflow-auto rounded-md border bg-white p-2 shadow-md">
+                {email ? (
+                  <div className="px-2 py-1 text-xs text-muted-foreground">{email}</div>
+                ) : null}
             {isAuthed ? (
               <Link
                 className="block rounded px-2 py-2 text-sm hover:bg-muted/40"
@@ -279,9 +254,12 @@ export default function TopMenu() {
                 </button>
               </>
             ) : null}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      </header>
+      <div className="hidden h-16 md:block" />
+    </>
   );
 }

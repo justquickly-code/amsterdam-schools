@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
@@ -185,6 +185,7 @@ export default function SchoolDetailPage() {
     const params = useParams<{ id: string }>();
     const searchParams = useSearchParams();
     const schoolId = params?.id;
+    const router = useRouter();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -209,6 +210,7 @@ export default function SchoolDetailPage() {
     const [saving, setSaving] = useState(false);
     const [savedMsg, setSavedMsg] = useState("");
     const [shortlistMsg, setShortlistMsg] = useState("");
+    const [isShortlisted, setIsShortlisted] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -238,6 +240,40 @@ export default function SchoolDetailPage() {
                 }
                 setWorkspace(workspaceRow);
                 setLanguage((workspaceRow?.language as Language) ?? readStoredLanguage());
+                if (schoolId) {
+                    const { data: shortlistRow, error: sErr } = await supabase
+                        .from("shortlists")
+                        .select("id")
+                        .eq("workspace_id", workspaceRow.id)
+                        .maybeSingle();
+
+                    if (!mounted) return;
+                    if (sErr && sErr.code !== "PGRST116") {
+                        setError(sErr.message);
+                        setLoading(false);
+                        return;
+                    }
+
+                    if (shortlistRow?.id) {
+                        const { data: itemRow, error: iErr } = await supabase
+                            .from("shortlist_items")
+                            .select("school_id")
+                            .eq("shortlist_id", shortlistRow.id)
+                            .eq("school_id", schoolId)
+                            .maybeSingle();
+
+                        if (!mounted) return;
+                        if (iErr && iErr.code !== "PGRST116") {
+                            setError(iErr.message);
+                            setLoading(false);
+                            return;
+                        }
+
+                        setIsShortlisted(Boolean(itemRow?.school_id));
+                    } else {
+                        setIsShortlisted(false);
+                    }
+                }
             } else {
                 setWorkspace(null);
                 setLanguage(readStoredLanguage());
@@ -353,16 +389,22 @@ export default function SchoolDetailPage() {
                 event_type: row.event_type ?? null,
                 is_active: row.is_active,
             })) as OpenDay[];
-            setOpenDays(mapped);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const upcoming = mapped.filter((row) => {
+                if (!row.starts_at) return false;
+                return new Date(row.starts_at) >= today;
+            });
+            setOpenDays(upcoming);
 
-            if (authed && workspaceRow?.id && mapped.length > 0) {
+            if (authed && workspaceRow?.id && upcoming.length > 0) {
                 const { data: plannedRows, error: pErr } = await supabase
                     .from("planned_open_days")
                     .select("open_day_id")
                     .eq("workspace_id", workspaceRow.id)
                     .in(
                         "open_day_id",
-                        mapped.map((r) => r.id)
+                        upcoming.map((r) => r.id)
                     );
 
                 if (!mounted) return;
@@ -530,6 +572,7 @@ export default function SchoolDetailPage() {
         const already = itemRows.some((x) => x.school_id === school.id);
         if (already) {
             setShortlistMsg(t(language, "schools.shortlist_already"));
+            setIsShortlisted(true);
             return;
         }
 
@@ -557,6 +600,48 @@ export default function SchoolDetailPage() {
         } else {
             setShortlistMsg(t(language, "schools.shortlist_added_unranked"));
         }
+        if (!upErr) {
+            setIsShortlisted(true);
+        }
+    }
+
+    async function removeFromShortlist() {
+        if (!workspace || !school) return;
+
+        setError("");
+        setShortlistMsg("");
+
+        const { data: existing, error: sErr } = await supabase
+            .from("shortlists")
+            .select("id")
+            .eq("workspace_id", workspace.id)
+            .maybeSingle();
+
+        if (sErr && sErr.code !== "PGRST116") {
+            setError(sErr.message);
+            return;
+        }
+
+        const shortlistId = (existing ?? null)?.id as string | undefined;
+        if (!shortlistId) {
+            setShortlistMsg(t(language, "schools.shortlist_removed"));
+            setIsShortlisted(false);
+            return;
+        }
+
+        const { error: delErr } = await supabase
+            .from("shortlist_items")
+            .delete()
+            .eq("shortlist_id", shortlistId)
+            .eq("school_id", school.id);
+
+        if (delErr) {
+            setError(delErr.message);
+            return;
+        }
+
+        setShortlistMsg(t(language, "schools.shortlist_removed"));
+        setIsShortlisted(false);
     }
 
     async function togglePlanned(openDayId: string) {
@@ -647,7 +732,31 @@ export default function SchoolDetailPage() {
                 )}
 
                 {school && (
-                    <InfoCard title={t(language, "school.detail_overview")}>
+                    <InfoCard
+                        title={t(language, "school.detail_overview")}
+                        action={
+                            <button
+                                className={`flex h-10 w-10 items-center justify-center rounded-full text-base shadow-sm transition ${
+                                    isShortlisted ? "bg-primary text-primary-foreground" : "border bg-white text-foreground"
+                                }`}
+                                type="button"
+                                aria-label={t(language, "schools.shortlist_add")}
+                                onClick={() => {
+                                    if (!hasSession) {
+                                        router.push("/login");
+                                        return;
+                                    }
+                                    if (isShortlisted) {
+                                        removeFromShortlist();
+                                    } else {
+                                        addToShortlist();
+                                    }
+                                }}
+                            >
+                                {isShortlisted ? "♥" : "♡"}
+                            </button>
+                        }
+                    >
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                             {school.image_url ? (
                                 <div className="relative h-32 w-full overflow-hidden rounded-2xl sm:h-40 sm:w-56">
@@ -662,6 +771,7 @@ export default function SchoolDetailPage() {
                                     {t(language, "schools.website")}
                                 </a>
                             )}
+                            {shortlistMsg && <div className="text-sm text-muted-foreground">{shortlistMsg}</div>}
                         </div>
                         </div>
                     </InfoCard>
@@ -671,6 +781,7 @@ export default function SchoolDetailPage() {
                     title={t(language, "open_days.title")}
                     action={<span className="text-xs text-muted-foreground">{t(language, "school.detail_verify")}</span>}
                 >
+                    <div className="mb-3 text-xs text-muted-foreground">{t(language, "open_days.remaining_label")}</div>
                     {openDays.length === 0 ? (
                         <div className="text-sm text-muted-foreground">{t(language, "school.detail_no_open_days")}</div>
                     ) : (
@@ -738,7 +849,7 @@ export default function SchoolDetailPage() {
                 {hasSession ? (
                     <InfoCard title={t(language, "school.notes_title")}>
                         <div className="space-y-4">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-wrap items-center gap-4">
                                 <label className="flex items-center gap-2 text-sm font-medium text-foreground">
                                     <input
                                         type="checkbox"
@@ -747,7 +858,10 @@ export default function SchoolDetailPage() {
                                     />
                                     <span>{t(language, "school.notes_visited")}</span>
                                 </label>
-                                <StarRating value={rating} onChange={setRating} />
+                                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                    <span>{t(language, "school.notes_rating_label")}</span>
+                                    <StarRating value={rating} onChange={setRating} />
+                                </div>
                             </div>
 
                             <label className="space-y-2 block">
@@ -787,18 +901,6 @@ export default function SchoolDetailPage() {
                                     {saving ? "Saving..." : "Save"}
                                 </button>
                                 {savedMsg && <span className="text-sm text-foreground">{savedMsg}</span>}
-                                {visit && (
-                                    <span className="text-xs text-muted-foreground">Visit record exists</span>
-                                )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3">
-                                <button
-                                    className="rounded-full border px-4 py-2 text-xs font-semibold"
-                                    onClick={addToShortlist}
-                                >
-                                    {t(language, "schools.shortlist_add_full")}
-                                </button>
-                                {shortlistMsg && <span className="text-sm text-foreground">{shortlistMsg}</span>}
                             </div>
                         </div>
                     </InfoCard>
