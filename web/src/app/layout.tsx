@@ -30,12 +30,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const store = cookies();
+  const store = await cookies();
   const langCookie = store.get("schools_lang")?.value ?? "";
   const language = langCookie === "en" || langCookie === "nl" ? langCookie : "nl";
 
