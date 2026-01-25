@@ -21,13 +21,10 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
         </tr>
         <tr>
           <td>
-            <h2 style="margin:0 0 6px 0;color:#111827;font-size:20px;">Je inloglink staat klaar</h2>
-            <p style="margin:0 0 6px 0;color:#6b7280;font-size:12px;">Your sign‑in link is ready</p>
+            <h2 style="margin:0 0 6px 0;color:#111827;font-size:20px;">Je reis start hier!</h2>
+            <p style="margin:0 0 6px 0;color:#6b7280;font-size:12px;">Your journey starts here!</p>
             <p style="margin:0 0 14px 0;color:#374151;font-size:14px;line-height:1.5;">
               Klik op de knop hieronder om in te loggen. Je blijft ingelogd op dit apparaat.
-            </p>
-            <p style="margin:0 0 14px 0;color:#6b7280;font-size:12px;">
-              Click the button below to sign in.
             </p>
 
             <div style="text-align:center;margin:18px 0;">
@@ -42,10 +39,6 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
               <br />
               <a href="{{ .ConfirmationURL }}" style="color:#ef4444;">{{ .ConfirmationURL }}</a>
             </p>
-            <p style="margin:0 0 18px 0;color:#6b7280;font-size:12px;">
-              If the button doesn’t work, paste the link above in your browser.
-            </p>
-
             <p style="margin:0;color:#6b7280;font-size:12px;">
               Geen mail? Check je spam of ongewenste e‑mail. (No email? Check spam.)
             </p>
@@ -96,9 +89,6 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
               Werkt de knop niet? Plak deze link in je browser:
               <br />
               <a href="{{ .ConfirmationURL }}" style="color:#ef4444;">{{ .ConfirmationURL }}</a>
-            </p>
-            <p style="margin:0;color:#6b7280;font-size:12px;">
-              If the button doesn’t work, paste the link above in your browser.
             </p>
           </td>
         </tr>
