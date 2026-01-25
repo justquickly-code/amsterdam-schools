@@ -8,11 +8,11 @@ import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setS
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { Wordmark } from "@/components/schoolkeuze";
 
-export default function TopMenu() {
+export default function TopMenu({ initialLanguage }: { initialLanguage?: Language }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
+  const [language, setLanguage] = useState<Language>(() => initialLanguage ?? readStoredLanguage());
   const [workspaceId, setWorkspaceId] = useState<string>("");
   const [hasNewFeedback, setHasNewFeedback] = useState(false);
   const adminFeedbackSeenEvent = "admin-feedback-seen";

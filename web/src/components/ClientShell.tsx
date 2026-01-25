@@ -20,7 +20,13 @@ function shouldBypassSetup(pathname: string) {
   return BYPASS_SETUP_PREFIXES.some((p) => pathname.startsWith(p));
 }
 
-export default function ClientShell({ children }: { children: React.ReactNode }) {
+export default function ClientShell({
+  children,
+  initialLanguage,
+}: {
+  children: React.ReactNode;
+  initialLanguage?: "nl" | "en";
+}) {
   const pathname = usePathname();
   const hideNav = shouldHideNav(pathname);
   const bypass = shouldBypassSetup(pathname);
@@ -29,7 +35,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
 
   return (
     <>
-      {showMenu && <TopMenu />}
+      {showMenu && <TopMenu initialLanguage={initialLanguage} />}
       <Suspense fallback={null}>
         <SetupGate bypass={bypass} showNav={!hideNav} nav={nav}>
           {children}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
 import ClientShell from "@/components/ClientShell";
 
@@ -34,12 +35,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const store = cookies();
+  const langCookie = store.get("schools_lang")?.value ?? "";
+  const language = langCookie === "en" || langCookie === "nl" ? langCookie : "nl";
+
   return (
-    <html lang="en">
+    <html lang={language}>
       <body
         className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans"
       >
-        <ClientShell>{children}</ClientShell>
+        <ClientShell initialLanguage={language}>{children}</ClientShell>
       </body>
     </html>
   );
