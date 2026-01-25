@@ -63,6 +63,7 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 
 ## Open Items
 - Confirm desktop top‑right menu and mobile bottom‑nav parity.
+- Known issue: language selection may revert to Dutch after magic-link login.
 
 ## Suggested Session Prompt (Redesign Work)
 “Switch to `design/airbnb-refresh`. Read `docs/DESIGN.md` (Design Refresh Plan). Implement Phase 1 only (theme + shared components), no functional changes.”

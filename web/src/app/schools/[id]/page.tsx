@@ -203,6 +203,7 @@ export default function SchoolDetailPage() {
     const [openDays, setOpenDays] = useState<OpenDay[]>([]);
     const [plannedOpenDayIds, setPlannedOpenDayIds] = useState<Set<string>>(new Set());
     const [planningId, setPlanningId] = useState<string | null>(null);
+    const [downloadingId, setDownloadingId] = useState<string | null>(null);
     const [hasSession, setHasSession] = useState(false);
 
     const [attended, setAttended] = useState(false);
@@ -686,6 +687,50 @@ export default function SchoolDetailPage() {
         setPlanningId(null);
     }
 
+    async function downloadIcs(openDayId: string) {
+        if (!hasSession) {
+            router.push("/login");
+            return;
+        }
+        setDownloadingId(openDayId);
+        setError("");
+        try {
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token ?? "";
+            if (!token) {
+                setError("You must be logged in to download the calendar invite.");
+                return;
+            }
+
+            const res = await fetch(`/api/open-days/${openDayId}/ics`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+                const json = await res.json().catch(() => null);
+                throw new Error(json?.error ?? "Calendar download failed");
+            }
+
+            const blob = await res.blob();
+            const contentDisposition = res.headers.get("content-disposition") ?? "";
+            const match = contentDisposition.match(/filename="([^"]+)"/i);
+            const filename = match?.[1] ?? "open-day.ics";
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : "Calendar download failed";
+            setError(msg);
+        } finally {
+            setDownloadingId(null);
+        }
+    }
+
     useEffect(() => {
         function onLang(e: Event) {
             const next = (e as CustomEvent<Language>).detail;
@@ -824,6 +869,19 @@ export default function SchoolDetailPage() {
                                                             : planned
                                                             ? t(language, "open_days.planned")
                                                             : t(language, "open_days.plan")}
+                                                    </button>
+                                                ) : null}
+                                                {hasSession ? (
+                                                    <button
+                                                        className={actionClass()}
+                                                        type="button"
+                                                        onClick={() => downloadIcs(r.id)}
+                                                        disabled={downloadingId === r.id}
+                                                        title={t(language, "open_days.calendar")}
+                                                    >
+                                                        {downloadingId === r.id
+                                                            ? t(language, "open_days.downloading")
+                                                            : t(language, "open_days.calendar")}
                                                     </button>
                                                 ) : null}
                                                 {r.info_url && (

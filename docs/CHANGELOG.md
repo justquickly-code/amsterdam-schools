@@ -21,6 +21,10 @@
 - Auth: improve language persistence fallback using cookies and query params.
 - Email: refresh magic-link and invite templates (single mixed-language email).
 - ICS: export open days in CET/Europe/Amsterdam timezone.
+- School detail: add “Add to calendar” for open days.
+- Profile: refine “finish list” next-step copy and link to Explore.
+- Explore: adjust CTA once list is started.
+- Docs: add basic release notes file.
 - Explore: show 5 real schools before search (logged out), and no placeholder stats.
 - Explore: “Start je lijst” routes to /login.
 - Explore: fix hydration mismatch for language toggle on the hero.
