@@ -34,6 +34,9 @@
 - /shortlist/print (Print export)
   - printable ranked list
 
+- /release-notes
+  - user-facing overview of main features + recent changes
+
 - /feedback
   - submit feedback (bug/idea/question/other)
   - list your feedback + admin responses

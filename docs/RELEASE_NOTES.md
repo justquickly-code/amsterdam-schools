@@ -6,10 +6,18 @@ This is a lightweight summary of features per release. Keep it short and user-fa
 - Known issue: Language selection may revert to Dutch after magic-link login.
 - Explore uses a single continuous list with combined search + sort controls.
 - Combined advice (e.g., HAVO/VWO) filters to schools offering both levels.
+- Shortlist uses a single list with consistent up/down controls and ranked labeling.
+- Journey progress line alignment refined.
+- Release notes page added at `/release-notes`.
 
-## 2026-01-25
-- Public Explore landing with hero search and featured schools.
-- My List (single list + ranked subset) with drag-free ranking controls.
-- Open Days (planner) with filters and calendar downloads.
-- Profile hub with journey stepper and next-step guidance.
-- School detail pages with notes, ratings, and planned open days.
+## 2026-01-25 (v1 launch)
+Main features:
+- Public Explore landing with advice filtering and school cards.
+- Magic-link login with shared family workspaces and invites.
+- My List: one saved list with ranked subset (cap by advice).
+- Bike commute time + distance once home address is set.
+- Open Days planner with planned toggles + calendar downloads.
+- School detail notes + ratings (per member) + shared visit status.
+- Profile hub with journey progress, stats, and next-step guidance.
+- Setup wizard with optional invite and how-it-works steps.
+- Shortlist print/export view for ranked list.

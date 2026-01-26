@@ -603,6 +603,12 @@ export default function Home() {
             },
             {
               icon: NoteIcon,
+              label: t(language, "profile.link_release_notes"),
+              description: t(language, "profile.desc_release_notes"),
+              action: () => router.push("/release-notes"),
+            },
+            {
+              icon: NoteIcon,
               label: t(language, "profile.link_feedback"),
               description: t(language, "profile.desc_feedback"),
               action: () => router.push("/feedback"),
