@@ -491,11 +491,11 @@ export default function ShortlistPage() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           {rankLabel ? (
-                            <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
                               {rankLabel}
                             </span>
                           ) : (
-                            <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                            <span className="rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">
                               {t(language, "shortlist.not_ranked")}
                             </span>
                           )}
