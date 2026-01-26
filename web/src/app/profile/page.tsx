@@ -510,10 +510,12 @@ export default function Home() {
           })()}
           <div className="relative mt-4">
             <div className="absolute left-[10%] right-[10%] top-5 h-0.5 bg-border" />
-            <div
-              className="absolute left-[10%] top-5 h-0.5 bg-primary"
-              style={{ width: `${Math.min(100, journeyProgress.pct)}%` }}
-            />
+            <div className="absolute left-[10%] right-[10%] top-5 h-0.5 overflow-hidden">
+              <div
+                className="h-full bg-primary"
+                style={{ transform: `scaleX(${Math.min(1, journeyProgress.pct / 100)})`, transformOrigin: "left" }}
+              />
+            </div>
             <div className="grid grid-cols-5">
               {journeySteps.map((step) => {
                 const DoneIcon = step.Icon;
