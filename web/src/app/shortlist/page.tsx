@@ -496,7 +496,7 @@ export default function ShortlistPage() {
                             </span>
                           ) : (
                             <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
-                              {t(language, "shortlist.saved_title")}
+                              {t(language, "shortlist.not_ranked")}
                             </span>
                           )}
                           {(it.attended || it.has_planned || it.has_open_days) && (
@@ -536,32 +536,20 @@ export default function ShortlistPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      {isRanked ? (
-                        <>
-                          <button
-                            className="rounded-full border px-2 py-1 text-xs"
-                            disabled={saving || !it.rank || it.rank === 1}
-                            onClick={() => it.rank && move(it.rank, it.rank - 1)}
-                          >
-                            ↑
-                          </button>
-                          <button
-                            className="rounded-full border px-2 py-1 text-xs"
-                            disabled={saving || !it.rank || it.rank === rankCap}
-                            onClick={() => it.rank && move(it.rank, it.rank + 1)}
-                          >
-                            ↓
-                          </button>
-                        </>
-                      ) : (
                         <button
-                          className="rounded-full border px-3 py-1 text-xs"
-                          disabled={saving}
-                          onClick={() => promoteToNextRank(it)}
+                          className="rounded-full border px-2 py-1 text-xs"
+                          disabled={saving || (isRanked && it.rank === 1)}
+                          onClick={() => (isRanked && it.rank ? move(it.rank, it.rank - 1) : promoteToNextRank(it))}
                         >
-                          {t(language, "shortlist.add_to_ranked")}
+                          ↑
                         </button>
-                      )}
+                        <button
+                          className="rounded-full border px-2 py-1 text-xs"
+                          disabled={saving || !isRanked || !it.rank || it.rank === rankCap}
+                          onClick={() => it.rank && move(it.rank, it.rank + 1)}
+                        >
+                          ↓
+                        </button>
                       <button
                         className="text-xs text-muted-foreground underline"
                         onClick={() => removeSchool(it.school_id)}
