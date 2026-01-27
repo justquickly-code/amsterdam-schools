@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
+import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS } from "@/lib/categoryRatings";
 import { Wordmark } from "@/components/schoolkeuze";
 import { InfoCard } from "@/components/schoolkeuze";
 
@@ -91,6 +92,11 @@ type OpenDayRow = {
 
 type PlannedOpenDayRow = {
     open_day_id: string;
+};
+
+type CategoryRatingRow = {
+    category: string;
+    rating: number | null;
 };
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -181,6 +187,16 @@ function StarRating({
     );
 }
 
+function categoryLabelKey(category: CategoryKey) {
+    return `ratings.category.${category}`;
+}
+
+function ratingButtonClass(selected: boolean) {
+    return `flex h-9 w-9 items-center justify-center rounded-full border text-lg transition ${
+        selected ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+    }`;
+}
+
 export default function SchoolDetailPage() {
     const params = useParams<{ id: string }>();
     const searchParams = useSearchParams();
@@ -208,6 +224,18 @@ export default function SchoolDetailPage() {
 
     const [attended, setAttended] = useState(false);
     const [rating, setRating] = useState<number | null>(null);
+    const [categoryRatings, setCategoryRatings] = useState<Record<CategoryKey, number | null>>(() => {
+        const initial: Record<CategoryKey, number | null> = {
+            atmosphere: null,
+            sciences: null,
+            arts: null,
+            languages: null,
+            facilities: null,
+            teachers_students: null,
+            unique_offerings: null,
+        };
+        return initial;
+    });
     const [saving, setSaving] = useState(false);
     const [savedMsg, setSavedMsg] = useState("");
     const [shortlistMsg, setShortlistMsg] = useState("");
@@ -356,11 +384,50 @@ export default function SchoolDetailPage() {
                         }))
                         .filter((n) => n.notes.trim().length > 0)
                 );
+
+                const { data: ratingRows, error: rErr } = await supabase
+                    .from("school_category_ratings")
+                    .select("category,rating")
+                    .eq("workspace_id", workspaceRow.id)
+                    .eq("school_id", schoolId);
+
+                if (!mounted) return;
+                if (rErr) {
+                    setError(rErr.message);
+                    setLoading(false);
+                    return;
+                }
+
+                const initialRatings: Record<CategoryKey, number | null> = {
+                    atmosphere: null,
+                    sciences: null,
+                    arts: null,
+                    languages: null,
+                    facilities: null,
+                    teachers_students: null,
+                    unique_offerings: null,
+                };
+                (ratingRows ?? []).forEach((row) => {
+                    const r = row as CategoryRatingRow;
+                    if (CATEGORY_KEYS.includes(r.category as CategoryKey)) {
+                        initialRatings[r.category as CategoryKey] = r.rating ?? null;
+                    }
+                });
+                setCategoryRatings(initialRatings);
             } else {
                 setVisit(null);
                 setVisitUpdatedAt(null);
                 setAttended(false);
                 setRating(null);
+                setCategoryRatings({
+                    atmosphere: null,
+                    sciences: null,
+                    arts: null,
+                    languages: null,
+                    facilities: null,
+                    teachers_students: null,
+                    unique_offerings: null,
+                });
                 setNoteText("");
                 setNoteUpdatedAt(null);
                 setOtherNotes([]);
@@ -513,6 +580,36 @@ export default function SchoolDetailPage() {
                 .eq("workspace_id", workspace.id)
                 .eq("school_id", school.id)
                 .eq("user_id", currentUserId);
+        }
+
+        const toUpsert = CATEGORY_KEYS.map((category) => ({
+            workspace_id: workspace.id,
+            school_id: school.id,
+            category,
+            rating: categoryRatings[category],
+        })).filter((row) => row.rating != null);
+
+        const toDelete = CATEGORY_KEYS.filter((category) => categoryRatings[category] == null);
+
+        if (toUpsert.length) {
+            const { error: upsertErr } = await supabase
+                .from("school_category_ratings")
+                .upsert(toUpsert, { onConflict: "workspace_id,school_id,category" });
+            if (upsertErr) {
+                setError(upsertErr.message);
+            }
+        }
+
+        if (toDelete.length) {
+            const { error: deleteErr } = await supabase
+                .from("school_category_ratings")
+                .delete()
+                .eq("workspace_id", workspace.id)
+                .eq("school_id", school.id)
+                .in("category", toDelete);
+            if (deleteErr) {
+                setError(deleteErr.message);
+            }
         }
 
         setSaving(false);
@@ -919,6 +1016,54 @@ export default function SchoolDetailPage() {
                                 <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                                     <span>{t(language, "school.notes_rating_label")}</span>
                                     <StarRating value={rating} onChange={setRating} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
+                                    <span>{t(language, "ratings.title")}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                        ? = {t(language, "ratings.unsure")}
+                                    </span>
+                                </div>
+                                <div className="space-y-3">
+                                    {CATEGORY_KEYS.map((category) => (
+                                        <div key={category} className="flex flex-wrap items-center gap-3">
+                                            <div className="min-w-[140px] text-sm text-foreground">
+                                                {t(language, categoryLabelKey(category))}
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {RATING_EMOJIS.map((item) => (
+                                                    <button
+                                                        key={item.value}
+                                                        type="button"
+                                                        className={ratingButtonClass(categoryRatings[category] === item.value)}
+                                                        onClick={() =>
+                                                            setCategoryRatings((prev) => ({
+                                                                ...prev,
+                                                                [category]: item.value,
+                                                            }))
+                                                        }
+                                                        aria-label={`${t(language, categoryLabelKey(category))} ${item.value}`}
+                                                    >
+                                                        {item.emoji}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    className={ratingButtonClass(categoryRatings[category] == null)}
+                                                    onClick={() =>
+                                                        setCategoryRatings((prev) => ({
+                                                            ...prev,
+                                                            [category]: null,
+                                                        }))
+                                                    }
+                                                >
+                                                    ?
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
