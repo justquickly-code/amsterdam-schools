@@ -4,15 +4,13 @@ This is a lightweight summary of features per release. Keep it short and user-fa
 
 ## Unreleased
 - Known issue: Language selection may revert to Dutch after magic-link login.
-- Explore uses a single continuous list with combined search + sort controls.
+
+## 2026-01-27
 - Combined advice (e.g., HAVO/VWO) filters to schools offering both levels.
-- Shortlist uses a single list with consistent up/down controls and ranked labeling.
-- Journey progress line alignment refined.
 - Release notes page added at `/release-notes`.
-- New: category-based school ratings with emoji scale and “Fit %” badge on My List.
+- Category-based school ratings with emoji scale and “Fit %” badges.
 
 ## 2026-01-25 (v1 launch)
-Main features:
 - Public Explore landing with advice filtering and school cards.
 - Magic-link login with shared family workspaces and invites.
 - My List: one saved list with ranked subset (cap by advice).
