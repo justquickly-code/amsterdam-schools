@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
+import { computeFitPercent } from "@/lib/categoryRatings";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
@@ -34,12 +35,14 @@ type ShortlistItem = {
   commute?: { duration_minutes: number | null; distance_km: number | null } | null;
   has_planned?: boolean;
   has_open_days?: boolean;
+  fit_score?: number | null;
 };
 
 type VisitRow = { school_id: string; rating_stars: number | null; attended: boolean | null };
 type CommuteRow = { school_id: string; duration_minutes: number | null; distance_km: number | null };
 type PlannedRow = { open_day?: { school_id: string | null } | Array<{ school_id: string | null }> | null };
 type OpenDayRow = { school_id: string | null };
+type CategoryRatingRow = { school_id: string; rating: number | null };
 
 function sortItems(list: ShortlistItem[]) {
   return [...list].sort((a, b) => {
@@ -63,6 +66,14 @@ function statusLabel(item: ShortlistItem, language: Language) {
   if (item.has_planned) return t(language, "shortlist.planned");
   if (item.has_open_days) return t(language, "shortlist.no_plan");
   return t(language, "shortlist.no_open_days");
+}
+
+function fitBadgeClass(score: number) {
+  if (score >= 80) return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (score >= 60) return "border-lime-200 bg-lime-50 text-lime-700";
+  if (score >= 40) return "border-amber-200 bg-amber-50 text-amber-700";
+  if (score >= 20) return "border-rose-200 bg-rose-50 text-rose-700";
+  return "border-red-200 bg-red-50 text-red-700";
 }
 
 export default function ShortlistPage() {
@@ -166,9 +177,16 @@ export default function ShortlistPage() {
       let commutes: CommuteRow[] = [];
       let plannedRows: PlannedRow[] = [];
       let openDayRows: OpenDayRow[] = [];
+      let categoryRows: CategoryRatingRow[] = [];
 
       if (workspaceRow.id && schoolIds.length) {
-        const [{ data: visitRows }, { data: commuteRows }, { data: planned }, { data: openDays }] = await Promise.all([
+        const [
+          { data: visitRows },
+          { data: commuteRows },
+          { data: planned },
+          { data: openDays },
+          { data: categoryRatings },
+        ] = await Promise.all([
           supabase
             .from("visits")
             .select("school_id,rating_stars,attended")
@@ -188,6 +206,11 @@ export default function ShortlistPage() {
             .from("open_days")
             .select("school_id")
             .in("school_id", schoolIds),
+          supabase
+            .from("school_category_ratings")
+            .select("school_id,rating")
+            .eq("workspace_id", workspaceRow.id)
+            .in("school_id", schoolIds),
         ]);
 
         if (!mounted) return;
@@ -195,10 +218,18 @@ export default function ShortlistPage() {
         commutes = (commuteRows ?? []) as CommuteRow[];
         plannedRows = (planned ?? []) as PlannedRow[];
         openDayRows = (openDays ?? []) as OpenDayRow[];
+        categoryRows = (categoryRatings ?? []) as CategoryRatingRow[];
       }
 
       const visitMap = new Map(visits.map((v) => [v.school_id, v]));
       const commuteMap = new Map(commutes.map((c) => [c.school_id, c]));
+      const categoryMap = new Map<string, number[]>();
+      for (const row of categoryRows) {
+        if (typeof row.rating !== "number") continue;
+        const list = categoryMap.get(row.school_id) ?? [];
+        list.push(row.rating);
+        categoryMap.set(row.school_id, list);
+      }
       const plannedSet = new Set(
         plannedRows
           .map((row) => {
@@ -220,6 +251,7 @@ export default function ShortlistPage() {
             commute: commuteMap.get(item.school_id) ?? null,
             has_planned: plannedSet.has(item.school_id),
             has_open_days: openDaySet.has(item.school_id),
+            fit_score: computeFitPercent(categoryMap.get(item.school_id) ?? []),
           }))
         )
       );
@@ -536,11 +568,20 @@ export default function ShortlistPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          className="rounded-full border px-2 py-1 text-xs"
-                          disabled={saving || (isRanked && it.rank === 1)}
-                          onClick={() => (isRanked && it.rank ? move(it.rank, it.rank - 1) : promoteToNextRank(it))}
+                      {typeof it.fit_score === "number" ? (
+                        <span
+                          className={`rounded-full border px-2 py-1 text-xs font-semibold ${fitBadgeClass(
+                            it.fit_score
+                          )}`}
                         >
+                          {t(language, "shortlist.fit_label")} {Math.round(it.fit_score)}%
+                        </span>
+                      ) : null}
+                      <button
+                        className="rounded-full border px-2 py-1 text-xs"
+                        disabled={saving || (isRanked && it.rank === 1)}
+                        onClick={() => (isRanked && it.rank ? move(it.rank, it.rank - 1) : promoteToNextRank(it))}
+                      >
                           ↑
                         </button>
                         <button
