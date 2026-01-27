@@ -517,8 +517,17 @@ export default function ShortlistPage() {
                 return (
                   <li
                     key={it.school_id}
-                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between"
+                    className="relative flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between"
                   >
+                    {typeof it.fit_score === "number" ? (
+                      <span
+                        className={`absolute right-0 top-4 rounded-full border px-2 py-1 text-xs font-semibold ${fitBadgeClass(
+                          it.fit_score
+                        )}`}
+                      >
+                        {Math.round(it.fit_score)}% {t(language, "shortlist.fit_label")}
+                      </span>
+                    ) : null}
                     <div className="flex min-w-0 items-start gap-3">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
@@ -568,15 +577,6 @@ export default function ShortlistPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      {typeof it.fit_score === "number" ? (
-                        <span
-                          className={`rounded-full border px-2 py-1 text-xs font-semibold ${fitBadgeClass(
-                            it.fit_score
-                          )}`}
-                        >
-                          {t(language, "shortlist.fit_label")} {Math.round(it.fit_score)}%
-                        </span>
-                      ) : null}
                       <button
                         className="rounded-full border px-2 py-1 text-xs"
                         disabled={saving || (isRanked && it.rank === 1)}
