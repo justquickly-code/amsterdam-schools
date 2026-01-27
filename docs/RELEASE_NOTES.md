@@ -9,6 +9,7 @@ This is a lightweight summary of features per release. Keep it short and user-fa
 - Shortlist uses a single list with consistent up/down controls and ranked labeling.
 - Journey progress line alignment refined.
 - Release notes page added at `/release-notes`.
+- New: category-based school ratings with emoji scale and “Fit %” badge on My List.
 
 ## 2026-01-25 (v1 launch)
 Main features:
