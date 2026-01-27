@@ -9,6 +9,7 @@ import { ADVIES_OPTIONS, friendlyLevel } from "@/lib/levels";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t, useIsClient, useLanguageStore } from "@/lib/i18n";
 import { schoolImageForName } from "@/lib/schoolImages";
+import { computeFitPercent } from "@/lib/categoryRatings";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 
 const FALLBACK_IMAGES = [
@@ -80,6 +81,11 @@ type PlannedOpenDayRow = {
   open_day?: { school_id: string | null; school_year_label: string | null }[] | { school_id: string | null; school_year_label: string | null } | null;
 };
 
+type CategoryRatingRow = {
+  school_id: string;
+  rating: number | null;
+};
+
 type School = {
   id: string;
   name: string;
@@ -97,6 +103,7 @@ type School = {
   }> | null;
   has_open_day?: boolean;
   has_planned_open_day?: boolean;
+  fit_score?: number | null;
 };
 
 type SortMode = "name" | "bike";
@@ -275,6 +282,7 @@ export default function ExploreHome() {
       let openDaySchoolIds = new Set<string>();
       let plannedSchoolIds = new Set<string>();
       let shortlistSchoolIds: string[] = [];
+      let categoryRows: CategoryRatingRow[] = [];
 
       if (authed && workspaceRow?.id) {
         const { data: commutes } = await supabase
@@ -378,6 +386,21 @@ export default function ExploreHome() {
             .map((row) => row.school_id as string)
             .filter(Boolean);
         }
+
+        const { data: ratings } = await supabase
+          .from("school_category_ratings")
+          .select("school_id,rating")
+          .eq("workspace_id", workspaceRow.id);
+
+        categoryRows = (ratings ?? []) as CategoryRatingRow[];
+      }
+
+      const categoryMap = new Map<string, number[]>();
+      for (const row of categoryRows) {
+        if (typeof row.rating !== "number") continue;
+        const list = categoryMap.get(row.school_id) ?? [];
+        list.push(row.rating);
+        categoryMap.set(row.school_id, list);
       }
 
       const merged = schoolList.map((s) => ({
@@ -386,6 +409,7 @@ export default function ExploreHome() {
         visits: authed ? visitsMap.get(s.id) ?? null : null,
         has_open_day: authed ? openDaySchoolIds.has(s.id) : false,
         has_planned_open_day: authed ? plannedSchoolIds.has(s.id) : false,
+        fit_score: authed ? computeFitPercent(categoryMap.get(s.id) ?? []) : null,
       }));
 
       setSchools(merged as School[]);
@@ -749,12 +773,12 @@ export default function ExploreHome() {
                       </div>
                     </Link>
                     <div className="space-y-3 p-4">
-                      <div className="space-y-1">
-                        <Link className="text-base font-semibold text-primary underline underline-offset-2" href={`/schools/${s.id}`}>
-                          {s.name}
-                        </Link>
-                        <div className="text-sm text-muted-foreground">{levelLabel}</div>
-                      </div>
+                    <div className="space-y-1">
+                      <Link className="text-base font-semibold text-primary underline underline-offset-2" href={`/schools/${s.id}`}>
+                        {s.name}
+                      </Link>
+                      <div className="text-sm text-muted-foreground">{levelLabel}</div>
+                    </div>
 
                       <div className="flex flex-wrap gap-2 text-xs">
                         {(s.supported_levels ?? []).slice(0, 3).map((lvl) => (
@@ -787,6 +811,11 @@ export default function ExploreHome() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-4">
+                        {typeof s.fit_score === "number" ? (
+                          <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-foreground">
+                            {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
+                          </span>
+                        ) : null}
                         {s.website_url ? (
                           <a className="text-sm text-muted-foreground underline" href={s.website_url} target="_blank" rel="noreferrer">
                             {t(language, "schools.website")}
