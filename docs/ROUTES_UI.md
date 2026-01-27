@@ -19,6 +19,7 @@
   - open days list (with warning + last synced)
   - planned toggle per open day
   - visit notes (per member) + shared 1–5 star rating
+  - category ratings (emoji scale) + Fit % badge
   - add/remove from ranked list
 
 - /planner (Open Days)

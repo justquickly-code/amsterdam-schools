@@ -25,6 +25,7 @@ Help a family plan Amsterdam secondary school open days, capture notes + a 1–5
   - vmbo-gl-tl / vmbo-gl-tl-havo: **6 schools**
   - havo / havo-vwo / vwo: **12 schools**
   - Note: if adding profile classes at the same school, the list may need to be longer.
+- Category ratings: shared per school with emoji scale; show Fit % badge based on rated categories (ignore “unsure”).
 
 ## Data sources (high level)
 - Schools: Schoolwijzer Amsterdam (prefer API/structured source)
