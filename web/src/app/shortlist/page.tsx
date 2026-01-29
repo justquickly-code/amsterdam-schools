@@ -9,7 +9,7 @@ import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } fro
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
-import { Bike } from "lucide-react";
+import { Bike, Star } from "lucide-react";
 
 type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
 
@@ -567,8 +567,9 @@ export default function ShortlistPage() {
                         {(it.rating_stars || commuteLabel(it.commute)) && (
                           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             {it.rating_stars ? (
-                              <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
-                                ★ {it.rating_stars}/5
+                              <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+                                <Star className="h-3.5 w-3.5 fill-current" />
+                                {it.rating_stars}/5
                               </span>
                             ) : null}
                             {commuteLabel(it.commute) ? (

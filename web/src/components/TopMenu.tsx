@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { Wordmark } from "@/components/schoolkeuze";
+import { Menu } from "lucide-react";
 
 export default function TopMenu({ initialLanguage }: { initialLanguage?: Language }) {
   const [open, setOpen] = useState(false);
@@ -197,7 +198,7 @@ export default function TopMenu({ initialLanguage }: { initialLanguage?: Languag
               onClick={() => setOpen((v) => !v)}
               aria-label="Open menu"
             >
-              ☰
+              <Menu className="h-4 w-4" />
             </button>
           </div>
           {hasNewFeedback && (

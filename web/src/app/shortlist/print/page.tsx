@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
-import { Bike } from "lucide-react";
+import { Bike, Star } from "lucide-react";
 
 type WorkspaceRow = { id: string; advies_levels?: string[] };
 
@@ -233,7 +233,14 @@ export default function ShortlistPrintPage() {
               <InfoCard key={item.school_id} title={`#${item.rank} — ${item.school_name}`} className="print:shadow-none">
                 <div className="space-y-2 text-sm">
                   <div className="text-sm text-muted-foreground print:text-black">
-                    {visit?.rating_stars ? `${visit.rating_stars}★` : "No rating"}
+                    {visit?.rating_stars ? (
+                      <span className="inline-flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 fill-current" />
+                        {visit.rating_stars}/5
+                      </span>
+                    ) : (
+                      "No rating"
+                    )}
                   </div>
 
                   <div className="text-sm text-muted-foreground print:text-black">

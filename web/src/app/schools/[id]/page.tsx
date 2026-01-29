@@ -11,6 +11,7 @@ import { shortlistRankCapForLevels } from "@/lib/levels";
 import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/lib/categoryRatings";
 import { Wordmark } from "@/components/schoolkeuze";
 import { InfoCard } from "@/components/schoolkeuze";
+import { Heart, Star } from "lucide-react";
 
 type Workspace = { id: string; advies_levels?: string[] };
 
@@ -166,11 +167,15 @@ function StarRating({
                     <button
                         key={n}
                         type="button"
-                        className={`text-xl ${n <= current ? "text-primary" : "text-muted-foreground/50"}`}
+                        className="text-xl"
                         onClick={() => onChange(n)}
                         aria-label={`${n} stars`}
                     >
-                        ★
+                        <Star
+                            className={`h-5 w-5 ${
+                                n <= current ? "fill-primary text-primary" : "text-muted-foreground/50"
+                            }`}
+                        />
                     </button>
                 ))}
             </div>
@@ -917,7 +922,7 @@ export default function SchoolDetailPage() {
                                         }
                                     }}
                                 >
-                                    {isShortlisted ? "♥" : "♡"}
+                                    <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
                                 </button>
                             </div>
                         }

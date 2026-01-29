@@ -11,7 +11,7 @@ import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t
 import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
-import { Bike, Heart } from "lucide-react";
+import { Bike, Heart, Star } from "lucide-react";
 
 const FALLBACK_IMAGES = [
   "/branding/hero/school-1.jpg",
@@ -792,8 +792,9 @@ export default function ExploreHome() {
                       {hasBadges ? (
                         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           {s.visits?.[0]?.rating_stars ? (
-                            <span className="rounded-full bg-secondary px-2 py-0.5 font-semibold">
-                              ★ {s.visits?.[0]?.rating_stars}/5
+                            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 font-semibold">
+                              <Star className="h-3.5 w-3.5 fill-current" />
+                              {s.visits?.[0]?.rating_stars}/5
                             </span>
                           ) : null}
                           {s.visits?.[0]?.attended ? (

@@ -6,79 +6,7 @@ import { usePathname } from "next/navigation";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { supabase } from "@/lib/supabaseClient";
-
-type NavIconProps = { className?: string };
-
-function SearchIcon({ className }: NavIconProps) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path
-        d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M21 21l-4.35-4.35"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function HeartIcon({ className }: NavIconProps) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path
-        d="M12 20s-7-4.35-7-10.2a4.4 4.4 0 0 1 7-3.4 4.4 4.4 0 0 1 7 3.4C19 15.65 12 20 12 20Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CalendarIcon({ className }: NavIconProps) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path d="M8 3v4M16 3v4M3 10h18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function UserIcon({ className }: NavIconProps) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6" fill="none" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
-}
-
-function LoginIcon({ className }: NavIconProps) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path d="M4 12h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M10 8l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path
-        d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+import { Calendar, Heart, LogIn, Search, User } from "lucide-react";
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -121,15 +49,15 @@ export default function BottomNav() {
 
   const items = isAuthed
     ? [
-        { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-7 w-7" },
-        { href: "/planner", label: t(language, "nav.open_days"), icon: CalendarIcon },
-        { href: "/profile", label: t(language, "nav.profile"), icon: UserIcon },
+        { href: "/", label: t(language, "nav.explore"), icon: Search },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: Heart, iconSize: "h-7 w-7" },
+        { href: "/planner", label: t(language, "nav.open_days"), icon: Calendar },
+        { href: "/profile", label: t(language, "nav.profile"), icon: User },
       ]
     : [
-        { href: "/", label: t(language, "nav.explore"), icon: SearchIcon },
-        { href: "/shortlist", label: t(language, "nav.my_list"), icon: HeartIcon, iconSize: "h-7 w-7" },
-        { href: "/login", label: t(language, "nav.login"), icon: LoginIcon },
+        { href: "/", label: t(language, "nav.explore"), icon: Search },
+        { href: "/shortlist", label: t(language, "nav.my_list"), icon: Heart, iconSize: "h-7 w-7" },
+        { href: "/login", label: t(language, "nav.login"), icon: LogIn },
       ];
 
   return (
