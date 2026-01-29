@@ -9,6 +9,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/lib/categoryRatings";
+import { badgeStrong, fitBadgeClass } from "@/lib/badges";
 import { Wordmark } from "@/components/schoolkeuze";
 import { InfoCard } from "@/components/schoolkeuze";
 import { buttonPrimary } from "@/lib/ui";
@@ -203,13 +204,7 @@ function ratingButtonClass(selected: boolean) {
     }`;
 }
 
-function fitBadgeClass(score: number) {
-    if (score >= 80) return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    if (score >= 60) return "border-lime-200 bg-lime-50 text-lime-700";
-    if (score >= 40) return "border-amber-200 bg-amber-50 text-amber-700";
-    if (score >= 20) return "border-rose-200 bg-rose-50 text-rose-700";
-    return "border-red-200 bg-red-50 text-red-700";
-}
+type BadgeClass = string;
 
 export default function SchoolDetailPage() {
     const params = useParams<{ id: string }>();
@@ -898,9 +893,7 @@ export default function SchoolDetailPage() {
                             <div className="flex items-center gap-2">
                                 {typeof fitScore === "number" ? (
                                     <span
-                                        className={`rounded-full border px-2 py-1 text-xs font-semibold ${fitBadgeClass(
-                                            fitScore
-                                        )}`}
+                                        className={`${badgeStrong} ${fitBadgeClass(fitScore)}`}
                                     >
                                         {Math.round(fitScore)}% {t(language, "shortlist.fit_label")}
                                     </span>

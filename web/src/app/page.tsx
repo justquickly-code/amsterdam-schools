@@ -10,6 +10,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t, useIsClient, useLanguageStore } from "@/lib/i18n";
 import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
+import { badgeStrong } from "@/lib/badges";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Heart, Star } from "lucide-react";
 import { buttonPrimaryHover } from "@/lib/ui";
@@ -818,7 +819,7 @@ export default function ExploreHome() {
 
                       <div className="flex flex-wrap items-center gap-4">
                         {typeof s.fit_score === "number" ? (
-                          <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-foreground">
+                          <span className={`${badgeStrong} bg-white text-foreground`}>
                             {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
                           </span>
                         ) : null}

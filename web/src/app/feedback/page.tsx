@@ -6,6 +6,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { buttonPrimary } from "@/lib/ui";
+import { badgeNeutral } from "@/lib/badges";
 
 type WorkspaceRow = { id: string; language?: Language | null };
 
@@ -278,7 +279,7 @@ export default function FeedbackPage() {
                         (!lastSeenAt ||
                           new Date(item.admin_responded_at).getTime() >
                             new Date(lastSeenAt).getTime())) && (
-                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
+                        <span className={`inline-flex items-center ${badgeNeutral}`}>
                           {t(language, "feedback.new_response")}
                         </span>
                       )}

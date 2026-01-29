@@ -8,6 +8,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { computeFitPercent } from "@/lib/categoryRatings";
+import { badgeNeutral, badgeStrong, fitBadgeClass } from "@/lib/badges";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Star } from "lucide-react";
 
@@ -69,13 +70,7 @@ function statusLabel(item: ShortlistItem, language: Language) {
   return t(language, "shortlist.no_open_days");
 }
 
-function fitBadgeClass(score: number) {
-  if (score >= 80) return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (score >= 60) return "border-lime-200 bg-lime-50 text-lime-700";
-  if (score >= 40) return "border-amber-200 bg-amber-50 text-amber-700";
-  if (score >= 20) return "border-rose-200 bg-rose-50 text-rose-700";
-  return "border-red-200 bg-red-50 text-red-700";
-}
+type BadgeClass = string;
 
 export default function ShortlistPage() {
   const router = useRouter();
@@ -522,7 +517,7 @@ export default function ShortlistPage() {
                   >
                     {typeof it.fit_score === "number" ? (
                       <span
-                        className={`absolute right-0 top-4 rounded-full border px-2 py-1 text-xs font-semibold ${fitBadgeClass(
+                        className={`absolute right-0 top-4 ${badgeStrong} ${fitBadgeClass(
                           it.fit_score
                         )}`}
                       >
@@ -533,16 +528,16 @@ export default function ShortlistPage() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           {rankLabel ? (
-                            <span className="rounded-full border bg-white px-2 py-0.5 text-xs font-semibold text-foreground">
+                            <span className={`${badgeNeutral} bg-white text-foreground`}>
                               {rankLabel}
                             </span>
                           ) : (
-                            <span className="rounded-full border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                            <span className={`${badgeNeutral} bg-muted`}>
                               {t(language, "shortlist.not_ranked")}
                             </span>
                           )}
                           {(it.attended || it.has_planned || it.has_open_days) && (
-                            <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                            <span className={badgeNeutral}>
                               {statusLabel(it, language)}
                             </span>
                           )}
