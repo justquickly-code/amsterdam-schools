@@ -16,97 +16,33 @@ import {
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
 import { InfoCard } from "@/components/schoolkeuze";
+import {
+  Calendar,
+  Check,
+  FileText,
+  GraduationCap,
+  Heart,
+  HelpCircle,
+  Home as HomeIconLucide,
+  LogOut,
+  MapPin,
+  Search,
+  Settings,
+  Share2,
+} from "lucide-react";
 
-const IconBase = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    {children}
-  </svg>
-);
-
-const ShareIcon = () => (
-  <IconBase className="h-5 w-5">
-    <circle cx="6" cy="12" r="2.5" />
-    <circle cx="18" cy="6" r="2.5" />
-    <circle cx="18" cy="18" r="2.5" />
-    <path d="M8.2 11l6.6-3.3" />
-    <path d="M8.2 13l6.6 3.3" />
-  </IconBase>
-);
-const NoteIcon = () => (
-  <IconBase className="h-5 w-5">
-    <path d="M7 3h8l4 4v14H7z" />
-    <path d="M15 3v5h5" />
-  </IconBase>
-);
-const HelpIcon = () => (
-  <IconBase className="h-5 w-5">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.3-1.5 1.1-1.5 2.2" />
-    <circle cx="12" cy="17" r="1" />
-  </IconBase>
-);
-const SettingsIcon = () => (
-  <IconBase className="h-5 w-5">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1 1 0 0 0 .2-1.1l-1-1.8a7.8 7.8 0 0 0 0-2.2l1-1.8a1 1 0 0 0-.2-1.1l-1.5-1.5a1 1 0 0 0-1.1-.2l-1.8 1a7.8 7.8 0 0 0-2.2 0l-1.8-1a1 1 0 0 0-1.1.2L7 5.8a1 1 0 0 0-.2 1.1l1 1.8a7.8 7.8 0 0 0 0 2.2l-1 1.8a1 1 0 0 0 .2 1.1l1.5 1.5a1 1 0 0 0 1.1.2l1.8-1a7.8 7.8 0 0 0 2.2 0l1.8 1a1 1 0 0 0 1.1-.2z" />
-  </IconBase>
-);
-const LogoutIcon = () => (
-  <IconBase className="h-5 w-5">
-    <path d="M10 16l-4-4 4-4" />
-    <path d="M6 12h12" />
-    <path d="M14 4h4v16h-4" />
-  </IconBase>
-);
-const HeartIcon = () => (
-  <IconBase className="h-6 w-6">
-    <path d="M12 21s-7-4.6-9-8.5C1.4 9.5 3.5 6 7 6c2 0 3.3 1.2 5 3 1.7-1.8 3-3 5-3 3.5 0 5.6 3.5 4 6.5C19 16.4 12 21 12 21z" />
-  </IconBase>
-);
-const CalendarIcon = () => (
-  <IconBase className="h-6 w-6">
-    <rect x="3" y="5" width="18" height="16" rx="2" />
-    <path d="M7 3v4M17 3v4M3 9h18" />
-  </IconBase>
-);
-const MapPinIcon = () => (
-  <IconBase className="h-4 w-4">
-    <path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10z" />
-    <circle cx="12" cy="11" r="2.5" />
-  </IconBase>
-);
-const CapIcon = () => (
-  <IconBase className="h-4 w-4">
-    <path d="M3 9l9-4 9 4-9 4z" />
-    <path d="M7 12v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4" />
-  </IconBase>
-);
-const SearchIcon = () => (
-  <IconBase className="h-5 w-5">
-    <circle cx="11" cy="11" r="7" />
-    <path d="M20 20l-3.5-3.5" />
-  </IconBase>
-);
-const HomeIcon = () => (
-  <IconBase className="h-5 w-5">
-    <path d="M3 10l9-7 9 7" />
-    <path d="M5 10v10h14V10" />
-  </IconBase>
-);
-const CheckIcon = () => (
-  <IconBase className="h-5 w-5">
-    <path d="M5 12l4 4 10-10" />
-  </IconBase>
-);
+const ShareIcon = () => <Share2 className="h-5 w-5" />;
+const NoteIcon = () => <FileText className="h-5 w-5" />;
+const HelpIcon = () => <HelpCircle className="h-5 w-5" />;
+const SettingsIcon = () => <Settings className="h-5 w-5" />;
+const LogoutIcon = () => <LogOut className="h-5 w-5" />;
+const HeartIcon = () => <Heart className="h-6 w-6" />;
+const CalendarIcon = () => <Calendar className="h-6 w-6" />;
+const MapPinIcon = () => <MapPin className="h-4 w-4" />;
+const CapIcon = () => <GraduationCap className="h-4 w-4" />;
+const SearchIcon = () => <Search className="h-5 w-5" />;
+const HomeIcon = () => <HomeIconLucide className="h-5 w-5" />;
+const CheckIcon = () => <Check className="h-5 w-5" />;
 
 type WorkspaceRow = {
   id: string;
