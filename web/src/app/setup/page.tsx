@@ -349,7 +349,7 @@ export default function SetupPage() {
               <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {t(language, "setup.step_count").replace("{current}", String(stepIndex + 1)).replace("{total}", "3")}
               </div>
-              <h1 className="text-3xl font-semibold text-foreground">{t(language, "setup.title")}</h1>
+              <h1 className="text-3xl font-serif font-semibold text-foreground">{t(language, "setup.title")}</h1>
               <p className="text-sm text-muted-foreground">{t(language, "setup.subtitle")}</p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-sm font-semibold text-primary">

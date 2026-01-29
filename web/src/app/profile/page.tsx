@@ -359,7 +359,7 @@ export default function Home() {
               {initials}
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">
+              <h1 className="text-xl font-serif font-semibold text-foreground">
                 {workspace?.child_name
                   ? t(language, "profile.title_named").replace("{name}", workspace.child_name)
                   : t(language, "profile.title")}

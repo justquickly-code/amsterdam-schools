@@ -520,7 +520,7 @@ export default function OpenDaysPage() {
         <header className="flex flex-col gap-2">
           <Wordmark />
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-3xl font-semibold text-foreground">
+            <h1 className="text-3xl font-serif font-semibold text-foreground">
               {t(language, "open_days.title")}
             </h1>
             <span className="text-sm text-muted-foreground">

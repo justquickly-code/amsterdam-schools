@@ -486,7 +486,7 @@ export default function ShortlistPage() {
           <Wordmark />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-3xl font-semibold text-foreground">
+              <h1 className="text-3xl font-serif font-semibold text-foreground">
                 {t(language, "shortlist.title")}
               </h1>
               <p className="text-sm text-muted-foreground">

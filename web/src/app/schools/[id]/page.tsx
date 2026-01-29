@@ -881,7 +881,7 @@ export default function SchoolDetailPage() {
                     >
                         ← {t(language, "about.back")}
                     </Link>
-                    <h1 className="text-3xl font-semibold text-foreground">{school?.name ?? "School"}</h1>
+                    <h1 className="text-3xl font-serif font-semibold text-foreground">{school?.name ?? "School"}</h1>
                 </header>
 
                 {error && (

@@ -112,7 +112,7 @@ export default function AdminComputeCommutesPage() {
         <header className="flex flex-col gap-2">
           <Wordmark />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-3xl font-semibold text-foreground">Compute commutes</h1>
+            <h1 className="text-3xl font-serif font-semibold text-foreground">Compute commutes</h1>
             <div className="flex gap-3 text-sm">
               <Link className="font-semibold text-primary hover:underline" href="/admin">
                 Back to Admin

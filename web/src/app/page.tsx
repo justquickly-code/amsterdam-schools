@@ -632,7 +632,7 @@ export default function ExploreHome() {
           </div>
 
           <div className="mt-10 max-w-xl">
-            <h1 className="font-serif text-3xl font-semibold text-white drop-shadow-sm sm:text-4xl">
+            <h1 className="font-serif text-3xl font-serif font-semibold text-white drop-shadow-sm sm:text-4xl">
               {t(language, "explore.hero_title")}
             </h1>
             <p className="mt-3 text-base text-white/90">{t(language, "explore.hero_subtitle")}</p>

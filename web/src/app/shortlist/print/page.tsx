@@ -201,7 +201,7 @@ export default function ShortlistPrintPage() {
           <Wordmark className="print:hidden" />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between print:flex-row">
             <div>
-              <h1 className="text-3xl font-semibold text-foreground print:text-black">Ranked list — Print</h1>
+              <h1 className="text-3xl font-serif font-semibold text-foreground print:text-black">Ranked list — Print</h1>
               <div className="text-sm text-muted-foreground print:text-black">
                 Ranked shortlist with notes and ratings (cap {rankCap}).
               </div>

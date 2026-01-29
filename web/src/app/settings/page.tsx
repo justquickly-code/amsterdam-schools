@@ -379,7 +379,7 @@ export default function SettingsPage() {
                     <Link className="text-sm font-semibold text-primary hover:underline" href="/profile">
                         ← {t(language, "about.back")}
                     </Link>
-                    <h1 className="text-3xl font-semibold text-foreground">{t(language, "settings.title")}</h1>
+                    <h1 className="text-3xl font-serif font-semibold text-foreground">{t(language, "settings.title")}</h1>
                 </header>
 
                 {loading && <p className="text-sm text-muted-foreground">{t(language, "settings.loading")}</p>}

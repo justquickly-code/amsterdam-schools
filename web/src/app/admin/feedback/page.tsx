@@ -137,7 +137,7 @@ export default function AdminFeedbackPage() {
         <header className="flex flex-col gap-2">
           <Wordmark />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-3xl font-semibold text-foreground">Feedback</h1>
+            <h1 className="text-3xl font-serif font-semibold text-foreground">Feedback</h1>
             <Link className="text-sm font-semibold text-primary hover:underline" href="/admin">
               Admin home
             </Link>

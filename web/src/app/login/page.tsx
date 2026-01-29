@@ -141,7 +141,7 @@ export default function LoginPage() {
           </button>
         </div>
         <div className="space-y-4 rounded-2xl border bg-card p-6 shadow-sm">
-            <h1 className="text-2xl font-semibold">{t(language, "login.title")}</h1>
+            <h1 className="text-2xl font-serif font-semibold">{t(language, "login.title")}</h1>
             <p className="text-sm text-muted-foreground">{t(language, "login.subtitle")}</p>
 
           {lastEmail && !email && (
