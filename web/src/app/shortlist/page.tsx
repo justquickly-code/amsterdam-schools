@@ -9,6 +9,7 @@ import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } fro
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { Bike } from "lucide-react";
 
 type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
 
@@ -58,7 +59,7 @@ function commuteLabel(commute: ShortlistItem["commute"]) {
   const parts: string[] = [];
   if (commute.duration_minutes != null) parts.push(`${commute.duration_minutes} min`);
   if (commute.distance_km != null) parts.push(`${commute.distance_km} km`);
-  return parts.length ? `🚲 ${parts.join(" • ")}` : null;
+  return parts.length ? parts.join(" • ") : null;
 }
 
 function statusLabel(item: ShortlistItem, language: Language) {
@@ -570,7 +571,12 @@ export default function ShortlistPage() {
                                 ★ {it.rating_stars}/5
                               </span>
                             ) : null}
-                            {commuteLabel(it.commute) ? <span>{commuteLabel(it.commute)}</span> : null}
+                            {commuteLabel(it.commute) ? (
+                              <span className="inline-flex items-center gap-2">
+                                <Bike className="h-4 w-4" />
+                                {commuteLabel(it.commute)}
+                              </span>
+                            ) : null}
                           </div>
                         )}
                       </div>

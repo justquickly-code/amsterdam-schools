@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { Bike } from "lucide-react";
 
 type WorkspaceRow = { id: string; advies_levels?: string[] };
 
@@ -238,7 +239,10 @@ export default function ShortlistPrintPage() {
                   <div className="text-sm text-muted-foreground print:text-black">
                     Attended: {visit?.attended ? "Yes" : "No"}
                     {commute?.duration_minutes != null && commute?.distance_km != null ? (
-                      <> • 🚲 {commute.duration_minutes} min • {commute.distance_km} km</>
+                      <span className="inline-flex items-center gap-2">
+                        <Bike className="h-4 w-4" />
+                        {commute.duration_minutes} min • {commute.distance_km} km
+                      </span>
                     ) : null}
                   </div>
 

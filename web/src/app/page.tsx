@@ -11,6 +11,7 @@ import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t
 import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { Bike, Heart } from "lucide-react";
 
 const FALLBACK_IMAGES = [
   "/branding/hero/school-1.jpg",
@@ -805,7 +806,10 @@ export default function ExploreHome() {
 
                       <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                         {s.commute ? (
-                          <span>🚲 {s.commute.duration_minutes} min • {s.commute.distance_km} km</span>
+                          <span className="inline-flex items-center gap-2">
+                            <Bike className="h-4 w-4" />
+                            {s.commute.duration_minutes} min • {s.commute.distance_km} km
+                          </span>
                         ) : null}
                         {s.address ? <span>{s.address}</span> : null}
                       </div>
@@ -830,7 +834,7 @@ export default function ExploreHome() {
                           aria-label={t(language, "schools.shortlist_add")}
                           disabled={shortlistBusyId === s.id}
                         >
-                          {isShortlisted ? "♥" : "♡"}
+                          <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
                         </button>
                       </div>
                     </div>
