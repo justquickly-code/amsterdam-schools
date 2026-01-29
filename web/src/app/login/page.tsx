@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 import { Wordmark } from "@/components/schoolkeuze";
+import { buttonPrimaryWide } from "@/lib/ui";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -164,7 +165,7 @@ export default function LoginPage() {
             </label>
 
             <button
-              className="w-full rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+              className={buttonPrimaryWide}
               type="submit"
               disabled={status === "sending"}
             >

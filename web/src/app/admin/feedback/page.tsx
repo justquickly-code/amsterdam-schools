@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { buttonPrimary } from "@/lib/ui";
 
 type FeedbackRow = {
   id: string;
@@ -214,7 +215,7 @@ export default function AdminFeedbackPage() {
                 </label>
 
                 <button
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                  className={buttonPrimary}
                   onClick={save}
                   disabled={saving}
                 >

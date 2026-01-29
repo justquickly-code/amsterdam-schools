@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { buttonOutline, buttonPrimary } from "@/lib/ui";
 
 export default function InviteStatusPage() {
   const params = useSearchParams();
@@ -156,7 +157,7 @@ export default function InviteStatusPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                  className={buttonPrimary}
                   type="button"
                   onClick={() => acceptInvite("switch")}
                   disabled={joining}
@@ -164,7 +165,7 @@ export default function InviteStatusPage() {
                   {joining ? t(language, "invite.joining") : t(language, "invite.join_switch")}
                 </button>
                 <button
-                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  className={buttonOutline}
                   type="button"
                   onClick={() => acceptInvite("keep")}
                   disabled={joining}
@@ -186,11 +187,11 @@ export default function InviteStatusPage() {
           )}
 
           <div className="flex flex-wrap gap-2 pt-2">
-            <Link className="rounded-full border px-4 py-2 text-xs font-semibold" href="/">
+            <Link className={buttonOutline} href="/">
               {t(language, "invite.go_dashboard")}
             </Link>
             <button
-              className="rounded-full border px-4 py-2 text-xs font-semibold"
+              className={buttonOutline}
               type="button"
               onClick={async () => {
                 await supabase.auth.signOut();

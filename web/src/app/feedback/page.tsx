@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { buttonPrimary } from "@/lib/ui";
 
 type WorkspaceRow = { id: string; language?: Language | null };
 
@@ -242,7 +243,7 @@ export default function FeedbackPage() {
             </label>
 
             <button
-              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+              className={buttonPrimary}
               onClick={submit}
               disabled={sending}
             >

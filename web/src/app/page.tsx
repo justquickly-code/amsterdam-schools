@@ -12,6 +12,7 @@ import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Heart, Star } from "lucide-react";
+import { buttonPrimaryHover } from "@/lib/ui";
 
 const FALLBACK_IMAGES = [
   "/branding/hero/school-1.jpg",
@@ -683,7 +684,7 @@ export default function ExploreHome() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-serif text-xl font-semibold text-foreground">{sectionTitle}</h2>
             <Link
-              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-95"
+              className={buttonPrimaryHover}
               href={
                 hasSession
                   ? shortlistIds.length > 0

@@ -7,6 +7,7 @@ import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { buttonOutline, buttonPrimary } from "@/lib/ui";
 
 type Workspace = {
     id: string;
@@ -456,7 +457,7 @@ export default function SettingsPage() {
 
                                 <div className="flex flex-wrap items-center gap-3">
                                     <button
-                                        className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                                        className={buttonPrimary}
                                         onClick={saveSettings}
                                         disabled={saving || !isOwner}
                                     >
@@ -529,7 +530,7 @@ export default function SettingsPage() {
                                             {t(language, "settings.invite_role")}
                                         </div>
                                         <button
-                                            className="rounded-full border px-4 py-2 text-xs font-semibold"
+                                            className={buttonOutline}
                                             onClick={inviteMember}
                                             disabled={inviteBusy || !inviteEmail.trim()}
                                         >

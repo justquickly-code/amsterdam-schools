@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { buttonPrimary } from "@/lib/ui";
 
 type Json = Record<string, unknown> | unknown[] | null;
 
@@ -140,7 +141,7 @@ export default function AdminSyncOpenDaysPage() {
             </div>
 
             <button
-              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+              className={buttonPrimary}
               onClick={runSync}
               disabled={running || !token.trim()}
             >

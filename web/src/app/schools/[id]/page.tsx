@@ -11,6 +11,7 @@ import { shortlistRankCapForLevels } from "@/lib/levels";
 import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/lib/categoryRatings";
 import { Wordmark } from "@/components/schoolkeuze";
 import { InfoCard } from "@/components/schoolkeuze";
+import { buttonPrimary } from "@/lib/ui";
 import { Heart, Star } from "lucide-react";
 
 type Workspace = { id: string; advies_levels?: string[] };
@@ -1125,7 +1126,7 @@ export default function SchoolDetailPage() {
 
                             <div className="flex flex-wrap items-center gap-3">
                                 <button
-                                    className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+                                    className={buttonPrimary}
                                     onClick={save}
                                     disabled={!canSave || saving}
                                 >

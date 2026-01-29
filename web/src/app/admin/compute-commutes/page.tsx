@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { buttonPrimary } from "@/lib/ui";
 
 type Json = Record<string, unknown> | unknown[] | null;
 
@@ -168,7 +169,7 @@ export default function AdminComputeCommutesPage() {
             </div>
 
             <button
-              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
+              className={buttonPrimary}
               onClick={runCompute}
               disabled={running || !token.trim()}
             >

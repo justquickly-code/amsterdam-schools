@@ -17,6 +17,7 @@ import {
 } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { buttonOutline, buttonOutlineWide, buttonPrimary, buttonPrimaryWide } from "@/lib/ui";
 
 type WorkspaceRow = {
   id: string;
@@ -309,11 +310,11 @@ export default function SetupPage() {
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>{t(language, "setup.required_body")}</p>
               <div className="flex flex-wrap gap-2">
-                <Link className="rounded-full border px-4 py-2 text-xs font-semibold" href="/">
+                <Link className={buttonOutline} href="/">
                   {t(language, "setup.go_dashboard")}
                 </Link>
                 <button
-                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  className={buttonOutline}
                   type="button"
                   onClick={handleSignOut}
                 >
@@ -422,7 +423,7 @@ export default function SetupPage() {
                   />
                 </label>
                 <button
-                  className="w-full rounded-full border px-4 py-2 text-xs font-semibold"
+                  className={buttonOutlineWide}
                   onClick={inviteMember}
                   disabled={inviteBusy || !inviteEmail.trim()}
                 >
@@ -435,14 +436,14 @@ export default function SetupPage() {
 
               <div className="flex flex-wrap gap-2">
                 <button
-                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  className={buttonOutline}
                   type="button"
                   onClick={() => setStep("tutorial")}
                 >
                   {t(language, "setup.skip")}
                 </button>
                 <button
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                  className={buttonPrimary}
                   type="button"
                   onClick={() => setStep("tutorial")}
                 >
@@ -459,14 +460,14 @@ export default function SetupPage() {
               <div className="text-xs text-muted-foreground">{t(language, "setup.tutorial_later")}</div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                  className={buttonPrimary}
                   type="button"
                   onClick={() => router.replace("/how-it-works?from=setup&setup=done")}
                 >
                   {t(language, "setup.tutorial_start")}
                 </button>
                 <button
-                  className="rounded-full border px-4 py-2 text-xs font-semibold"
+                  className={buttonOutline}
                   type="button"
                   onClick={() => router.replace("/profile?setup=done")}
                 >
@@ -527,14 +528,14 @@ export default function SetupPage() {
               </div>
 
               <button
-                className="w-full rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                className={buttonPrimaryWide}
                 onClick={saveSetup}
                 disabled={saving}
               >
                 {saving ? t(language, "setup.saving") : t(language, "setup.next")}
               </button>
               <button
-                className="w-full rounded-full border px-4 py-2 text-xs font-semibold"
+                className={buttonOutlineWide}
                 type="button"
                 onClick={handleSignOut}
               >

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { InfoCard } from "@/components/schoolkeuze";
+import { buttonOutline } from "@/lib/ui";
 
 export default function NotFound() {
   return (
@@ -10,7 +11,7 @@ export default function NotFound() {
         <InfoCard title="Page not found">
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>Sorry, we can’t find that page.</p>
-            <Link className="rounded-full border px-4 py-2 text-xs font-semibold text-foreground" href="/">
+            <Link className={buttonOutline} href="/">
               Back to Dashboard
             </Link>
           </div>
