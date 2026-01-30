@@ -94,4 +94,4 @@ Create a more engaging, Airbnb‑style experience while preserving all MVP funct
 - Open days: done (public view; login‑gated planner actions).
 - My List: done (single list + top‑N highlight).
 - Profile: done (matches UI kit layout).
-- Setup: in progress (step pills added; further restyle pending).
+- Setup: restyled (step header + inputs aligned with shared UI).

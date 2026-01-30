@@ -17,7 +17,7 @@ import {
 } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
-import { buttonOutline, buttonOutlineWide, buttonPrimary, buttonPrimaryWide } from "@/lib/ui";
+import { buttonOutline, buttonOutlineWide, buttonPrimary, buttonPrimaryWide, buttonOutlineSmall } from "@/lib/ui";
 
 type WorkspaceRow = {
   id: string;
@@ -335,7 +335,7 @@ export default function SetupPage() {
           <Wordmark />
           {isClient && (
             <button
-              className="rounded-full border bg-background px-3 py-1 text-xs font-semibold"
+              className={buttonOutlineSmall}
               type="button"
               onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
             >
@@ -365,7 +365,7 @@ export default function SetupPage() {
                 className={`rounded-full border px-3 py-1 ${
                   idx <= stepIndex
                     ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground"
+                    : "border-border bg-white text-muted-foreground"
                 }`}
               >
                 {t(language, `setup.step_${key}`)}
@@ -416,7 +416,7 @@ export default function SetupPage() {
                 <label className="space-y-1">
                   <div className="text-sm font-medium">{t(language, "setup.invite_label")}</div>
                   <input
-                    className="w-full rounded-2xl border bg-background px-4 py-2"
+                    className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder={t(language, "settings.invite_placeholder")}
@@ -481,7 +481,7 @@ export default function SetupPage() {
                 <label className="block space-y-1">
                   <span className="text-sm font-medium">{t(language, "settings.child_name")}</span>
                   <input
-                    className="w-full rounded-2xl border bg-background px-4 py-2"
+                    className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                     value={childName}
                     onChange={(e) => setChildName(e.target.value)}
                     placeholder="Sam"
@@ -492,7 +492,7 @@ export default function SetupPage() {
                   <label className="space-y-1">
                     <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
                     <input
-                      className="w-full rounded-2xl border bg-background px-4 py-2"
+                      className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                       value={homePostcode}
                       onChange={(e) => setHomePostcode(e.target.value)}
                       placeholder="1234 AB"
@@ -502,7 +502,7 @@ export default function SetupPage() {
                   <label className="space-y-1">
                     <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
                     <input
-                      className="w-full rounded-2xl border bg-background px-4 py-2"
+                      className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                       value={homeHouseNumber}
                       onChange={(e) => setHomeHouseNumber(e.target.value)}
                       placeholder="10"
@@ -513,7 +513,7 @@ export default function SetupPage() {
                 <label className="space-y-1">
                   <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
                   <select
-                    className="w-full rounded-2xl border bg-background px-4 py-2"
+                    className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                     value={adviesOption}
                     onChange={(e) => setAdviesOption(e.target.value)}
                   >
