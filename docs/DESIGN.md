@@ -14,7 +14,8 @@ Style reference: Airbnb‑inspired (warm, visual, journey‑first).
 - Row padding: py-3
 
 ## Typography
-- Page title: text-xl font-semibold
+- Page title: text-3xl font-serif font-semibold (hero titles can be larger)
+- Section title: text-xl font-serif font-semibold
 - Body: text-sm
 - Secondary: text-xs text-muted-foreground
 

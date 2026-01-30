@@ -10,8 +10,8 @@ import { shortlistRankCapForLevels } from "@/lib/levels";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { badgeNeutral, badgeSecondary, badgeStrong, fitBadgeClass } from "@/lib/badges";
 import { buttonOutlineSmall } from "@/lib/ui";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
-import { Bike, Star } from "lucide-react";
+import { InfoCard, SchoolRow, Wordmark } from "@/components/schoolkeuze";
+import { ArrowDown, ArrowUp, Bike, Star } from "lucide-react";
 
 type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
 
@@ -507,27 +507,18 @@ export default function ShortlistPage() {
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t(language, "shortlist.empty_list")}</p>
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="space-y-3">
               {sortItems(items).map((it) => {
                 const isRanked = typeof it.rank === "number" && it.rank <= rankCap;
                 const rankLabel = isRanked ? `${t(language, "shortlist.rank")} ${it.rank}` : null;
                 return (
-                  <li
-                    key={it.school_id}
-                    className="relative flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between"
-                  >
-                    {typeof it.fit_score === "number" ? (
-                      <span
-                        className={`absolute right-0 top-4 ${badgeStrong} ${fitBadgeClass(
-                          it.fit_score
-                        )}`}
-                      >
-                        {Math.round(it.fit_score)}% {t(language, "shortlist.fit_label")}
-                      </span>
-                    ) : null}
-                    <div className="flex min-w-0 items-start gap-3">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
+                  <li key={it.school_id}>
+                    <SchoolRow
+                      name={it.school?.name ?? it.school_id}
+                      href={`/schools/${it.school_id}?from=shortlist`}
+                      imageUrl={it.school?.image_url ?? undefined}
+                      badges={
+                        <>
                           {rankLabel ? (
                             <span className={`${badgeNeutral} bg-white text-foreground`}>
                               {rankLabel}
@@ -537,71 +528,62 @@ export default function ShortlistPage() {
                               {t(language, "shortlist.not_ranked")}
                             </span>
                           )}
-                          {(it.attended || it.has_planned || it.has_open_days) && (
-                            <span className={badgeNeutral}>
-                              {statusLabel(it, language)}
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-2 flex items-start gap-3">
-                          {it.school?.image_url ? (
-                            <Link href={`/schools/${it.school_id}?from=shortlist`} className="shrink-0">
-                              <img
-                                src={it.school.image_url}
-                                alt={it.school?.name ?? "School"}
-                                className="h-12 w-12 rounded-xl object-cover"
-                              />
-                            </Link>
+                          {(it.attended || it.has_planned || it.has_open_days) ? (
+                            <span className={badgeNeutral}>{statusLabel(it, language)}</span>
                           ) : null}
-                          <Link
-                            className="block min-w-0 truncate text-base font-semibold text-primary underline underline-offset-2 hover:decoration-2"
-                            href={`/schools/${it.school_id}?from=shortlist`}
+                        </>
+                      }
+                      meta={
+                        <>
+                          {it.rating_stars ? (
+                            <span className={`inline-flex items-center gap-1 ${badgeSecondary}`}>
+                              <Star className="h-3.5 w-3.5 fill-current" />
+                              {it.rating_stars}/5
+                            </span>
+                          ) : null}
+                          {commuteLabel(it.commute) ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Bike className="h-4 w-4" />
+                              {commuteLabel(it.commute)}
+                            </span>
+                          ) : null}
+                        </>
+                      }
+                      cornerBadge={
+                        typeof it.fit_score === "number" ? (
+                          <span className={`${badgeStrong} ${fitBadgeClass(it.fit_score)}`}>
+                            {Math.round(it.fit_score)}% {t(language, "shortlist.fit_label")}
+                          </span>
+                        ) : null
+                      }
+                      action={
+                        <>
+                          <button
+                            className={buttonOutlineSmall}
+                            disabled={saving || (isRanked && it.rank === 1)}
+                            onClick={() => (isRanked && it.rank ? move(it.rank, it.rank - 1) : promoteToNextRank(it))}
+                            aria-label={t(language, "shortlist.move_up")}
                           >
-                            {it.school?.name ?? it.school_id}
-                          </Link>
-                        </div>
-                        {(it.rating_stars || commuteLabel(it.commute)) && (
-                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                            {it.rating_stars ? (
-                              <span className={`inline-flex items-center gap-1 ${badgeSecondary}`}>
-                                <Star className="h-3.5 w-3.5 fill-current" />
-                                {it.rating_stars}/5
-                              </span>
-                            ) : null}
-                            {commuteLabel(it.commute) ? (
-                              <span className="inline-flex items-center gap-2">
-                                <Bike className="h-4 w-4" />
-                                {commuteLabel(it.commute)}
-                              </span>
-                            ) : null}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        className={buttonOutlineSmall}
-                        disabled={saving || (isRanked && it.rank === 1)}
-                        onClick={() => (isRanked && it.rank ? move(it.rank, it.rank - 1) : promoteToNextRank(it))}
-                      >
-                          ↑
-                        </button>
-                        <button
-                          className={buttonOutlineSmall}
-                          disabled={saving || !isRanked || !it.rank || it.rank === rankCap}
-                          onClick={() => it.rank && move(it.rank, it.rank + 1)}
-                        >
-                          ↓
-                        </button>
-                      <button
-                        className="text-xs text-muted-foreground underline"
-                        onClick={() => removeSchool(it.school_id)}
-                        disabled={saving}
-                      >
-                        {t(language, "shortlist.remove")}
-                      </button>
-                    </div>
+                            <ArrowUp className="h-4 w-4" />
+                          </button>
+                          <button
+                            className={buttonOutlineSmall}
+                            disabled={saving || !isRanked || !it.rank || it.rank === rankCap}
+                            onClick={() => it.rank && move(it.rank, it.rank + 1)}
+                            aria-label={t(language, "shortlist.move_down")}
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </button>
+                          <button
+                            className="text-xs text-muted-foreground underline"
+                            onClick={() => removeSchool(it.school_id)}
+                            disabled={saving}
+                          >
+                            {t(language, "shortlist.remove")}
+                          </button>
+                        </>
+                      }
+                    />
                   </li>
                 );
               })}

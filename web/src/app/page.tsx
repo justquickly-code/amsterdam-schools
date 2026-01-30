@@ -10,7 +10,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t, useIsClient, useLanguageStore } from "@/lib/i18n";
 import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
-import { badgeNeutral, badgeSecondary, badgeStrong, badgeTag } from "@/lib/badges";
+import { badgeNeutral, badgeSecondary, badgeStrong, badgeTag, fitBadgeClass } from "@/lib/badges";
 import { InfoCard, SchoolCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Heart, Star } from "lucide-react";
 import { buttonPrimaryHover } from "@/lib/ui";
@@ -807,25 +807,27 @@ export default function ExploreHome() {
                       </>
                     }
                     action={
-                      <button
-                        className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
-                          isShortlisted ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
-                        }`}
-                        onClick={() => toggleFavorite(s.id)}
-                        type="button"
-                        aria-label={t(language, "schools.shortlist_add")}
-                        disabled={shortlistBusyId === s.id}
-                      >
-                        <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
-                      </button>
+                      <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
+                        {typeof s.fit_score === "number" ? (
+                          <span className={`${badgeStrong} ${fitBadgeClass(s.fit_score)}`}>
+                            {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
+                          </span>
+                        ) : null}
+                        <button
+                          className={`flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
+                            isShortlisted ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
+                          }`}
+                          onClick={() => toggleFavorite(s.id)}
+                          type="button"
+                          aria-label={t(language, "schools.shortlist_add")}
+                          disabled={shortlistBusyId === s.id}
+                        >
+                          <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
+                        </button>
+                      </div>
                     }
                   >
                     <div className="flex flex-wrap items-center gap-4">
-                      {typeof s.fit_score === "number" ? (
-                        <span className={`${badgeStrong} bg-white text-foreground`}>
-                          {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
-                        </span>
-                      ) : null}
                       {s.website_url ? (
                         <a className="text-sm text-muted-foreground underline" href={s.website_url} target="_blank" rel="noreferrer">
                           {t(language, "schools.website")}

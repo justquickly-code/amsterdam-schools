@@ -4,7 +4,7 @@
 - / (Explore / public landing)
   - public hero search (postcode + advies)
   - public list of schools (minimal filters)
-  - logged-in view adds search + sort + advice badge
+  - logged-in view adds search + sort + advice badge + Fit % badge (if rated)
   - save/heart/notes actions require login
   - “Start je lijst” CTA routes to /login
 

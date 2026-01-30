@@ -75,4 +75,62 @@ function SchoolCard({
   );
 }
 
-export { InfoCard, SchoolCard };
+interface SchoolRowProps {
+  name: string;
+  href: string;
+  imageUrl?: string | null;
+  subtitle?: string | null;
+  badges?: React.ReactNode;
+  meta?: React.ReactNode;
+  action?: React.ReactNode;
+  cornerBadge?: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+function SchoolRow({
+  name,
+  href,
+  imageUrl,
+  subtitle,
+  badges,
+  meta,
+  action,
+  cornerBadge,
+  className,
+  children,
+}: SchoolRowProps) {
+  return (
+    <div
+      className={cn(
+        "relative flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between",
+        className
+      )}
+    >
+      {cornerBadge ? <div className="absolute right-4 top-4">{cornerBadge}</div> : null}
+      <div className="flex min-w-0 items-start gap-3">
+        {imageUrl ? (
+          <Link href={href} className="shrink-0">
+            <Image src={imageUrl} alt={name} width={56} height={56} className="h-14 w-14 rounded-xl object-cover" />
+          </Link>
+        ) : null}
+        <div className="min-w-0 space-y-2">
+          <Link className="block min-w-0 truncate text-base font-semibold text-primary underline underline-offset-2" href={href}>
+            {name}
+          </Link>
+          {subtitle ? <div className="text-sm text-muted-foreground">{subtitle}</div> : null}
+          {badges ? <div className="flex flex-wrap items-center gap-2">{badges}</div> : null}
+          {meta ? <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">{meta}</div> : null}
+          {children}
+        </div>
+      </div>
+      {action ? (
+        <div className={cn("flex flex-wrap items-center gap-2 sm:justify-end", cornerBadge ? "sm:pt-10" : "")}>
+          {action}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export { InfoCard, SchoolCard, SchoolRow };

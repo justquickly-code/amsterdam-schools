@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
@@ -10,8 +9,7 @@ import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLangua
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/lib/categoryRatings";
 import { badgeNeutral, badgeStrong, fitBadgeClass } from "@/lib/badges";
-import { Wordmark } from "@/components/schoolkeuze";
-import { InfoCard } from "@/components/schoolkeuze";
+import { InfoCard, SchoolRow, Wordmark } from "@/components/schoolkeuze";
 import { buttonPrimary, pillAction } from "@/lib/ui";
 import { Heart, Star } from "lucide-react";
 
@@ -28,7 +26,7 @@ type School = {
     image_url?: string | null;
 };
 
-type SchoolRow = {
+type SchoolRowData = {
     id: string;
     name: string;
     supported_levels: string[];
@@ -328,7 +326,7 @@ export default function SchoolDetailPage() {
                 .maybeSingle();
 
             if (!mounted) return;
-            const schoolRow = (sch ?? null) as SchoolRow | null;
+            const schoolRow = (sch ?? null) as SchoolRowData | null;
             if (sErr || !schoolRow) {
                 setError(sErr?.message ?? "School not found.");
                 setLoading(false);
@@ -887,58 +885,61 @@ export default function SchoolDetailPage() {
                 )}
 
                 {school && (
-                    <InfoCard
-                        title={t(language, "school.detail_overview")}
-                        action={
-                            <div className="flex items-center gap-2">
-                                {typeof fitScore === "number" ? (
-                                    <span
-                                        className={`${badgeStrong} ${fitBadgeClass(fitScore)}`}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-serif font-semibold text-foreground">
+                                {t(language, "school.detail_overview")}
+                            </h2>
+                        </div>
+                        <SchoolRow
+                            name={school.name}
+                            href={`/schools/${school.id}`}
+                            imageUrl={school.image_url ?? undefined}
+                            subtitle={(school.supported_levels ?? []).join(", ")}
+                            meta={school.address ? <span>{school.address}</span> : null}
+                            cornerBadge={
+                                <div className="flex flex-col items-end gap-2">
+                                    {typeof fitScore === "number" ? (
+                                        <span className={`${badgeStrong} ${fitBadgeClass(fitScore)}`}>
+                                            {Math.round(fitScore)}% {t(language, "shortlist.fit_label")}
+                                        </span>
+                                    ) : null}
+                                    <button
+                                        className={`flex h-10 w-10 items-center justify-center rounded-full text-base shadow-sm transition ${
+                                            isShortlisted ? "bg-primary text-primary-foreground" : "border bg-white text-foreground"
+                                        }`}
+                                        type="button"
+                                        aria-label={t(language, "schools.shortlist_add")}
+                                        onClick={() => {
+                                            if (!hasSession) {
+                                                router.push("/login");
+                                                return;
+                                            }
+                                            if (isShortlisted) {
+                                                removeFromShortlist();
+                                            } else {
+                                                addToShortlist();
+                                            }
+                                        }}
                                     >
-                                        {Math.round(fitScore)}% {t(language, "shortlist.fit_label")}
-                                    </span>
-                                ) : null}
-                                <button
-                                    className={`flex h-10 w-10 items-center justify-center rounded-full text-base shadow-sm transition ${
-                                        isShortlisted ? "bg-primary text-primary-foreground" : "border bg-white text-foreground"
-                                    }`}
-                                    type="button"
-                                    aria-label={t(language, "schools.shortlist_add")}
-                                    onClick={() => {
-                                        if (!hasSession) {
-                                            router.push("/login");
-                                            return;
-                                        }
-                                        if (isShortlisted) {
-                                            removeFromShortlist();
-                                        } else {
-                                            addToShortlist();
-                                        }
-                                    }}
-                                >
-                                    <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
-                                </button>
-                            </div>
-                        }
-                    >
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                            {school.image_url ? (
-                                <div className="relative h-32 w-full overflow-hidden rounded-2xl sm:h-40 sm:w-56">
-                                    <Image src={school.image_url} alt={school.name} fill className="object-cover" />
+                                        <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
+                                    </button>
                                 </div>
-                            ) : null}
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                            <div>{(school.supported_levels ?? []).join(", ")}</div>
-                            {school.address && <div>{school.address}</div>}
+                            }
+                        >
                             {school.website_url && (
-                                <a className="text-sm text-primary underline" href={school.website_url} target="_blank" rel="noreferrer">
+                                <a
+                                    className="text-sm text-primary underline"
+                                    href={school.website_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
                                     {t(language, "schools.website")}
                                 </a>
                             )}
                             {shortlistMsg && <div className="text-sm text-muted-foreground">{shortlistMsg}</div>}
-                        </div>
-                        </div>
-                    </InfoCard>
+                        </SchoolRow>
+                    </div>
                 )}
 
                 <InfoCard

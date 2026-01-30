@@ -51,9 +51,10 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Explore shows a single continuous list with combined search + sort controls.
 - Combined advice (e.g., HAVO/VWO) requires schools that offer both levels.
 - Advice pill shows when filters are applied; hearts add to My List.
+- Fit % badge appears on school cards when category ratings exist.
 - Dashboard content now lives in `/profile` (Profile hub layout).
 - Open days list is public; planner actions are login‑gated.
-- My List is a single list with ranked subset controls (cap by advice).
+- My List is a single list with ranked subset controls (cap by advice) and consistent row cards.
 - Setup wizard restyle (copy + visuals) in progress.
 - Open days now show upcoming dates only (labeled as remaining).
 - Admin hub exists; admin routes require allowlist + token.
