@@ -11,7 +11,7 @@ import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t
 import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { badgeNeutral, badgeSecondary, badgeStrong, badgeTag } from "@/lib/badges";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard, SchoolCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Heart, Star } from "lucide-react";
 import { buttonPrimaryHover } from "@/lib/ui";
 
@@ -763,36 +763,15 @@ export default function ExploreHome() {
                 const image = s.image_url || pickSchoolImage(s.name, s.id);
                 const isShortlisted = shortlistIds.includes(s.id);
                 return (
-                  <div key={s.id} className="flex flex-col overflow-hidden rounded-3xl border bg-card shadow-md">
-                    <Link href={`/schools/${s.id}`} className="block">
-                      <div className="relative h-40 overflow-hidden">
-                        <Image
-                          src={image}
-                          alt=""
-                          fill
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          className="object-cover"
-                        />
-                      </div>
-                    </Link>
-                    <div className="space-y-3 p-4">
-                    <div className="space-y-1">
-                      <Link className="text-base font-semibold text-primary underline underline-offset-2" href={`/schools/${s.id}`}>
-                        {s.name}
-                      </Link>
-                      <div className="text-sm text-muted-foreground">{levelLabel}</div>
-                    </div>
-
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        {(s.supported_levels ?? []).slice(0, 3).map((lvl) => (
-                          <span key={lvl} className={badgeTag}>
-                            {friendlyLevel(lvl)}
-                          </span>
-                        ))}
-                      </div>
-
-                      {hasBadges ? (
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <SchoolCard
+                    key={s.id}
+                    name={s.name}
+                    href={`/schools/${s.id}`}
+                    imageUrl={image}
+                    subtitle={levelLabel}
+                    badges={
+                      hasBadges ? (
+                        <>
                           {s.visits?.[0]?.rating_stars ? (
                             <span className={`inline-flex items-center gap-1 ${badgeSecondary}`}>
                               <Star className="h-3.5 w-3.5 fill-current" />
@@ -804,10 +783,20 @@ export default function ExploreHome() {
                               {t(language, "schools.visited")}
                             </span>
                           ) : null}
-                        </div>
-                      ) : null}
-
-                      <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                        </>
+                      ) : null
+                    }
+                    tags={
+                      (s.supported_levels ?? []).length ? (
+                        (s.supported_levels ?? []).slice(0, 3).map((lvl) => (
+                          <span key={lvl} className={badgeTag}>
+                            {friendlyLevel(lvl)}
+                          </span>
+                        ))
+                      ) : null
+                    }
+                    meta={
+                      <>
                         {s.commute ? (
                           <span className="inline-flex items-center gap-2">
                             <Bike className="h-4 w-4" />
@@ -815,33 +804,35 @@ export default function ExploreHome() {
                           </span>
                         ) : null}
                         {s.address ? <span>{s.address}</span> : null}
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-4">
-                        {typeof s.fit_score === "number" ? (
-                          <span className={`${badgeStrong} bg-white text-foreground`}>
-                            {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
-                          </span>
-                        ) : null}
-                        {s.website_url ? (
-                          <a className="text-sm text-muted-foreground underline" href={s.website_url} target="_blank" rel="noreferrer">
-                            {t(language, "schools.website")}
-                          </a>
-                        ) : null}
-                        <button
-                          className={`ml-auto flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
-                            isShortlisted ? "bg-primary text-primary-foreground" : "border bg-white text-foreground"
-                          }`}
-                          onClick={() => toggleFavorite(s.id)}
-                          type="button"
-                          aria-label={t(language, "schools.shortlist_add")}
-                          disabled={shortlistBusyId === s.id}
-                        >
-                          <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
-                        </button>
-                      </div>
+                      </>
+                    }
+                    action={
+                      <button
+                        className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
+                          isShortlisted ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
+                        }`}
+                        onClick={() => toggleFavorite(s.id)}
+                        type="button"
+                        aria-label={t(language, "schools.shortlist_add")}
+                        disabled={shortlistBusyId === s.id}
+                      >
+                        <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
+                      </button>
+                    }
+                  >
+                    <div className="flex flex-wrap items-center gap-4">
+                      {typeof s.fit_score === "number" ? (
+                        <span className={`${badgeStrong} bg-white text-foreground`}>
+                          {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
+                        </span>
+                      ) : null}
+                      {s.website_url ? (
+                        <a className="text-sm text-muted-foreground underline" href={s.website_url} target="_blank" rel="noreferrer">
+                          {t(language, "schools.website")}
+                        </a>
+                      ) : null}
                     </div>
-                  </div>
+                  </SchoolCard>
                 );
               })}
             </div>
