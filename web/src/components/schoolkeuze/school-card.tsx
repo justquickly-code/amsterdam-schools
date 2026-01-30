@@ -16,7 +16,7 @@ function InfoCard({ title, action, children, className }: InfoCardProps) {
   return (
     <div className={cn("flex flex-col gap-4 rounded-2xl border bg-card p-4 shadow-sm", className)}>
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-card-foreground">{title}</h3>
+        <h3 className="font-serif text-base font-semibold text-card-foreground">{title}</h3>
         {action}
       </div>
       {children}

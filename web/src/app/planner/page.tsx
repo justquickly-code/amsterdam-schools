@@ -536,17 +536,17 @@ export default function OpenDaysPage() {
           <p className="text-sm text-muted-foreground">{t(language, "open_days.important_body")}</p>
         </InfoCard>
 
-        <InfoCard
-          title={t(language, "open_days.filters_title")}
-          action={
-            adviesLabel ? (
+        <div className="rounded-3xl border bg-white/95 p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-foreground">{t(language, "open_days.filters_title")}</div>
+            {adviesLabel ? (
               <div className={`inline-flex items-center gap-2 ${badgeTag}`}>
                 {t(language, "open_days.filters_advies")} {adviesLabel}
               </div>
-            ) : undefined
-          }
-        >
-          <div className="space-y-4">
+            ) : null}
+          </div>
+
+          <div className="mt-4 space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-muted-foreground">
                 {year ? (
@@ -565,10 +565,10 @@ export default function OpenDaysPage() {
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 {yearOptions.length > 1 && (
-                  <label className="flex items-center gap-2 text-sm">
-                    <span className="text-muted-foreground">{t(language, "open_days.year_label")}</span>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                    {t(language, "open_days.year_label")}
                     <select
-                      className="rounded-full border bg-background px-3 py-1 text-sm"
+                      className="h-10 rounded-2xl border bg-white px-3 text-sm font-medium text-foreground shadow-sm"
                       value={year}
                       onChange={(e) => setYear(e.target.value)}
                     >
@@ -594,12 +594,10 @@ export default function OpenDaysPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="text-sm">
-                <div className="text-xs text-muted-foreground mb-1">
-                  {t(language, "open_days.event_type")}
-                </div>
+              <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                {t(language, "open_days.event_type")}
                 <select
-                  className="w-full rounded-2xl border bg-background px-3 py-2 text-sm"
+                  className="h-11 w-full rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm"
                   value={eventTypeFilter}
                   onChange={(e) => setEventTypeFilter(e.target.value)}
                 >
@@ -612,12 +610,10 @@ export default function OpenDaysPage() {
                 </select>
               </label>
 
-              <label className="text-sm">
-                <div className="text-xs text-muted-foreground mb-1">
-                  {t(language, "open_days.when")}
-                </div>
+              <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
+                {t(language, "open_days.when")}
                 <select
-                  className="w-full rounded-2xl border bg-background px-3 py-2 text-sm"
+                  className="h-11 w-full rounded-2xl border bg-white px-4 text-sm font-medium text-foreground shadow-sm"
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value as DateRangeFilter)}
                 >
@@ -628,7 +624,7 @@ export default function OpenDaysPage() {
               </label>
             </div>
           </div>
-        </InfoCard>
+        </div>
 
         {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
         {!loading && error && <p className="text-sm text-red-600">Error: {error}</p>}
