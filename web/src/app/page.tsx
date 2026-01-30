@@ -10,7 +10,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t, useIsClient, useLanguageStore } from "@/lib/i18n";
 import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
-import { badgeStrong } from "@/lib/badges";
+import { badgeNeutral, badgeSecondary, badgeStrong, badgeTag } from "@/lib/badges";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Heart, Star } from "lucide-react";
 import { buttonPrimaryHover } from "@/lib/ui";
@@ -728,7 +728,7 @@ export default function ExploreHome() {
               ) : null}
               {adviesPill ? (
                 <div className="md:ml-auto">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-2 text-xs font-semibold text-foreground">
+                  <span className={`inline-flex items-center gap-2 ${badgeTag}`}>
                     {t(language, "schools.filters_advies")} {adviesPill}
                   </span>
                 </div>
@@ -785,7 +785,7 @@ export default function ExploreHome() {
 
                       <div className="flex flex-wrap gap-2 text-xs">
                         {(s.supported_levels ?? []).slice(0, 3).map((lvl) => (
-                          <span key={lvl} className="rounded-full bg-secondary/70 px-3 py-1 font-semibold text-foreground">
+                          <span key={lvl} className={badgeTag}>
                             {friendlyLevel(lvl)}
                           </span>
                         ))}
@@ -794,13 +794,13 @@ export default function ExploreHome() {
                       {hasBadges ? (
                         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           {s.visits?.[0]?.rating_stars ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 font-semibold">
+                            <span className={`inline-flex items-center gap-1 ${badgeSecondary}`}>
                               <Star className="h-3.5 w-3.5 fill-current" />
                               {s.visits?.[0]?.rating_stars}/5
                             </span>
                           ) : null}
                           {s.visits?.[0]?.attended ? (
-                            <span className="rounded-full border px-2 py-0.5">
+                            <span className={badgeNeutral}>
                               {t(language, "schools.visited")}
                             </span>
                           ) : null}

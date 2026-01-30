@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { badgeNeutral, badgeTag } from "@/lib/badges";
+import { pillAction } from "@/lib/ui";
 
 type OpenDay = {
   id: string;
@@ -113,11 +115,11 @@ function eventTypeLabel(t: string | null) {
 type DateRangeFilter = "all" | "7" | "14";
 
 function pillClass() {
-  return "text-xs rounded-full border px-2 py-0.5 text-muted-foreground";
+  return badgeNeutral;
 }
 
 function actionClass() {
-  return "text-xs font-semibold rounded-full border bg-secondary/60 px-3 py-1 text-foreground hover:bg-secondary shadow-sm";
+  return pillAction;
 }
 
 function matchesAdvies(
@@ -538,7 +540,7 @@ export default function OpenDaysPage() {
           title={t(language, "open_days.filters_title")}
           action={
             adviesLabel ? (
-              <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+              <div className={`inline-flex items-center gap-2 ${badgeTag}`}>
                 {t(language, "open_days.filters_advies")} {adviesLabel}
               </div>
             ) : undefined

@@ -9,10 +9,10 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/lib/categoryRatings";
-import { badgeStrong, fitBadgeClass } from "@/lib/badges";
+import { badgeNeutral, badgeStrong, fitBadgeClass } from "@/lib/badges";
 import { Wordmark } from "@/components/schoolkeuze";
 import { InfoCard } from "@/components/schoolkeuze";
-import { buttonPrimary } from "@/lib/ui";
+import { buttonPrimary, pillAction } from "@/lib/ui";
 import { Heart, Star } from "lucide-react";
 
 type Workspace = { id: string; advies_levels?: string[] };
@@ -146,11 +146,11 @@ function stripAnyUrlLabel(s: string | null) {
 }
 
 function pillClass() {
-    return "text-xs rounded-full border px-2 py-0.5 text-muted-foreground";
+    return badgeNeutral;
 }
 
 function actionClass() {
-    return "text-xs font-semibold rounded-full border bg-secondary/60 px-3 py-1 text-foreground hover:bg-secondary shadow-sm";
+    return pillAction;
 }
 
 function StarRating({

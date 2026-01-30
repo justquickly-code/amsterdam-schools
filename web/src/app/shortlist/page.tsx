@@ -8,7 +8,8 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { computeFitPercent } from "@/lib/categoryRatings";
-import { badgeNeutral, badgeStrong, fitBadgeClass } from "@/lib/badges";
+import { badgeNeutral, badgeSecondary, badgeStrong, fitBadgeClass } from "@/lib/badges";
+import { buttonOutlineSmall } from "@/lib/ui";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Star } from "lucide-react";
 
@@ -562,7 +563,7 @@ export default function ShortlistPage() {
                         {(it.rating_stars || commuteLabel(it.commute)) && (
                           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             {it.rating_stars ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+                              <span className={`inline-flex items-center gap-1 ${badgeSecondary}`}>
                                 <Star className="h-3.5 w-3.5 fill-current" />
                                 {it.rating_stars}/5
                               </span>
@@ -580,14 +581,14 @@ export default function ShortlistPage() {
 
                     <div className="flex flex-wrap items-center gap-2">
                       <button
-                        className="rounded-full border px-2 py-1 text-xs"
+                        className={buttonOutlineSmall}
                         disabled={saving || (isRanked && it.rank === 1)}
                         onClick={() => (isRanked && it.rank ? move(it.rank, it.rank - 1) : promoteToNextRank(it))}
                       >
                           ↑
                         </button>
                         <button
-                          className="rounded-full border px-2 py-1 text-xs"
+                          className={buttonOutlineSmall}
                           disabled={saving || !isRanked || !it.rank || it.rank === rankCap}
                           onClick={() => it.rank && move(it.rank, it.rank + 1)}
                         >

@@ -4,6 +4,10 @@ export const badgeNeutral = `${badgeBase} text-muted-foreground`;
 
 export const badgeStrong = "rounded-full border px-2 py-1 text-xs font-semibold";
 
+export const badgeSecondary = "rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground";
+
+export const badgeTag = "rounded-full bg-secondary/70 px-3 py-1 text-xs font-semibold text-foreground";
+
 export function fitBadgeClass(score: number) {
   if (score >= 80) return "border-emerald-200 bg-emerald-50 text-emerald-700";
   if (score >= 60) return "border-lime-200 bg-lime-50 text-lime-700";

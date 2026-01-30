@@ -16,6 +16,8 @@ import {
 import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
 import { InfoCard } from "@/components/schoolkeuze";
+import { badgeSecondary } from "@/lib/badges";
+import { buttonOutlinePill } from "@/lib/ui";
 import {
   Calendar,
   Check,
@@ -371,7 +373,7 @@ export default function Home() {
                 </p>
               ) : null}
               {adviceLabel ? (
-                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-foreground">
+                <span className={`mt-1 inline-flex items-center gap-1 ${badgeSecondary}`}>
                   <CapIcon />
                   {adviceLabel} {t(language, "profile.advice_suffix")}
                 </span>
@@ -436,7 +438,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">{suggestions[0].body}</p>
                   <Link
                     href={suggestions[0].href}
-                    className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold text-foreground"
+                    className={buttonOutlinePill}
                   >
                     {suggestions[0].cta}
                   </Link>
