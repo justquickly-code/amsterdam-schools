@@ -211,7 +211,7 @@ export default function FeedbackPage() {
               <label className="space-y-1">
                 <div className="text-xs text-muted-foreground">{t(language, "feedback.category")}</div>
                 <select
-                  className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                  className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                   value={category}
                   onChange={(e) => setCategory(e.target.value as FeedbackRow["category"])}
                 >
@@ -225,7 +225,7 @@ export default function FeedbackPage() {
               <label className="space-y-1 sm:col-span-2">
                 <div className="text-xs text-muted-foreground">{t(language, "feedback.title_label")}</div>
                 <input
-                  className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                  className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Short summary"

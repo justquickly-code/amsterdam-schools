@@ -11,7 +11,7 @@ import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/
 import { badgeNeutral, badgeStrong, fitBadgeClass } from "@/lib/badges";
 import { InfoCard, SchoolRow, Wordmark } from "@/components/schoolkeuze";
 import { buttonPrimary, pillAction } from "@/lib/ui";
-import { Heart, Star } from "lucide-react";
+import { ArrowLeft, Heart, Star } from "lucide-react";
 
 type Workspace = { id: string; advies_levels?: string[] };
 
@@ -869,11 +869,12 @@ export default function SchoolDetailPage() {
                 <header className="flex flex-col gap-2">
                     <Wordmark />
                     <Link
-                        className="text-sm font-semibold text-primary hover:underline"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
                         href={backHref}
                         aria-label={t(language, "about.back")}
                     >
-                        ← {t(language, "about.back")}
+                        <ArrowLeft className="h-4 w-4" />
+                        {t(language, "about.back")}
                     </Link>
                     <h1 className="text-3xl font-serif font-semibold text-foreground">{school?.name ?? "School"}</h1>
                 </header>

@@ -138,7 +138,7 @@ export default function AdminComputeCommutesPage() {
               <label className="space-y-1">
                 <div className="text-sm font-medium">Admin token</div>
                 <input
-                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
                   placeholder="(ADMIN_SYNC_TOKEN)"
@@ -148,7 +148,7 @@ export default function AdminComputeCommutesPage() {
               <label className="space-y-1">
                 <div className="text-sm font-medium">Workspace ID</div>
                 <input
-                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                   value={workspaceId}
                   onChange={(e) => setWorkspaceId(e.target.value)}
                   placeholder="(auto-filled from session)"
@@ -158,7 +158,7 @@ export default function AdminComputeCommutesPage() {
               <label className="space-y-1">
                 <div className="text-sm font-medium">Batch size</div>
                 <input
-                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                   type="number"
                   min={1}
                   max={200}

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 import { Wordmark } from "@/components/schoolkeuze";
-import { buttonPrimaryWide } from "@/lib/ui";
+import { buttonOutlineSmall, buttonPrimaryWide } from "@/lib/ui";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -134,7 +134,7 @@ export default function LoginPage() {
         <div className="flex items-center justify-between">
           <Wordmark className="h-10" />
           <button
-            className="rounded-full border border-white/40 bg-white/90 px-4 py-2 text-xs font-semibold text-foreground shadow-sm backdrop-blur"
+            className={buttonOutlineSmall}
             type="button"
             onClick={toggleLanguage}
           >
@@ -155,7 +155,7 @@ export default function LoginPage() {
             <label className="block space-y-1">
               <span className="text-sm">{t(language, "login.email")}</span>
               <input
-                className="w-full rounded-2xl border bg-background px-4 py-2"
+                className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

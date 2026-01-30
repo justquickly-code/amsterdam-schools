@@ -8,6 +8,7 @@ import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } fro
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { buttonOutline, buttonPrimary } from "@/lib/ui";
+import { ArrowLeft } from "lucide-react";
 
 type Workspace = {
     id: string;
@@ -377,8 +378,9 @@ export default function SettingsPage() {
             <div className="mx-auto w-full max-w-4xl space-y-6">
                 <header className="flex flex-col gap-2">
                     <Wordmark />
-                    <Link className="text-sm font-semibold text-primary hover:underline" href="/profile">
-                        ← {t(language, "about.back")}
+                    <Link className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline" href="/profile">
+                        <ArrowLeft className="h-4 w-4" />
+                        {t(language, "about.back")}
                     </Link>
                     <h1 className="text-3xl font-serif font-semibold text-foreground">{t(language, "settings.title")}</h1>
                 </header>
@@ -405,7 +407,7 @@ export default function SettingsPage() {
                                     <label className="space-y-1 sm:col-span-2">
                                         <div className="text-sm font-medium">{t(language, "settings.child_name")}</div>
                                         <input
-                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                                             value={childName}
                                             onChange={(e) => setChildName(e.target.value)}
                                             placeholder={t(language, "settings.child_placeholder")}
@@ -416,7 +418,7 @@ export default function SettingsPage() {
                                     <label className="space-y-1">
                                         <div className="text-sm font-medium">{t(language, "settings.postcode")}</div>
                                         <input
-                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                                             value={homePostcode}
                                             onChange={(e) => setHomePostcode(e.target.value)}
                                             placeholder={t(language, "settings.postcode_placeholder")}
@@ -427,7 +429,7 @@ export default function SettingsPage() {
                                     <label className="space-y-1">
                                         <div className="text-sm font-medium">{t(language, "settings.house_number")}</div>
                                         <input
-                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                                             value={homeHouseNumber}
                                             onChange={(e) => setHomeHouseNumber(e.target.value)}
                                             placeholder={t(language, "settings.house_placeholder")}
@@ -440,7 +442,7 @@ export default function SettingsPage() {
                                     <label className="space-y-1">
                                         <div className="text-sm font-medium">{t(language, "settings.advies1")}</div>
                                         <select
-                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                                             value={adviesOption}
                                             onChange={(e) => setAdviesOption(e.target.value)}
                                             disabled={!isOwner}
@@ -479,7 +481,7 @@ export default function SettingsPage() {
                                     <div className="space-y-1">
                                         <div className="text-xs text-muted-foreground">{t(language, "settings.current_workspace")}</div>
                                         <select
-                                            className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                                            className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                                             value={activeWorkspaceId}
                                             onChange={(e) => {
                                                 const next = e.target.value;
@@ -521,7 +523,7 @@ export default function SettingsPage() {
                                     <div className="space-y-2">
                                         <div className="text-sm font-medium">{t(language, "settings.invite_title")}</div>
                                         <input
-                                            className="w-full rounded-2xl border bg-background px-4 py-2"
+                                            className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                                             value={inviteEmail}
                                             onChange={(e) => setInviteEmail(e.target.value)}
                                             placeholder={t(language, "settings.invite_placeholder")}

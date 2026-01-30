@@ -17,7 +17,7 @@ import { friendlyLevel, shortlistRankCapForLevels } from "@/lib/levels";
 import { useRouter } from "next/navigation";
 import { InfoCard } from "@/components/schoolkeuze";
 import { badgeSecondary } from "@/lib/badges";
-import { buttonOutlinePill } from "@/lib/ui";
+import { buttonOutline, buttonOutlinePill } from "@/lib/ui";
 import {
   Calendar,
   Check,
@@ -490,20 +490,18 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="flex gap-3">
-          <Link
-            href="/shortlist"
-            className="flex-1 bg-primary/10 rounded-2xl p-4 flex flex-col items-center gap-2"
-          >
-            <HeartIcon />
-            <span className="text-sm font-medium text-foreground">{t(language, "profile.cta_my_list")}</span>
+        <section className="flex flex-col gap-3 sm:flex-row">
+          <Link href="/shortlist" className={`${buttonOutline} w-full sm:flex-1`}>
+            <span className="inline-flex items-center gap-2">
+              <HeartIcon />
+              {t(language, "profile.cta_my_list")}
+            </span>
           </Link>
-          <Link
-            href="/planner"
-            className="flex-1 bg-accent/10 rounded-2xl p-4 flex flex-col items-center gap-2"
-          >
-            <CalendarIcon />
-            <span className="text-sm font-medium text-foreground">{t(language, "profile.cta_open_days")}</span>
+          <Link href="/planner" className={`${buttonOutline} w-full sm:flex-1`}>
+            <span className="inline-flex items-center gap-2">
+              <CalendarIcon />
+              {t(language, "profile.cta_open_days")}
+            </span>
           </Link>
         </section>
 
@@ -512,7 +510,7 @@ export default function Home() {
             <div className="text-sm text-muted-foreground">
               {t(language, "dashboard.finish_setup_body")}
             </div>
-            <Link className="inline-block rounded-md border px-3 py-2 text-sm" href="/settings">
+            <Link className={buttonOutline} href="/settings">
               {t(language, "dashboard.finish_setup_cta")}
             </Link>
           </InfoCard>

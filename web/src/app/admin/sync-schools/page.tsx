@@ -122,7 +122,7 @@ export default function AdminSyncSchoolsPage() {
               <label className="space-y-1">
                 <div className="text-sm font-medium">School year label</div>
                 <input
-                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                   value={schoolYearLabel}
                   onChange={(e) => setSchoolYearLabel(e.target.value)}
                   placeholder="2025/26"
@@ -132,7 +132,7 @@ export default function AdminSyncSchoolsPage() {
               <label className="space-y-1">
                 <div className="text-sm font-medium">Admin token</div>
                 <input
-                  className="w-full rounded-2xl border bg-background px-4 py-2"
+                  className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
                   placeholder="(from ADMIN_SYNC_TOKEN)"

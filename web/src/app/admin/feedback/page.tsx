@@ -194,7 +194,7 @@ export default function AdminFeedbackPage() {
                 <label className="space-y-1">
                   <div className="text-sm text-muted-foreground">Status</div>
                   <select
-                    className="w-full rounded-2xl border bg-background px-4 py-2 text-sm"
+                    className="h-11 w-full rounded-2xl border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary"
                     value={status}
                     onChange={(e) => setStatus(e.target.value as FeedbackRow["status"])}
                   >
