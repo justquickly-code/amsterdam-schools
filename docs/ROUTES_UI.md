@@ -5,6 +5,7 @@
   - public hero search (postcode + advies)
   - public list of schools (minimal filters)
   - logged-in view adds search + sort + advice badge + Fit % badge (if rated)
+  - map view at top of list (uses same filters as list)
   - save/heart/notes actions require login
   - “Start je lijst” CTA routes to /login
 
@@ -16,6 +17,7 @@
 
 - /schools/[id] (School detail)
   - school info + website link
+  - cycling route preview (home → school) + Google Maps directions link
   - open days list (with warning + last synced)
   - planned toggle per open day
   - visit notes (per member) + shared 1–5 star rating
@@ -24,6 +26,7 @@
 
 - /planner (Open Days)
   - chronological list
+  - “Today” panel for planned visits with “Take me there” directions
   - filters: event type, date range, shortlist-only
   - planned status toggle (login required)
 

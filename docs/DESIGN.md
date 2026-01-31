@@ -65,6 +65,7 @@ Create a more engaging, Airbnb‑style experience while preserving all MVP funct
    - Logged‑out bottom nav: Explore / My List / Login.
 2) **Explore / Schools List**
    - Photo cards, heart save, advice badge + combined filter/sort bar.
+   - Map view at top of list (same filters as cards).
 3) **My List**
    - Single list; ranked subset via up/down controls; ranked positions shown.
 4) **Open Days (Planner)**

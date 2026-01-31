@@ -37,6 +37,10 @@ These routes use SUPABASE_SERVICE_ROLE_KEY and must remain server-only.
 IMPORTANT:
 - Ensure the route computes commutes for the caller’s workspace (never “first workspace in DB”).
 
+### Map rendering (client)
+- Client map uses a public token: `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`.
+- Server-only token remains `MAPBOX_ACCESS_TOKEN` for directions/geocoding on API routes.
+
 ### Feedback (admin)
 - Endpoint: GET/PATCH /api/admin/feedback
 - Purpose: list user feedback and respond as admin.

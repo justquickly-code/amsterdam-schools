@@ -11,9 +11,10 @@ import { Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t
 import { schoolImageForName } from "@/lib/schoolImages";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { badgeNeutral, badgeSecondary, badgeStrong, badgeTag, fitBadgeClass } from "@/lib/badges";
-import { InfoCard, SchoolCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard, MapboxMap, SchoolCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Heart, Star } from "lucide-react";
 import { buttonPrimaryHover } from "@/lib/ui";
+import { googleMapsDirectionsUrl } from "@/lib/maps";
 
 const FALLBACK_IMAGES = [
   "/branding/hero/school-1.jpg",
@@ -39,6 +40,8 @@ type WorkspaceRow = {
   advies_match_mode: "either" | "both";
   home_postcode?: string | null;
   home_house_number?: string | null;
+  home_lat?: number | null;
+  home_lng?: number | null;
   language?: Language | null;
 };
 
@@ -56,6 +59,8 @@ type SchoolRow = {
   address: string | null;
   website_url: string | null;
   image_url?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   visits?: VisitRow[] | null;
 };
 
@@ -96,6 +101,8 @@ type School = {
   address: string | null;
   website_url: string | null;
   image_url?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   commute?: {
     duration_minutes: number | null;
     distance_km: number;
@@ -163,6 +170,8 @@ export default function ExploreHome() {
   const [error, setError] = useState("");
   const [shortlistMsg, setShortlistMsg] = useState<string>("");
   const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
+  const [homeCoords, setHomeCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -173,11 +182,68 @@ export default function ExploreHome() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("prefill_advies", adviesKey);
   }, [adviesKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("explore_show_map");
+    if (stored === "true") {
+      setShowMap(true);
+      return;
+    }
+    if (stored === "false") {
+      setShowMap(false);
+      return;
+    }
+    setShowMap(window.innerWidth >= 768);
+  }, []);
   const setStoredSortMode = (next: SortMode) => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("schools_sort_mode", next);
     window.dispatchEvent(new Event("schools-sort-mode-changed"));
   };
+
+  useEffect(() => {
+    let mounted = true;
+    async function resolveHomeCoords() {
+      const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+      if (!token) return;
+
+      if (typeof ws?.home_lat === "number" && typeof ws?.home_lng === "number") {
+        setHomeCoords({ lat: ws.home_lat, lng: ws.home_lng });
+        return;
+      }
+
+      const query = hasSession
+        ? ws?.home_postcode && ws?.home_house_number
+          ? `${ws.home_postcode} ${ws.home_house_number} Amsterdam`
+          : null
+        : postcode && adviesKey
+        ? `${postcode} Amsterdam`
+        : null;
+
+      if (!query) {
+        setHomeCoords(null);
+        return;
+      }
+
+      try {
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          query
+        )}.json?limit=1&access_token=${token}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const coords = json?.features?.[0]?.center;
+        if (!mounted || !Array.isArray(coords) || coords.length < 2) return;
+        setHomeCoords({ lng: coords[0], lat: coords[1] });
+      } catch {
+        if (!mounted) return;
+      }
+    }
+    resolveHomeCoords();
+    return () => {
+      mounted = false;
+    };
+  }, [ws, hasSession, postcode, adviesKey]);
 
   const toggleLanguage = async () => {
     const next = language === "nl" ? "en" : "nl";
@@ -217,7 +283,7 @@ export default function ExploreHome() {
       let workspaceRow: WorkspaceRow | null = null;
       if (authed) {
         const { workspace, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-          "id,advies_levels,advies_match_mode,home_postcode,home_house_number,language"
+          "id,advies_levels,advies_match_mode,home_postcode,home_house_number,home_lat,home_lng,language"
         );
         if (!mounted) return;
         if (wErr) {
@@ -258,14 +324,14 @@ export default function ExploreHome() {
       if (authed) {
         const { data, error } = await supabase
           .from("schools")
-          .select("id,name,supported_levels,address,website_url,image_url")
+          .select("id,name,supported_levels,address,website_url,image_url,lat,lng")
           .order("name", { ascending: true });
         schoolsData = data;
         sErr = error;
       } else {
         const { data, error } = await supabase
           .from("schools")
-          .select("id,name,supported_levels,address,website_url,image_url")
+          .select("id,name,supported_levels,address,website_url,image_url,lat,lng")
           .order("name", { ascending: true });
         schoolsData = data;
         sErr = error;
@@ -726,7 +792,7 @@ export default function ExploreHome() {
                   </select>
                 </label>
               ) : null}
-              {adviesPill ? (
+              {isClient && adviesPill ? (
                 <div className="md:ml-auto">
                   <span className={`inline-flex items-center gap-2 ${badgeTag}`}>
                     {t(language, "schools.filters_advies")} {adviesPill}
@@ -754,90 +820,151 @@ export default function ExploreHome() {
           ) : null}
 
           {!loading && !error && sorted.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {sorted.map((s) => {
-                const levelLabel =
-                  (s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
-                  t(language, "schools.levels_empty");
-                const hasBadges = Boolean(s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended);
-                const image = s.image_url || pickSchoolImage(s.name, s.id);
-                const isShortlisted = shortlistIds.includes(s.id);
-                return (
-                  <SchoolCard
-                    key={s.id}
-                    name={s.name}
-                    href={`/schools/${s.id}`}
-                    imageUrl={image}
-                    subtitle={levelLabel}
-                    badges={
-                      hasBadges ? (
+            <>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">{t(language, "explore.map_title")}</h3>
+                  <button
+                    className="md:hidden text-xs font-semibold underline"
+                    type="button"
+                    onClick={() => {
+                      setShowMap((prev) => {
+                        const next = !prev;
+                        if (typeof window !== "undefined") {
+                          window.localStorage.setItem("explore_show_map", String(next));
+                        }
+                        return next;
+                      });
+                    }}
+                  >
+                    {showMap ? t(language, "explore.map_hide") : t(language, "explore.map_show")}
+                  </button>
+                </div>
+                <div className={`${showMap ? "" : "hidden"} md:block`}>
+                  <MapboxMap
+                    className="h-72"
+                    markers={[
+                      ...sorted
+                        .filter((s) => typeof s.lat === "number" && typeof s.lng === "number")
+                        .map((s) => ({
+                          id: s.id,
+                          lat: s.lat as number,
+                          lng: s.lng as number,
+                          title: s.name,
+                          href: `/schools/${s.id}`,
+                          pin: "school" as const,
+                        })),
+                      ...(homeCoords
+                        ? [
+                            {
+                              id: "home",
+                              lat: homeCoords.lat,
+                              lng: homeCoords.lng,
+                              title: t(language, "explore.home_pin"),
+                              pin: "home" as const,
+                            },
+                          ]
+                        : []),
+                    ]}
+                    viewLabel={t(language, "explore.map_view_school")}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {sorted.map((s) => {
+                  const levelLabel =
+                    (s.supported_levels ?? []).map(friendlyLevel).join(", ") ||
+                    t(language, "schools.levels_empty");
+                  const hasBadges = Boolean(s.visits?.[0]?.rating_stars || s.visits?.[0]?.attended);
+                  const image = s.image_url || pickSchoolImage(s.name, s.id);
+                  const isShortlisted = shortlistIds.includes(s.id);
+                  return (
+                    <SchoolCard
+                      key={s.id}
+                      name={s.name}
+                      href={`/schools/${s.id}`}
+                      imageUrl={image}
+                      subtitle={levelLabel}
+                      badges={
+                        hasBadges ? (
+                          <>
+                            {s.visits?.[0]?.rating_stars ? (
+                              <span className={`inline-flex items-center gap-1 ${badgeSecondary}`}>
+                                <Star className="h-3.5 w-3.5 fill-current" />
+                                {s.visits?.[0]?.rating_stars}/5
+                              </span>
+                            ) : null}
+                            {s.visits?.[0]?.attended ? (
+                              <span className={badgeNeutral}>
+                                {t(language, "schools.visited")}
+                              </span>
+                            ) : null}
+                          </>
+                        ) : null
+                      }
+                      tags={
+                        (s.supported_levels ?? []).length ? (
+                          (s.supported_levels ?? []).slice(0, 3).map((lvl) => (
+                            <span key={lvl} className={badgeTag}>
+                              {friendlyLevel(lvl)}
+                            </span>
+                          ))
+                        ) : null
+                      }
+                      meta={
                         <>
-                          {s.visits?.[0]?.rating_stars ? (
-                            <span className={`inline-flex items-center gap-1 ${badgeSecondary}`}>
-                              <Star className="h-3.5 w-3.5 fill-current" />
-                              {s.visits?.[0]?.rating_stars}/5
+                          {s.commute ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Bike className="h-4 w-4" />
+                              {s.commute.duration_minutes} min • {s.commute.distance_km} km
                             </span>
                           ) : null}
-                          {s.visits?.[0]?.attended ? (
-                            <span className={badgeNeutral}>
-                              {t(language, "schools.visited")}
-                            </span>
+                          {s.address ? (
+                            <a
+                              className="text-muted-foreground underline"
+                              href={googleMapsDirectionsUrl({ destination: s.address })}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {s.address}
+                            </a>
                           ) : null}
                         </>
-                      ) : null
-                    }
-                    tags={
-                      (s.supported_levels ?? []).length ? (
-                        (s.supported_levels ?? []).slice(0, 3).map((lvl) => (
-                          <span key={lvl} className={badgeTag}>
-                            {friendlyLevel(lvl)}
-                          </span>
-                        ))
-                      ) : null
-                    }
-                    meta={
-                      <>
-                        {s.commute ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Bike className="h-4 w-4" />
-                            {s.commute.duration_minutes} min • {s.commute.distance_km} km
-                          </span>
+                      }
+                      action={
+                        <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
+                          {typeof s.fit_score === "number" ? (
+                            <span className={`${badgeStrong} ${fitBadgeClass(s.fit_score)}`}>
+                              {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
+                            </span>
+                          ) : null}
+                          <button
+                            className={`flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
+                              isShortlisted ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
+                            }`}
+                            onClick={() => toggleFavorite(s.id)}
+                            type="button"
+                            aria-label={t(language, "schools.shortlist_add")}
+                            disabled={shortlistBusyId === s.id}
+                          >
+                            <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
+                          </button>
+                        </div>
+                      }
+                    >
+                      <div className="flex flex-wrap items-center gap-4">
+                        {s.website_url ? (
+                          <a className="text-sm text-muted-foreground underline" href={s.website_url} target="_blank" rel="noreferrer">
+                            {t(language, "schools.website")}
+                          </a>
                         ) : null}
-                        {s.address ? <span>{s.address}</span> : null}
-                      </>
-                    }
-                    action={
-                      <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
-                        {typeof s.fit_score === "number" ? (
-                          <span className={`${badgeStrong} ${fitBadgeClass(s.fit_score)}`}>
-                            {Math.round(s.fit_score)}% {t(language, "shortlist.fit_label")}
-                          </span>
-                        ) : null}
-                        <button
-                          className={`flex h-9 w-9 items-center justify-center rounded-full text-base shadow-sm transition ${
-                            isShortlisted ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
-                          }`}
-                          onClick={() => toggleFavorite(s.id)}
-                          type="button"
-                          aria-label={t(language, "schools.shortlist_add")}
-                          disabled={shortlistBusyId === s.id}
-                        >
-                          <Heart className={`h-4 w-4 ${isShortlisted ? "fill-current" : ""}`} />
-                        </button>
                       </div>
-                    }
-                  >
-                    <div className="flex flex-wrap items-center gap-4">
-                      {s.website_url ? (
-                        <a className="text-sm text-muted-foreground underline" href={s.website_url} target="_blank" rel="noreferrer">
-                          {t(language, "schools.website")}
-                        </a>
-                      ) : null}
-                    </div>
-                  </SchoolCard>
-                );
-              })}
-            </div>
+                    </SchoolCard>
+                  );
+                })}
+              </div>
+            </>
           ) : null}
         </div>
       </section>

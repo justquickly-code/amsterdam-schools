@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- Explore: add a map view aligned to list filters with home + school pins.
+- School detail: add cycling route preview and Google Maps directions link.
+- Open Days: add “Today” panel with “Take me there” directions.
+- Addresses: make school addresses clickable to Google Maps.
 - Data: add `schools.image_url` and seed image URLs from local assets.
 - Data: normalize school image folder names to match slugs; clear stale image URLs when missing.
 - Security: allow public read on `schools` for Explore (no PII).

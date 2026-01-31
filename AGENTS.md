@@ -49,11 +49,13 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Core MVP complete; Airbnb-style design refresh merged into `main`.
 - Explore is public at `/` (hero + schools list); login required for save/plan actions.
 - Explore shows a single continuous list with combined search + sort controls.
+- Explore includes a map view aligned to list filters (home + school pins).
 - Combined advice (e.g., HAVO/VWO) requires schools that offer both levels.
 - Advice pill shows when filters are applied; hearts add to My List.
 - Fit % badge appears on school cards when category ratings exist.
 - Dashboard content now lives in `/profile` (Profile hub layout).
 - Open days list is public; planner actions are login‑gated.
+- Open Days has a “Today” panel with directions for planned visits.
 - My List is a single list with ranked subset controls (cap by advice) and consistent row cards.
 - Setup wizard restyle aligned to shared input/button styles.
 - Open days now show upcoming dates only (labeled as remaining).

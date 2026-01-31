@@ -9,6 +9,7 @@ import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLangua
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { badgeNeutral, badgeTag } from "@/lib/badges";
 import { pillAction } from "@/lib/ui";
+import { googleMapsDirectionsUrl } from "@/lib/maps";
 
 type OpenDay = {
   id: string;
@@ -40,8 +41,8 @@ type OpenDayRow = {
   is_active?: boolean;
   missing_since?: string | null;
   school?:
-    | Array<{ id: string; name: string; supported_levels?: string[] } | null>
-    | { id: string; name: string; supported_levels?: string[] }
+    | Array<{ id: string; name: string; supported_levels?: string[]; address?: string | null } | null>
+    | { id: string; name: string; supported_levels?: string[]; address?: string | null }
     | null;
 };
 
@@ -88,6 +89,10 @@ function fmtDate(iso: string, locale: string) {
 function fmtTime(iso: string, locale: string) {
   const d = new Date(iso);
   return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+}
+
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -263,7 +268,7 @@ export default function OpenDaysPage() {
       let query = supabase
         .from("open_days")
         .select(
-          "id,school_id,school_name,starts_at,ends_at,location_text,info_url,school_year_label,last_synced_at,event_type,is_active,missing_since,school:schools(id,name,supported_levels)"
+          "id,school_id,school_name,starts_at,ends_at,location_text,info_url,school_year_label,last_synced_at,event_type,is_active,missing_since,school:schools(id,name,supported_levels,address)"
         );
 
       query = query.eq("is_active", true);
@@ -499,6 +504,16 @@ export default function OpenDaysPage() {
     return list;
   }, [rowsForYear, shortlistOnly, shortlistSchoolIds, eventTypeFilter, dateRange, workspace]);
 
+  const todayPlanned = useMemo(() => {
+    const today = new Date();
+    return visibleRows.filter((row) => {
+      if (!row.starts_at) return false;
+      if (!plannedIds.has(row.id)) return false;
+      const d = new Date(row.starts_at);
+      return isSameDay(d, today);
+    });
+  }, [visibleRows, plannedIds]);
+
   const grouped = useMemo(() => {
     const g = new Map<string, OpenDay[]>();
     for (const r of visibleRows) {
@@ -531,6 +546,41 @@ export default function OpenDaysPage() {
           </div>
           <p className="text-xs text-muted-foreground">{t(language, "open_days.remaining_label")}</p>
         </header>
+
+        {hasSession && (
+          <InfoCard title={t(language, "open_days.today_title")}>
+            {todayPlanned.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t(language, "open_days.today_empty")}</p>
+            ) : (
+              <ul className="divide-y rounded-2xl border bg-card">
+                {todayPlanned.map((r) => {
+                  const displayName = r.school?.name ?? stripTrailingUrlLabel(r.school_name);
+                  const destination = r.school?.address ?? displayName;
+                  return (
+                    <li key={r.id} className="p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-1">
+                          <div className="font-semibold text-foreground">{displayName}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {r.starts_at ? fmtTime(r.starts_at, getLocale(language)) : "—"}
+                          </div>
+                        </div>
+                        <a
+                          className={pillAction}
+                          href={googleMapsDirectionsUrl({ destination })}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {t(language, "open_days.take_me_there")}
+                        </a>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </InfoCard>
+        )}
 
         <InfoCard title={t(language, "open_days.important")}>
           <p className="text-sm text-muted-foreground">{t(language, "open_days.important_body")}</p>

@@ -9,13 +9,29 @@ import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLangua
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/lib/categoryRatings";
 import { badgeNeutral, badgeStrong, fitBadgeClass } from "@/lib/badges";
-import { InfoCard, SchoolRow, Wordmark } from "@/components/schoolkeuze";
-import { buttonPrimary, pillAction } from "@/lib/ui";
+import { InfoCard, MapboxMap, SchoolRow, Wordmark } from "@/components/schoolkeuze";
+import { buttonOutline, buttonPrimary, pillAction } from "@/lib/ui";
 import { ArrowLeft, Heart, Star } from "lucide-react";
+import { googleMapsDirectionsUrl } from "@/lib/maps";
 
-type Workspace = { id: string; advies_levels?: string[] };
+type Workspace = {
+    id: string;
+    advies_levels?: string[];
+    home_postcode?: string | null;
+    home_house_number?: string | null;
+    home_lat?: number | null;
+    home_lng?: number | null;
+};
 
-type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
+type WorkspaceRow = {
+    id: string;
+    language?: Language | null;
+    advies_levels?: string[];
+    home_postcode?: string | null;
+    home_house_number?: string | null;
+    home_lat?: number | null;
+    home_lng?: number | null;
+};
 
 type School = {
     id: string;
@@ -24,6 +40,8 @@ type School = {
     address: string | null;
     website_url: string | null;
     image_url?: string | null;
+    lat?: number | null;
+    lng?: number | null;
 };
 
 type SchoolRowData = {
@@ -33,6 +51,8 @@ type SchoolRowData = {
     address: string | null;
     website_url: string | null;
     image_url?: string | null;
+    lat?: number | null;
+    lng?: number | null;
 };
 
 type Visit = {
@@ -227,6 +247,8 @@ export default function SchoolDetailPage() {
     const [plannedOpenDayIds, setPlannedOpenDayIds] = useState<Set<string>>(new Set());
     const [planningId, setPlanningId] = useState<string | null>(null);
     const [downloadingId, setDownloadingId] = useState<string | null>(null);
+    const [route, setRoute] = useState<{ coordinates: Array<[number, number]> } | null>(null);
+    const [routeLoading, setRouteLoading] = useState(false);
     const [hasSession, setHasSession] = useState(false);
 
     const [attended, setAttended] = useState(false);
@@ -268,7 +290,7 @@ export default function SchoolDetailPage() {
             let workspaceRow: WorkspaceRow | null = null;
             if (authed) {
                 const { workspace: ws, error: wErr } = await fetchCurrentWorkspace<WorkspaceRow>(
-                    "id,language"
+                    "id,language,home_postcode,home_house_number,home_lat,home_lng"
                 );
 
                 if (!mounted) return;
@@ -321,7 +343,7 @@ export default function SchoolDetailPage() {
 
             const { data: sch, error: sErr } = await supabase
                 .from("schools")
-                .select("id,name,supported_levels,address,website_url,image_url")
+                .select("id,name,supported_levels,address,website_url,image_url,lat,lng")
                 .eq("id", schoolId)
                 .maybeSingle();
 
@@ -848,6 +870,47 @@ export default function SchoolDetailPage() {
         return () => window.removeEventListener(LANGUAGE_EVENT, onLang as EventListener);
     }, []);
 
+    useEffect(() => {
+        let mounted = true;
+        async function loadRoute() {
+            if (typeof workspace?.home_lat !== "number" || typeof workspace?.home_lng !== "number") {
+                setRoute(null);
+                return;
+            }
+            if (typeof school?.lat !== "number" || typeof school?.lng !== "number") {
+                setRoute(null);
+                return;
+            }
+            setRouteLoading(true);
+            try {
+                const res = await fetch("/api/maps/route", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        origin: { lat: workspace.home_lat, lng: workspace.home_lng },
+                        destination: { lat: school.lat, lng: school.lng },
+                    }),
+                });
+                const json = await res.json();
+                if (!mounted) return;
+                if (!res.ok) {
+                    setRoute(null);
+                } else {
+                    setRoute({ coordinates: json.coordinates ?? [] });
+                }
+            } catch {
+                if (!mounted) return;
+                setRoute(null);
+            } finally {
+                if (mounted) setRouteLoading(false);
+            }
+        }
+        loadRoute();
+        return () => {
+            mounted = false;
+        };
+    }, [workspace?.home_lat, workspace?.home_lng, school?.lat, school?.lng]);
+
     const locale = getLocale(language);
 
     if (loading) {
@@ -862,6 +925,11 @@ export default function SchoolDetailPage() {
 
     const from = searchParams.get("from");
     const backHref = from === "shortlist" ? "/shortlist" : "/";
+    const homeAddress =
+        workspace?.home_postcode && workspace?.home_house_number
+            ? `${workspace.home_postcode} ${workspace.home_house_number} Amsterdam`
+            : null;
+    const destinationAddress = school?.address ?? school?.name ?? "";
 
     return (
         <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
@@ -897,7 +965,18 @@ export default function SchoolDetailPage() {
                             href={`/schools/${school.id}`}
                             imageUrl={school.image_url ?? undefined}
                             subtitle={(school.supported_levels ?? []).join(", ")}
-                            meta={school.address ? <span>{school.address}</span> : null}
+                            meta={
+                                school.address ? (
+                                    <a
+                                        className="text-muted-foreground underline"
+                                        href={googleMapsDirectionsUrl({ destination: school.address })}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        {school.address}
+                                    </a>
+                                ) : null
+                            }
                             cornerBadge={
                                 <div className="flex flex-col items-end gap-2">
                                     {typeof fitScore === "number" ? (
@@ -942,6 +1021,57 @@ export default function SchoolDetailPage() {
                         </SchoolRow>
                     </div>
                 )}
+
+                <InfoCard title={t(language, "school.route_title")}>
+                    {routeLoading ? (
+                        <p className="text-sm text-muted-foreground">{t(language, "school.route_loading")}</p>
+                    ) : route && route.coordinates.length > 1 ? (
+                        <div className="space-y-3">
+                            <MapboxMap
+                                className="h-72"
+                                markers={[
+                                    ...(typeof school?.lat === "number" && typeof school?.lng === "number"
+                                        ? [
+                                              {
+                                                  id: school.id,
+                                                  lat: school.lat,
+                                                  lng: school.lng,
+                                                  title: school.name,
+                                                  href: `/schools/${school.id}`,
+                                                  pin: "school" as const,
+                                              },
+                                          ]
+                                        : []),
+                                    ...(typeof workspace?.home_lat === "number" && typeof workspace?.home_lng === "number"
+                                        ? [
+                                              {
+                                                  id: "home",
+                                                  lat: workspace.home_lat,
+                                                  lng: workspace.home_lng,
+                                                  title: t(language, "explore.home_pin"),
+                                                  pin: "home" as const,
+                                              },
+                                          ]
+                                        : []),
+                                ]}
+                                route={route}
+                                viewLabel={t(language, "explore.map_view_school")}
+                            />
+                            {destinationAddress ? (
+                                <a
+                                    className={buttonOutline}
+                                    href={googleMapsDirectionsUrl({ origin: homeAddress, destination: destinationAddress })}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    {t(language, "school.route_open_maps")}
+                                </a>
+                            ) : null}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">{t(language, "school.route_missing")}</p>
+                    )}
+                </InfoCard>
 
                 <InfoCard
                     title={t(language, "open_days.title")}
