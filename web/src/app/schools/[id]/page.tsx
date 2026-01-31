@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
@@ -9,10 +10,10 @@ import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLangua
 import { shortlistRankCapForLevels } from "@/lib/levels";
 import { CATEGORY_KEYS, CategoryKey, RATING_EMOJIS, computeFitPercent } from "@/lib/categoryRatings";
 import { badgeNeutral, badgeStrong, fitBadgeClass } from "@/lib/badges";
-import { InfoCard, MapboxMap, SchoolRow, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard, MapboxMap, SchoolRow } from "@/components/schoolkeuze";
 import { buttonOutline, buttonPrimary, pillAction } from "@/lib/ui";
 import { ArrowLeft, Heart, Star } from "lucide-react";
-import { googleMapsDirectionsUrl } from "@/lib/maps";
+import { googleMapsDirectionsUrl, googleMapsPlaceUrl } from "@/lib/maps";
 
 type Workspace = {
     id: string;
@@ -932,20 +933,29 @@ export default function SchoolDetailPage() {
     const destinationAddress = school?.address ?? school?.name ?? "";
 
     return (
-        <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <main className="min-h-screen pb-24">
+            <header className="relative overflow-hidden">
+                <div className="absolute inset-0">
+                    <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+                </div>
+                <div className="relative px-4 pt-6 pb-12 sm:px-6">
+                    <div className="mx-auto w-full max-w-4xl">
+                        <Link
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:underline"
+                            href={backHref}
+                            aria-label={t(language, "about.back")}
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            {t(language, "about.back")}
+                        </Link>
+                        <h1 className="mt-2 text-3xl font-serif font-semibold text-white drop-shadow-sm">{school?.name ?? "School"}</h1>
+                    </div>
+                </div>
+            </header>
+
+            <section className="bg-background px-4 py-6 sm:px-6">
             <div className="mx-auto w-full max-w-4xl space-y-6">
-                <header className="flex flex-col gap-2">
-                    <Wordmark />
-                    <Link
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
-                        href={backHref}
-                        aria-label={t(language, "about.back")}
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        {t(language, "about.back")}
-                    </Link>
-                    <h1 className="text-3xl font-serif font-semibold text-foreground">{school?.name ?? "School"}</h1>
-                </header>
 
                 {error && (
                     <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -969,7 +979,7 @@ export default function SchoolDetailPage() {
                                 school.address ? (
                                     <a
                                         className="text-muted-foreground underline"
-                                        href={googleMapsDirectionsUrl({ destination: school.address })}
+                                        href={googleMapsPlaceUrl({ query: school.address })}
                                         target="_blank"
                                         rel="noreferrer"
                                     >
@@ -1263,6 +1273,7 @@ export default function SchoolDetailPage() {
                     </InfoCard>
                 ) : null}
             </div>
+            </section>
         </main>
     );
 }

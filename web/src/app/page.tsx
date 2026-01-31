@@ -14,7 +14,7 @@ import { badgeNeutral, badgeSecondary, badgeStrong, badgeTag, fitBadgeClass } fr
 import { InfoCard, MapboxMap, SchoolCard, Wordmark } from "@/components/schoolkeuze";
 import { Bike, Heart, Star } from "lucide-react";
 import { buttonPrimaryHover } from "@/lib/ui";
-import { googleMapsDirectionsUrl } from "@/lib/maps";
+import { googleMapsPlaceUrl } from "@/lib/maps";
 
 const FALLBACK_IMAGES = [
   "/branding/hero/school-1.jpg",
@@ -699,15 +699,15 @@ export default function ExploreHome() {
             ) : null}
           </div>
 
-          <div className="mt-10 max-w-xl">
-            <h1 className="font-serif text-3xl font-serif font-semibold text-white drop-shadow-sm sm:text-4xl">
+          <div className="mx-auto mt-10 w-full max-w-5xl">
+            <h1 className="max-w-xl font-serif text-3xl font-serif font-semibold text-white drop-shadow-sm sm:text-4xl">
               {t(language, "explore.hero_title")}
             </h1>
-            <p className="mt-3 text-base text-white/90">{t(language, "explore.hero_subtitle")}</p>
+            <p className="mt-3 max-w-xl text-base text-white/90">{t(language, "explore.hero_subtitle")}</p>
           </div>
 
           {!hasSession ? (
-            <div className="mt-8 rounded-3xl border border-white/30 bg-white/95 p-4 shadow-lg backdrop-blur">
+            <div className="mx-auto mt-8 w-full max-w-5xl rounded-3xl border border-white/30 bg-white/95 p-4 shadow-lg backdrop-blur">
               <div className="grid gap-3 sm:grid-cols-[1.1fr_1fr_auto] sm:items-end">
                 <label className="flex flex-col gap-2 text-xs font-semibold text-muted-foreground">
                   {t(language, "explore.search_postcode")}
@@ -912,7 +912,7 @@ export default function ExploreHome() {
                           {s.address ? (
                             <a
                               className="text-muted-foreground underline"
-                              href={googleMapsDirectionsUrl({ destination: s.address })}
+                              href={googleMapsPlaceUrl({ query: s.address })}
                               target="_blank"
                               rel="noreferrer"
                             >

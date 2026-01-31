@@ -9,3 +9,12 @@ export function googleMapsDirectionsUrl({ origin, destination, travelMode = "bic
   if (origin) params.set("origin", origin);
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
+
+type PlaceOptions = {
+  query: string;
+};
+
+export function googleMapsPlaceUrl({ query }: PlaceOptions) {
+  const params = new URLSearchParams({ api: "1", query });
+  return `https://www.google.com/maps/search/?${params.toString()}`;
+}
