@@ -1,9 +1,13 @@
 # Changelog
 
 ## Unreleased
+- SEO: add default metadata, Open Graph/Twitter tags, robots.txt, and sitemap.
+- Analytics: enable Vercel Analytics in the global client shell.
+- Explore: remove the My List CTA for logged-in users.
 - Explore: add a map view aligned to list filters with home + school pins.
 - School detail: add cycling route preview and Google Maps directions link.
 - Open Days: add “Today” panel with “Take me there” directions.
+- Open Days: shortlist-only filter now matches by school id or name when ids are missing.
 - Addresses: make school addresses clickable to Google Maps.
 - Data: add `schools.image_url` and seed image URLs from local assets.
 - Data: normalize school image folder names to match slugs; clear stale image URLs when missing.

@@ -5,6 +5,11 @@ This is a lightweight summary of features per release. Keep it short and user-fa
 ## Unreleased
 - Known issue: Language selection may revert to Dutch after magic-link login.
 
+## 2026-01-31
+- Explore now includes a map view aligned with filters and your home pin.
+- School detail shows a cycling route preview with Google Maps directions.
+- Open Days includes a “Today” section with quick directions.
+
 ## 2026-01-27
 - Combined advice (e.g., HAVO/VWO) filters to schools offering both levels.
 - Release notes page added at `/release-notes`.

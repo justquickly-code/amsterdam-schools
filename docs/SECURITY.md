@@ -31,3 +31,4 @@ Routes under /api/admin/*:
   - server-only
   - protected by token gate
   - scoped to the correct workspace (avoid “first row wins” patterns)
+- Any route using MAPBOX_ACCESS_TOKEN (e.g., `/api/maps/route`) must remain server-only.

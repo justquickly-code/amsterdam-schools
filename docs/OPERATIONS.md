@@ -41,6 +41,11 @@ IMPORTANT:
 - Client map uses a public token: `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`.
 - Server-only token remains `MAPBOX_ACCESS_TOKEN` for directions/geocoding on API routes.
 
+### Map directions (server)
+- Endpoint: POST /api/maps/route
+- Purpose: return a cycling route line between home and school for map previews.
+- Requires server-side `MAPBOX_ACCESS_TOKEN`.
+
 ### Feedback (admin)
 - Endpoint: GET/PATCH /api/admin/feedback
 - Purpose: list user feedback and respond as admin.
@@ -58,10 +63,10 @@ Update templates in **Supabase → Authentication → Email Templates**.
 
 **Magic Link**
 - Subject: **Log in bij Mijn Schoolkeuze / Sign in to Mijn Schoolkeuze**
-- Body: bilingual HTML (NL + EN)
+- Body: single template, NL-first with a short English helper line.
 
 **Invite User**
 - Subject: **Uitnodiging voor Mijn Schoolkeuze / Invitation to Mijn Schoolkeuze**
-- Body: bilingual HTML (NL + EN)
+- Body: single template, NL-first with a short English helper line.
 
 Full HTML templates: `docs/EMAIL_TEMPLATES.md`

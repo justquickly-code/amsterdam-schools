@@ -60,6 +60,8 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Setup wizard restyle aligned to shared input/button styles.
 - Open days now show upcoming dates only (labeled as remaining).
 - Admin hub exists; admin routes require allowlist + token.
+- SEO basics in place (metadata, Open Graph, robots, sitemap).
+- Vercel Analytics enabled.
 
 ## Design Refresh Branch
 - Redesign merged into `main` (no active redesign branch).

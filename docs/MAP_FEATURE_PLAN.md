@@ -1,4 +1,5 @@
 # Map View + Directions Plan
+Status: Implemented (2026-01-31).
 
 ## Scope (approved)
 - **Explore map** lives at the top of the Explore screen (no separate route).
@@ -6,9 +7,7 @@
 - **Logged out**: show all schools; once postcode + advice selected, show **home pin** and filter by advice.
 - **Logged in**: show home pin when postcode + house number exist; list filtered by advice.
 - **Pins**:
-  - Schools: `web/public/branding/mijnschoolkeuze-ui-exports/pins/pin-default-48.png`
-  - Selected: `.../pin-selected-48.png`
-  - Home: `.../pin-saved-48.png`
+  - Map pin components live in `web/src/components/schoolkeuze/map-pins.tsx`.
 - **Mobile**: map is collapsed by default with a “Show map” toggle.
 - **Desktop**: map is visible by default.
 - **School detail**: show cycling route from home to school (Mapbox Directions) + “Open in Google Maps”.

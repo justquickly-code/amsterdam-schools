@@ -5,9 +5,10 @@
   - public hero search (postcode + advies)
   - public list of schools (minimal filters)
   - logged-in view adds search + sort + advice badge + Fit % badge (if rated)
-  - map view at top of list (uses same filters as list)
+  - map view at top of list (uses same filters as list; show/hide persists per device)
   - save/heart/notes actions require login
   - “Start je lijst” CTA routes to /login
+  - school addresses link to Google Maps
 
 - /profile (Dashboard hub)
   - child name + address + advies badge
@@ -18,6 +19,7 @@
 - /schools/[id] (School detail)
   - school info + website link
   - cycling route preview (home → school) + Google Maps directions link
+  - address links to Google Maps
   - open days list (with warning + last synced)
   - planned toggle per open day
   - visit notes (per member) + shared 1–5 star rating

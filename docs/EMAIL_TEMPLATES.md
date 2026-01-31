@@ -1,13 +1,13 @@
 # Email Templates (Supabase Auth)
 
 These templates are used in **Supabase → Authentication → Email Templates**.
-They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
+They are NL-first with a short English helper line and use the hosted logo on `mijnschoolkeuze.com`.
 
 ---
 
 ## Magic Link
 
-**Subject:** Inloglink voor Mijn Schoolkeuze (Sign‑in link)
+**Subject:** Log in bij Mijn Schoolkeuze / Sign in to Mijn Schoolkeuze
 
 ```html
 <table style="width:100%;background:#f7f7f7;padding:24px 0;font-family:Arial,Helvetica,sans-serif;">
@@ -34,11 +34,6 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
               </a>
             </div>
 
-            <p style="margin:0 0 10px 0;color:#6b7280;font-size:12px;">
-              Werkt de knop niet? Plak deze link in je browser:
-              <br />
-              <a href="{{ .ConfirmationURL }}" style="color:#ef4444;">{{ .ConfirmationURL }}</a>
-            </p>
             <p style="margin:0;color:#6b7280;font-size:12px;">
               Geen mail? Check je spam of ongewenste e‑mail. (No email? Check spam.)
             </p>
@@ -54,7 +49,7 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
 
 ## Invite User
 
-**Subject:** Uitnodiging voor Mijn Schoolkeuze (Invitation)
+**Subject:** Uitnodiging voor Mijn Schoolkeuze / Invitation to Mijn Schoolkeuze
 
 ```html
 <table style="width:100%;background:#f7f7f7;padding:24px 0;font-family:Arial,Helvetica,sans-serif;">
@@ -69,13 +64,13 @@ They are bilingual (NL + EN) and use the hosted logo on `mijnschoolkeuze.com`.
         <tr>
           <td>
             <h2 style="margin:0 0 6px 0;color:#111827;font-size:20px;">Je bent uitgenodigd</h2>
-            <p style="margin:0 0 6px 0;color:#6b7280;font-size:12px;">You’ve been invited</p>
+            <p style="margin:0 0 6px 0;color:#6b7280;font-size:12px;">You’re invited to join Mijn Schoolkeuze.</p>
             <p style="margin:0 0 12px 0;color:#374151;font-size:14px;line-height:1.5;">
               Je bent uitgenodigd om samen een schoolkeuzelijst te maken in Mijn Schoolkeuze.
               Je kunt open dagen bekijken, scholen bewaren en notities delen.
             </p>
             <p style="margin:0 0 12px 0;color:#6b7280;font-size:12px;">
-              You can view open days, save schools, and share notes.
+              English: You can view open days, save schools, and share notes.
             </p>
 
             <div style="text-align:center;margin:18px 0;">

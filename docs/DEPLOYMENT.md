@@ -37,5 +37,7 @@ Use Supabase Cron (seasonal):
 - Run admin sync: schools + open days
 - Seed school images (image_url) if using local assets
 - Mapbox key set (geocoding + commutes)
+- Mapbox server token set for directions (`/api/maps/route`)
+- Vercel Analytics enabled (optional, via `@vercel/analytics`)
 - Feedback + admin feedback console tested
 - Planner shows open days with advice filter applied

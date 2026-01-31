@@ -65,15 +65,17 @@ Create a more engaging, Airbnb‑style experience while preserving all MVP funct
    - Logged‑out bottom nav: Explore / My List / Login.
 2) **Explore / Schools List**
    - Photo cards, heart save, advice badge + combined filter/sort bar.
-   - Map view at top of list (same filters as cards).
+   - Map view at top of list (same filters as cards; home pin when available).
 3) **My List**
    - Single list; ranked subset via up/down controls; ranked positions shown.
 4) **Open Days (Planner)**
    - Date‑grouped cards, collapsed filters, “Add to planner”.
+   - “Today” panel with planned visits and quick directions.
 5) **Profile (Dashboard hub)**
    - Child name + avatar, journey progress, planner preview, settings list.
 6) **School Detail**
    - Full‑page, destination style; notes + ratings present.
+   - Cycling route preview and directions link.
 7) **Setup Wizard**
    - Step‑based progress; profile required, invite + tutorial optional.
 8) **Login**
