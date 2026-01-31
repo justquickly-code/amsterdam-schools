@@ -4,9 +4,38 @@ import "./globals.css";
 import ClientShell from "@/components/ClientShell";
 
 export const metadata: Metadata = {
-  title: "Amsterdam Schools",
-  description: "Find and compare schools.",
+  metadataBase: new URL("https://mijnschoolkeuze.com"),
+  title: {
+    default: "Mijn Schoolkeuze",
+    template: "%s — Mijn Schoolkeuze",
+  },
+  description:
+    "Vind en vergelijk middelbare scholen in Amsterdam. Plan open dagen en maak samen een shortlist.",
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    title: "Mijn Schoolkeuze",
+    description:
+      "Vind en vergelijk middelbare scholen in Amsterdam. Plan open dagen en maak samen een shortlist.",
+    url: "/",
+    siteName: "Mijn Schoolkeuze",
+    locale: "nl_NL",
+    type: "website",
+    images: [
+      {
+        url: "/branding/hero/hero-bg.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Mijn Schoolkeuze",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mijn Schoolkeuze",
+    description:
+      "Vind en vergelijk middelbare scholen in Amsterdam. Plan open dagen en maak samen een shortlist.",
+    images: ["/branding/hero/hero-bg.jpg"],
+  },
   icons: {
     icon: [
       {

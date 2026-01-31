@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
+import { Analytics } from "@vercel/analytics/react";
 import BottomNav from "@/components/BottomNav";
 import SetupGate from "@/components/SetupGate";
 import TopMenu from "@/components/TopMenu";
@@ -41,6 +42,7 @@ export default function ClientShell({
           {children}
         </SetupGate>
       </Suspense>
+      <Analytics />
     </>
   );
 }
