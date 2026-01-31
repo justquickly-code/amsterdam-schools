@@ -61,7 +61,7 @@ export default function BottomNav() {
       ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t bg-card/95 backdrop-blur md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur md:hidden">
       <div className="mx-auto max-w-3xl px-4 pb-[env(safe-area-inset-bottom)] pt-2">
         <div className={`grid gap-2 text-center text-[11px] ${items.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}>
           {items.map((item) => {
