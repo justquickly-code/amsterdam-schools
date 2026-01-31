@@ -54,7 +54,13 @@ function SchoolCard({
       {imageUrl ? (
         <div className="relative h-40">
           <Link href={href} className="absolute inset-0">
-            <Image src={imageUrl} alt={name} fill className="object-cover" />
+            <Image
+              src={imageUrl}
+              alt={name}
+              fill
+              className="object-cover"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            />
           </Link>
           {action}
         </div>
