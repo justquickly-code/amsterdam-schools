@@ -194,15 +194,15 @@ export default function FeedbackPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
         </div>
         <div className="relative px-4 pt-10 pb-12 sm:px-6">
-          <div className="mx-auto w-full max-w-4xl">
+          <div className="mx-auto mt-10 w-full max-w-5xl">
             <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm">{t(language, "feedback.title")}</h1>
             <p className="mt-2 text-sm text-white/90">{t(language, "feedback.subtitle")}</p>
           </div>
         </div>
       </header>
 
-      <section className="bg-background px-4 py-6 sm:px-6">
-        <div className="mx-auto w-full max-w-4xl space-y-6">
+      <section className="bg-background px-5 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-5xl space-y-6">
 
         {error && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">

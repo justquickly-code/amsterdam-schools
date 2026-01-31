@@ -484,7 +484,7 @@ export default function ShortlistPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
         </div>
         <div className="relative px-5 pt-10 pb-12">
-          <div className="mx-auto w-full max-w-5xl">
+          <div className="mx-auto mt-10 w-full max-w-5xl">
             <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm">
               {t(language, "shortlist.title")}
             </h1>

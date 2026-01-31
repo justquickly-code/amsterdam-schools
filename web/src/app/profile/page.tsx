@@ -361,31 +361,24 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
         </div>
         <div className="relative px-4 pt-10 pb-12 sm:px-6">
-          <div className="mx-auto w-full max-w-5xl">
-            <div className="flex items-center gap-4">
-              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                {initials}
-              </div>
-              <div>
-                <h1 className="text-xl font-serif font-semibold text-white drop-shadow-sm">
-                  {workspace?.child_name
-                    ? t(language, "profile.title_named").replace("{name}", workspace.child_name)
-                    : t(language, "profile.title")}
-                </h1>
-                {addressLabel ? (
-                  <p className="text-sm text-white/90 flex items-center gap-1">
-                    <MapPinIcon />
-                    {addressLabel}
-                  </p>
-                ) : null}
-                {adviceLabel ? (
-                  <span className={`mt-1 inline-flex items-center gap-1 ${badgeSecondary}`}>
-                    <CapIcon />
-                    {adviceLabel} {t(language, "profile.advice_suffix")}
-                  </span>
-                ) : null}
-              </div>
-            </div>
+          <div className="mx-auto mt-10 w-full max-w-5xl">
+            <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm">
+              {workspace?.child_name
+                ? t(language, "profile.title_named").replace("{name}", workspace.child_name)
+                : t(language, "profile.title")}
+            </h1>
+            {addressLabel ? (
+              <p className="mt-2 text-sm text-white/90 flex items-center gap-1">
+                <MapPinIcon />
+                {addressLabel}
+              </p>
+            ) : null}
+            {adviceLabel ? (
+              <span className={`mt-2 inline-flex items-center gap-1 ${badgeSecondary}`}>
+                <CapIcon />
+                {adviceLabel} {t(language, "profile.advice_suffix")}
+              </span>
+            ) : null}
           </div>
         </div>
       </header>
