@@ -168,8 +168,8 @@ export default function MapboxMap({ className, markers, route, selectedId, onSel
     const source = map.getSource("route") as mapboxgl.GeoJSONSource | undefined;
     if (route?.coordinates?.length) {
       const data = {
-        type: "Feature",
-        geometry: { type: "LineString", coordinates: route.coordinates },
+        type: "Feature" as const,
+        geometry: { type: "LineString" as const, coordinates: route.coordinates },
         properties: {},
       };
       if (source) {
