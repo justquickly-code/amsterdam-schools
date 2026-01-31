@@ -12,6 +12,7 @@ Style reference: Airbnb‑inspired (warm, visual, journey‑first).
 - Desktop padding: p-6
 - Section spacing: space-y-4
 - Row padding: py-3
+- Hero header height: consistent across pages (shared background image + gradient).
 
 ## Typography
 - Page title: text-3xl font-serif font-semibold (hero titles can be larger)
@@ -58,6 +59,8 @@ Create a more engaging, Airbnb‑style experience while preserving all MVP funct
 - **Advice is set in setup and only editable in Settings.** Show it as a badge.
 - **Language persists via cookie + localStorage**, and toggles render only after hydration to avoid SSR mismatch.
 - **Setup prefill**: Explore stores postcode + advice to prefill setup after login.
+- **Unified hero header**: core pages share the Explore hero background, height, and title placement.
+- **Top menu**: floating pill nav + white wordmark pill on hero headers for readability.
 
 ## Screen Plan (approved)
 1) **Explore / Home (Public)**

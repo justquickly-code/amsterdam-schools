@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- UI: unify hero headers across primary pages (shared background, height, and title placement).
+- UI: floating top menu uses a white wordmark pill for consistent contrast on hero images.
+- Map: add custom map pin graphics for home + schools.
+- Maps: school address links open Google Maps locations (not directions).
 - SEO: add default metadata, Open Graph/Twitter tags, robots.txt, and sitemap.
 - Analytics: enable Vercel Analytics in the global client shell.
 - Explore: remove the My List CTA for logged-in users.

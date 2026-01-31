@@ -62,6 +62,9 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Admin hub exists; admin routes require allowlist + token.
 - SEO basics in place (metadata, Open Graph, robots, sitemap).
 - Vercel Analytics enabled.
+- Hero headers are unified across main pages (same background image + height + title placement).
+- Top desktop menu uses floating pill navigation and a white wordmark pill on hero headers.
+- School address links open Google Maps locations (non-directional).
 
 ## Design Refresh Branch
 - Redesign merged into `main` (no active redesign branch).

@@ -9,6 +9,7 @@ This is a lightweight summary of features per release. Keep it short and user-fa
 - Explore now includes a map view aligned with filters and your home pin.
 - School detail shows a cycling route preview with Google Maps directions.
 - Open Days includes a “Today” section with quick directions.
+- Pages now share a consistent hero header style for a smoother experience.
 
 ## 2026-01-27
 - Combined advice (e.g., HAVO/VWO) filters to schools offering both levels.
