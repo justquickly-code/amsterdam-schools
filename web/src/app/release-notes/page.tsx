@@ -99,6 +99,7 @@ export default function ReleaseNotesPage() {
             </Link>
           </span>
         </div>
+        </div>
       </section>
     </main>
   );
