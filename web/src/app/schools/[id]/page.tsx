@@ -934,12 +934,12 @@ export default function SchoolDetailPage() {
 
     return (
         <main className="min-h-screen pb-24">
-            <header className="relative overflow-hidden">
+            <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
                 <div className="absolute inset-0">
                     <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
                 </div>
-                <div className="relative px-4 pt-6 pb-12 sm:px-6">
+                <div className="relative px-4 pt-10 pb-12 sm:px-6">
                     <div className="mx-auto w-full max-w-4xl">
                         <Link
                             className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:underline"

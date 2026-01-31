@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard } from "@/components/schoolkeuze";
 import { badgeNeutral, badgeTag } from "@/lib/badges";
 import { buttonOutline, pillAction } from "@/lib/ui";
 import { googleMapsDirectionsUrl } from "@/lib/maps";
@@ -544,20 +545,29 @@ export default function OpenDaysPage() {
   }, [workspace]);
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
-        <header className="flex flex-col gap-2">
-          <Wordmark />
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-3xl font-serif font-semibold text-foreground">
-              {t(language, "open_days.title")}
-            </h1>
-            <span className="text-sm text-muted-foreground">
-              {t(language, "open_days.count").replace("#{count}", String(visibleRows.length))}
-            </span>
+    <main className="min-h-screen pb-24">
+      <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+        </div>
+        <div className="relative px-5 pt-10 pb-12">
+          <div className="mx-auto w-full max-w-5xl">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm">
+                {t(language, "open_days.title")}
+              </h1>
+              <span className="text-sm text-white/90">
+                {t(language, "open_days.count").replace("#{count}", String(visibleRows.length))}
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-white/80">{t(language, "open_days.important_body")}</p>
           </div>
-          <p className="text-xs text-muted-foreground">{t(language, "open_days.important_body")}</p>
-        </header>
+        </div>
+      </header>
+
+      <section className="bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-5xl space-y-6">
 
         {hasSession && (
           <InfoCard title={t(language, "open_days.today_title")}>
@@ -811,6 +821,7 @@ export default function OpenDaysPage() {
           </div>
         )}
       </div>
+      </section>
     </main>
   );
 }

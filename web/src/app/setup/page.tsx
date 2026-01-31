@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
@@ -16,7 +17,7 @@ import {
   useIsClient,
 } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard } from "@/components/schoolkeuze";
 import { buttonOutline, buttonOutlineWide, buttonPrimary, buttonPrimaryWide, buttonOutlineSmall } from "@/lib/ui";
 
 type WorkspaceRow = {
@@ -329,30 +330,51 @@ export default function SetupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-muted/20 px-4 py-8 sm:px-6">
-      <div className="mx-auto w-full max-w-3xl space-y-6">
-        <div className="flex items-center justify-between">
-          <Wordmark />
-          {isClient && (
-            <button
-              className={buttonOutlineSmall}
-              type="button"
-              onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
-            >
-              {language === "nl" ? "NL" : "EN"}
-            </button>
-          )}
+    <main className="min-h-screen pb-24">
+      <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
         </div>
-
-        <section className="rounded-3xl border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-2">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="relative px-4 pt-10 pb-12 sm:px-6">
+          <div className="mx-auto w-full max-w-3xl">
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-2 text-sm font-semibold text-white">
+                <Image
+                  src="/branding/mijnschoolkeuze_kit_v4/logo-mark.png"
+                  alt="Mijn Schoolkeuze"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6"
+                  priority
+                />
+                <span className="font-serif">mijn schoolkeuze</span>
+              </div>
+              {isClient && (
+                <button
+                  className={buttonOutlineSmall}
+                  type="button"
+                  onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
+                >
+                  {language === "nl" ? "NL" : "EN"}
+                </button>
+              )}
+            </div>
+            <div className="mt-6">
+              <div className="text-xs font-semibold uppercase tracking-wide text-white/80">
                 {t(language, "setup.step_count").replace("{current}", String(stepIndex + 1)).replace("{total}", "3")}
               </div>
-              <h1 className="text-3xl font-serif font-semibold text-foreground">{t(language, "setup.title")}</h1>
-              <p className="text-sm text-muted-foreground">{t(language, "setup.subtitle")}</p>
+              <h1 className="mt-2 text-3xl font-serif font-semibold text-white drop-shadow-sm">{t(language, "setup.title")}</h1>
+              <p className="mt-2 text-sm text-white/90">{t(language, "setup.subtitle")}</p>
             </div>
+          </div>
+        </div>
+      </header>
+
+      <section className="bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-3xl space-y-6">
+        <section className="rounded-3xl border bg-card p-6 shadow-sm">
+          <div className="flex items-center justify-end">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
               {stepIndex + 1}/3
             </div>
@@ -544,7 +566,8 @@ export default function SetupPage() {
             </div>
           )}
         </InfoCard>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

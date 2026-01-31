@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -10,7 +11,7 @@ import { shortlistRankCapForLevels } from "@/lib/levels";
 import { computeFitPercent } from "@/lib/categoryRatings";
 import { badgeNeutral, badgeSecondary, badgeStrong, fitBadgeClass } from "@/lib/badges";
 import { buttonOutlineSmall } from "@/lib/ui";
-import { InfoCard, SchoolRow, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard, SchoolRow } from "@/components/schoolkeuze";
 import { ArrowDown, ArrowUp, Bike, Star } from "lucide-react";
 
 type WorkspaceRow = { id: string; language?: Language | null; advies_levels?: string[] };
@@ -476,21 +477,26 @@ export default function ShortlistPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
-        <header className="flex flex-col gap-2">
-          <Wordmark />
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-serif font-semibold text-foreground">
-                {t(language, "shortlist.title")}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {t(language, "shortlist.subtitle").replace("{cap}", String(rankCap))}
-              </p>
-            </div>
+    <main className="min-h-screen pb-24">
+      <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+        </div>
+        <div className="relative px-5 pt-10 pb-12">
+          <div className="mx-auto w-full max-w-5xl">
+            <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm">
+              {t(language, "shortlist.title")}
+            </h1>
+            <p className="mt-2 text-sm text-white/90">
+              {t(language, "shortlist.subtitle").replace("{cap}", String(rankCap))}
+            </p>
           </div>
-        </header>
+        </div>
+      </header>
+
+      <section className="bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-5xl space-y-6">
 
         {error && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -590,8 +596,8 @@ export default function ShortlistPage() {
             </ul>
           )}
         </InfoCard>
-
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
-import { Wordmark } from "@/components/schoolkeuze";
 import { buttonOutlineSmall, buttonPrimaryWide } from "@/lib/ui";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -129,19 +129,34 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-md space-y-4">
-        <div className="flex items-center justify-between">
-          <Wordmark className="h-10" />
-          <button
-            className={buttonOutlineSmall}
-            type="button"
-            onClick={toggleLanguage}
-          >
-            {language === "nl" ? "NL" : "EN"}
-          </button>
+    <main className="min-h-screen pb-24">
+      <div className="relative min-h-screen">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
         </div>
-        <div className="space-y-4 rounded-2xl border bg-card p-6 shadow-sm">
+        <div className="relative mx-auto w-full max-w-md space-y-4 px-4 py-6 sm:px-6">
+          <div className="flex items-center justify-between">
+            <div className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-2 text-sm font-semibold text-white">
+              <Image
+                src="/branding/mijnschoolkeuze_kit_v4/logo-mark.png"
+                alt="Mijn Schoolkeuze"
+                width={24}
+                height={24}
+                className="h-6 w-6"
+                priority
+              />
+              <span className="font-serif">mijn schoolkeuze</span>
+            </div>
+            <button
+              className={buttonOutlineSmall}
+              type="button"
+              onClick={toggleLanguage}
+            >
+              {language === "nl" ? "NL" : "EN"}
+            </button>
+          </div>
+          <div className="space-y-4 rounded-2xl border bg-card p-6 shadow-sm">
             <h1 className="text-2xl font-serif font-semibold">{t(language, "login.title")}</h1>
             <p className="text-sm text-muted-foreground">{t(language, "login.subtitle")}</p>
 
@@ -185,6 +200,7 @@ export default function LoginPage() {
           </p>
         ) : null}
         </div>
+      </div>
       </div>
     </main>
   );

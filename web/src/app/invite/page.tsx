@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard } from "@/components/schoolkeuze";
 import { buttonOutline, buttonPrimary } from "@/lib/ui";
 
 export default function InviteStatusPage() {
@@ -136,9 +137,24 @@ export default function InviteStatusPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-xl space-y-6">
-        <Wordmark />
+    <main className="min-h-screen pb-24">
+      <div className="relative min-h-screen">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+        </div>
+        <div className="relative mx-auto w-full max-w-xl space-y-6 px-4 py-6 sm:px-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-2 text-sm font-semibold text-white">
+            <Image
+              src="/branding/mijnschoolkeuze_kit_v4/logo-mark.png"
+              alt="Mijn Schoolkeuze"
+              width={24}
+              height={24}
+              className="h-6 w-6"
+              priority
+            />
+            <span className="font-serif">mijn schoolkeuze</span>
+          </div>
         <InfoCard
           title={
             status === "idle"
@@ -202,6 +218,7 @@ export default function InviteStatusPage() {
             </button>
           </div>
         </InfoCard>
+        </div>
       </div>
     </main>
   );

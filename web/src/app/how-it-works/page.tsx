@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { formatDateRange, getNextTimelineItems, KEUZEGIDS_TIMELINE_2025_26 } from "@/lib/keuzegidsTimeline";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard } from "@/components/schoolkeuze";
 import { buttonPrimary } from "@/lib/ui";
 
 type WorkspaceRow = { id: string; language?: Language | null };
@@ -87,15 +88,23 @@ export default function HowItWorksPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <header className="flex flex-col gap-2">
-          <Wordmark />
-          <h1 className="text-3xl font-serif font-semibold text-foreground">{t(language, "how.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t(language, "how.subtitle")}</p>
-        </header>
+    <main className="min-h-screen pb-24">
+      <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+        </div>
+        <div className="relative px-5 pt-10 pb-12">
+          <div className="mx-auto mt-10 w-full max-w-5xl">
+            <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm sm:text-4xl">{t(language, "how.title")}</h1>
+            <p className="mt-2 text-base text-white/90">{t(language, "how.subtitle")}</p>
+          </div>
+        </div>
+      </header>
 
-        {nextDates.length ? (
+      <section className="bg-background px-5 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-5xl space-y-6">
+          {nextDates.length ? (
           <InfoCard title={t(language, "how.next_title")}>
             <ul className="text-sm text-muted-foreground space-y-1">
               {nextDates.map((item) => (
@@ -106,9 +115,9 @@ export default function HowItWorksPage() {
               ))}
             </ul>
           </InfoCard>
-        ) : null}
+          ) : null}
 
-        <div className="space-y-3">
+          <div className="space-y-3">
           {KEUZEGIDS_TIMELINE_2025_26.map((item) => (
             <InfoCard key={item.id} title={t(language, item.titleKey)}>
               <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
@@ -147,7 +156,8 @@ export default function HowItWorksPage() {
             {completedAt ? t(language, "how.completed") : t(language, "how.complete_cta")}
           </button>
         </div>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

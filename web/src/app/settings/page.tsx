@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace, WorkspaceRole } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { ADVIES_OPTIONS, adviesOptionFromLevels } from "@/lib/levels";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard } from "@/components/schoolkeuze";
 import { buttonOutline, buttonPrimary } from "@/lib/ui";
 import { ArrowLeft } from "lucide-react";
 
@@ -374,16 +375,25 @@ export default function SettingsPage() {
     const isOwner = role === "owner";
 
     return (
-        <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <main className="min-h-screen pb-24">
+            <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
+                <div className="absolute inset-0">
+                    <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+                </div>
+                <div className="relative px-4 pt-10 pb-12 sm:px-6">
+                    <div className="mx-auto w-full max-w-4xl">
+                        <Link className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:underline" href="/profile">
+                            <ArrowLeft className="h-4 w-4" />
+                            {t(language, "about.back")}
+                        </Link>
+                        <h1 className="mt-2 text-3xl font-serif font-semibold text-white drop-shadow-sm">{t(language, "settings.title")}</h1>
+                    </div>
+                </div>
+            </header>
+
+            <section className="bg-background px-4 py-6 sm:px-6">
             <div className="mx-auto w-full max-w-4xl space-y-6">
-                <header className="flex flex-col gap-2">
-                    <Wordmark />
-                    <Link className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline" href="/profile">
-                        <ArrowLeft className="h-4 w-4" />
-                        {t(language, "about.back")}
-                    </Link>
-                    <h1 className="text-3xl font-serif font-semibold text-foreground">{t(language, "settings.title")}</h1>
-                </header>
 
                 {loading && <p className="text-sm text-muted-foreground">{t(language, "settings.loading")}</p>}
 
@@ -553,6 +563,7 @@ export default function SettingsPage() {
                     </div>
                 )}
             </div>
+            </section>
         </main>
     );
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import { InfoCard } from "@/components/schoolkeuze";
 import { buttonPrimary } from "@/lib/ui";
 import { badgeNeutral } from "@/lib/badges";
 
@@ -186,13 +187,22 @@ export default function FeedbackPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <header className="flex flex-col gap-2">
-          <Wordmark />
-          <h1 className="text-3xl font-serif font-semibold text-foreground">{t(language, "feedback.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t(language, "feedback.subtitle")}</p>
-        </header>
+    <main className="min-h-screen pb-24">
+      <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+        </div>
+        <div className="relative px-4 pt-10 pb-12 sm:px-6">
+          <div className="mx-auto w-full max-w-4xl">
+            <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm">{t(language, "feedback.title")}</h1>
+            <p className="mt-2 text-sm text-white/90">{t(language, "feedback.subtitle")}</p>
+          </div>
+        </div>
+      </header>
+
+      <section className="bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-4xl space-y-6">
 
         {error && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -291,6 +301,7 @@ export default function FeedbackPage() {
           )}
         </InfoCard>
       </div>
+      </section>
     </main>
   );
 }

@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Language, LANGUAGE_EVENT, emitLanguageChanged, readStoredLanguage, setStoredLanguage, t } from "@/lib/i18n";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
-import { Wordmark } from "@/components/schoolkeuze";
 import { Menu } from "lucide-react";
 
 export default function TopMenu({ initialLanguage }: { initialLanguage?: Language }) {
@@ -20,7 +20,7 @@ export default function TopMenu({ initialLanguage }: { initialLanguage?: Languag
   const menuRef = useRef<HTMLDivElement | null>(null);
   const isAuthed = Boolean(email);
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  const isHero = !pathname.startsWith("/admin");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -171,9 +171,22 @@ export default function TopMenu({ initialLanguage }: { initialLanguage?: Languag
     <>
       <div className="fixed inset-x-0 top-4 z-50 hidden md:flex px-6">
         <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between" ref={menuRef}>
-          <div className={isHome ? "" : "rounded-full bg-black/60 px-3 py-1"}>
-            <Wordmark variant="white" />
-          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full border bg-white/95 px-3 py-1 text-sm font-semibold text-foreground shadow-sm"
+          >
+            <span className="rounded-full bg-white/90 p-1">
+              <Image
+                src="/branding/mijnschoolkeuze-ui-exports/icons/logo-mark-64.png"
+                alt="Mijn Schoolkeuze"
+                width={28}
+                height={28}
+                className="h-7 w-7"
+                priority
+              />
+            </span>
+            <span className="font-serif leading-none">mijn schoolkeuze</span>
+          </Link>
           <div className="absolute left-1/2 -translate-x-1/2">
             <div className="flex items-center gap-3 rounded-full border bg-white/95 px-4 py-2 text-sm font-semibold text-foreground shadow-md backdrop-blur">
               {navLinks.map((link) => (
@@ -289,7 +302,7 @@ export default function TopMenu({ initialLanguage }: { initialLanguage?: Languag
           )}
         </div>
       </div>
-      {!isHome && <div className="hidden h-16 md:block" />}
+      {!isHero && <div className="hidden h-16 md:block" />}
     </>
   );
 }

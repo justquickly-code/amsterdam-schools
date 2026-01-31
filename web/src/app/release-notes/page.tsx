@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { InfoCard, Wordmark } from "@/components/schoolkeuze";
+import Image from "next/image";
+import { InfoCard } from "@/components/schoolkeuze";
 import { t, useLanguageStore } from "@/lib/i18n";
 
 export default function ReleaseNotesPage() {
@@ -53,15 +54,24 @@ export default function ReleaseNotesPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <header className="flex flex-col gap-2">
-          <Wordmark />
-          <h1 className="text-3xl font-serif font-semibold text-foreground">
-            {t(language, "release.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t(language, "release.subtitle")}</p>
-        </header>
+    <main className="min-h-screen pb-24">
+      <header className="relative -mt-4 overflow-hidden min-h-[260px] md:min-h-[320px]">
+        <div className="absolute inset-0">
+          <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+        </div>
+        <div className="relative px-4 pt-10 pb-12 sm:px-6">
+          <div className="mx-auto w-full max-w-4xl">
+            <h1 className="text-3xl font-serif font-semibold text-white drop-shadow-sm">
+              {t(language, "release.title")}
+            </h1>
+            <p className="mt-2 text-sm text-white/90">{t(language, "release.subtitle")}</p>
+          </div>
+        </div>
+      </header>
+
+      <section className="bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-4xl space-y-6">
 
         <InfoCard title={t(language, "release.main_features_title")}>
           <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
@@ -89,7 +99,7 @@ export default function ReleaseNotesPage() {
             </Link>
           </span>
         </div>
-      </div>
+      </section>
     </main>
   );
 }

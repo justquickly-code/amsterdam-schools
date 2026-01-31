@@ -678,12 +678,12 @@ export default function ExploreHome() {
 
   return (
     <main className="min-h-screen pb-24">
-      <header className="relative overflow-hidden">
+      <header className="relative -mt-4 overflow-hidden">
         <div className="absolute inset-0">
           <Image src="/branding/hero/hero-bg.jpg" alt="" fill className="object-cover" priority />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
         </div>
-        <div className="relative px-5 pt-6 pb-12">
+        <div className="relative px-5 pt-10 pb-12">
           <div className="flex items-center justify-between">
             <div className="md:hidden">
               <Wordmark variant="white" />
