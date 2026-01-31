@@ -750,22 +750,11 @@ export default function ExploreHome() {
         <div className="mx-auto w-full max-w-5xl space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-serif text-xl font-semibold text-foreground">{sectionTitle}</h2>
-            <Link
-              className={buttonPrimaryHover}
-              href={
-                hasSession
-                  ? shortlistIds.length > 0
-                    ? "/shortlist"
-                    : "#school-list"
-                  : "/login"
-              }
-            >
-              {hasSession
-                ? shortlistIds.length > 0
-                  ? t(language, "explore.cta_my_list")
-                  : t(language, "explore.cta_add_school")
-                : t(language, "explore.cta_start_list")}
-            </Link>
+            {!hasSession ? (
+              <Link className={buttonPrimaryHover} href="/login">
+                {t(language, "explore.cta_start_list")}
+              </Link>
+            ) : null}
           </div>
 
           <div className="rounded-3xl border bg-white/95 p-4 shadow-sm">

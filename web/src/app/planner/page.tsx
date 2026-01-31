@@ -61,6 +61,7 @@ type ShortlistRow = {
 
 type ShortlistItemRow = {
   school_id: string;
+  school?: { name?: string | null } | null;
 };
 
 type PlannedOpenDayRow = {
@@ -153,6 +154,7 @@ export default function OpenDaysPage() {
 
   const [shortlistOnly, setShortlistOnly] = useState(false);
   const [shortlistSchoolIds, setShortlistSchoolIds] = useState<string[]>([]);
+  const [shortlistSchoolNames, setShortlistSchoolNames] = useState<string[]>([]);
 
   const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRangeFilter>("all");
@@ -241,7 +243,7 @@ export default function OpenDaysPage() {
         if (shortlistRow?.id) {
           const { data: items, error: iErr } = await supabase
             .from("shortlist_items")
-            .select("school_id")
+            .select("school_id, school:schools(name)")
             .eq("shortlist_id", shortlistRow.id);
 
           if (!mounted) return;
@@ -255,13 +257,20 @@ export default function OpenDaysPage() {
           const ids = ((items ?? []) as ShortlistItemRow[])
             .map((x) => x.school_id)
             .filter(Boolean);
+          const names = ((items ?? []) as ShortlistItemRow[])
+            .map((x) => x.school?.name ?? null)
+            .filter((name): name is string => Boolean(name))
+            .map((name) => name.toLowerCase());
 
           setShortlistSchoolIds(ids);
+          setShortlistSchoolNames(names);
         } else {
           setShortlistSchoolIds([]);
+          setShortlistSchoolNames([]);
         }
       } else {
         setShortlistSchoolIds([]);
+        setShortlistSchoolNames([]);
       }
 
       // Open days
@@ -473,9 +482,12 @@ export default function OpenDaysPage() {
 
     if (shortlistOnly) {
       const set = new Set(shortlistSchoolIds);
+      const nameSet = new Set(shortlistSchoolNames);
       list = list.filter((r) => {
         const sid = r.school?.id ?? r.school_id ?? null;
-        return sid ? set.has(sid) : false;
+        if (sid && set.has(sid)) return true;
+        const name = (r.school?.name ?? r.school_name ?? "").toLowerCase();
+        return name ? nameSet.has(name) : false;
       });
     }
 
@@ -502,7 +514,7 @@ export default function OpenDaysPage() {
     }
 
     return list;
-  }, [rowsForYear, shortlistOnly, shortlistSchoolIds, eventTypeFilter, dateRange, workspace]);
+  }, [rowsForYear, shortlistOnly, shortlistSchoolIds, shortlistSchoolNames, eventTypeFilter, dateRange, workspace]);
 
   const todayPlanned = useMemo(() => {
     const today = new Date();

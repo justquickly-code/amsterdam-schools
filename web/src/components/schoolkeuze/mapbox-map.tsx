@@ -102,8 +102,13 @@ export default function MapboxMap({ className, markers, route, selectedId, onSel
 
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
-    markerRootsRef.current.forEach((root) => root.unmount());
+    const rootsToUnmount = markerRootsRef.current;
     markerRootsRef.current = [];
+    if (rootsToUnmount.length) {
+      setTimeout(() => {
+        rootsToUnmount.forEach((root) => root.unmount());
+      }, 0);
+    }
 
     const bounds = new mapboxgl.LngLatBounds();
 
@@ -141,15 +146,19 @@ export default function MapboxMap({ className, markers, route, selectedId, onSel
     if (!map.isStyleLoaded()) {
       const onLoad = () => {
         map.off("load", onLoad);
-        if (route?.coordinates?.length) {
-          map.addSource("route", {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              geometry: { type: "LineString", coordinates: route.coordinates },
-              properties: {},
-            },
-          });
+        if (!route?.coordinates?.length) return;
+        const existing = map.getSource("route") as mapboxgl.GeoJSONSource | undefined;
+        const data = {
+          type: "Feature" as const,
+          geometry: { type: "LineString" as const, coordinates: route.coordinates },
+          properties: {},
+        };
+        if (existing) {
+          existing.setData(data);
+          return;
+        }
+        map.addSource("route", { type: "geojson", data });
+        if (!map.getLayer("route-line")) {
           map.addLayer({
             id: "route-line",
             type: "line",
@@ -196,5 +205,24 @@ export default function MapboxMap({ className, markers, route, selectedId, onSel
     );
   }
 
-  return <div ref={mapRef} className={cn("h-72 w-full overflow-hidden rounded-3xl border", className)} />;
+  return (
+    <div className="msk-map">
+      <div ref={mapRef} className={cn("h-72 w-full overflow-hidden rounded-3xl border", className)} />
+      <style jsx global>{`
+        .msk-map .mapboxgl-ctrl {
+          z-index: 10;
+        }
+        .msk-map .mapboxgl-canvas {
+          z-index: 0;
+        }
+        @media (max-width: 767px) {
+          .msk-map .mapboxgl-ctrl-bottom-right,
+          .msk-map .mapboxgl-ctrl-bottom-left {
+            bottom: auto;
+            top: 0.75rem;
+          }
+        }
+      `}</style>
+    </div>
+  );
 }
