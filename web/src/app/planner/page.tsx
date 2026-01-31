@@ -8,7 +8,7 @@ import { fetchCurrentWorkspace } from "@/lib/workspace";
 import { DEFAULT_LANGUAGE, Language, getLocale, LANGUAGE_EVENT, readStoredLanguage, t } from "@/lib/i18n";
 import { InfoCard, Wordmark } from "@/components/schoolkeuze";
 import { badgeNeutral, badgeTag } from "@/lib/badges";
-import { pillAction } from "@/lib/ui";
+import { buttonOutline, pillAction } from "@/lib/ui";
 import { googleMapsDirectionsUrl } from "@/lib/maps";
 
 type OpenDay = {
@@ -544,7 +544,7 @@ export default function OpenDaysPage() {
               {t(language, "open_days.count").replace("#{count}", String(visibleRows.length))}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">{t(language, "open_days.remaining_label")}</p>
+          <p className="text-xs text-muted-foreground">{t(language, "open_days.important_body")}</p>
         </header>
 
         {hasSession && (
@@ -566,7 +566,7 @@ export default function OpenDaysPage() {
                           </div>
                         </div>
                         <a
-                          className={pillAction}
+                          className={buttonOutline}
                           href={googleMapsDirectionsUrl({ destination })}
                           target="_blank"
                           rel="noreferrer"
@@ -581,10 +581,6 @@ export default function OpenDaysPage() {
             )}
           </InfoCard>
         )}
-
-        <InfoCard title={t(language, "open_days.important")}>
-          <p className="text-sm text-muted-foreground">{t(language, "open_days.important_body")}</p>
-        </InfoCard>
 
         <div className="rounded-3xl border bg-white/95 p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
