@@ -5,6 +5,22 @@ Audience: planning and future roadmap.
 
 ---
 
+## 0) Map view + directions (now planned)
+
+Goal:
+Add a map to Explore plus routing/directions to help families visualize schools and travel.
+
+Plan link:
+- `docs/MAP_FEATURE_PLAN.md`
+
+Notes:
+- Explore map uses the same filters as the list (advies + search).
+- Home pin appears when postcode/advice are set.
+- School detail shows cycling route and Google Maps link.
+- Open Days gets a “Today” section with a “Take me there” link.
+
+---
+
 ## 1) Gamification: milestones, achievements, progress
 
 Goal:
