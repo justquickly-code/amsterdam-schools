@@ -24,7 +24,7 @@ type OpenDay = {
   event_type: string | null;
   is_active?: boolean;
   missing_since?: string | null;
-  school?: { id: string; name: string; supported_levels?: string[] } | null;
+  school?: { id: string; name: string; supported_levels?: string[]; address?: string | null } | null;
 };
 
 type OpenDayRow = {
