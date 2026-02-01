@@ -57,6 +57,27 @@ IMPORTANT:
 - Requires Authorization header (session JWT) and `workspace_id` + `school_ids`.
 - Uses RLS-safe writes to `commute_cache` and Mapbox server token.
 
+## DUO School metrics import (one-time)
+Script: `scripts/import_duo_school_data.py`
+
+Requires:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Usage:
+```
+python3 scripts/import_duo_school_data.py /path/to/amsterdam_vo_schools_seed.xlsx
+```
+
+Optional env vars:
+- `DUO_IMPORT_DRY_RUN=1` (no writes, logs matches)
+- `DUO_MATCH_NAME_ONLY=1` (allow name-only matches when unique)
+
+Notes:
+- Updates `schools` with DUO identifiers + contact/address fields (only when missing).
+- Replaces existing `school_metrics` rows for matched schools.
+- Use service role; do not expose in the browser.
+
 ## Supabase email templates (production)
 
 Update templates in **Supabase → Authentication → Email Templates**.

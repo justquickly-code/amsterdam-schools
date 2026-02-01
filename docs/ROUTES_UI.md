@@ -25,6 +25,7 @@
   - visit notes (per member) + shared 1–5 star rating
   - category ratings (emoji scale) + Fit % badge
   - add/remove from ranked list
+  - “School facts (DUO data)” section for parents (collapsible)
 
 - /planner (Open Days)
   - chronological list

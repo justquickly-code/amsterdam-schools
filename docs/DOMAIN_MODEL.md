@@ -19,6 +19,15 @@
   - website_url
   - image_url (optional, local asset path)
   - lat/lng (if available)
+  - duo_school_id (DUO BRIN+vestiging nr)
+  - brin
+  - vestiging_nr
+  - denominatie
+  - phone
+  - postcode
+  - street
+  - house_nr
+  - house_nr_suffix
 
 - OpenDayEvent
   - school_id
@@ -56,6 +65,18 @@
   - distance_km
   - computed_at
   - provider (e.g., mapbox)
+
+- SchoolMetric (DUO open data, long-form)
+  - school_id
+  - duo_school_id
+  - metric_group
+  - metric_name
+  - period
+  - value_numeric / value_text
+  - unit
+  - notes
+  - source
+  - public_use_ok
 
 - AdviesProfile (workspace-specific)
   - advies_levels: array (e.g., ["havo"] or ["havo","vwo"])

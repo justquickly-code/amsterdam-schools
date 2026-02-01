@@ -121,6 +121,18 @@ type CategoryRatingRow = {
     rating: number | null;
 };
 
+type SchoolMetricRow = {
+    metric_group: string;
+    metric_name: string;
+    period: string | null;
+    value_numeric: number | null;
+    value_text: string | null;
+    unit: string | null;
+    notes: string | null;
+    source: string | null;
+    public_use_ok: string | null;
+};
+
 const EVENT_TYPE_LABELS: Record<string, string> = {
     open_dag: "Open dag",
     open_avond: "Open avond",
@@ -157,6 +169,69 @@ function fmtDate(iso: string, locale: string) {
 function fmtTime(iso: string, locale: string) {
     const d = new Date(iso);
     return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+}
+
+const DUO_PUPIL_METRICS = [
+    "pupils_total_known",
+    "pupils_known_brug",
+    "pupils_known_vmbo",
+    "pupils_known_havo",
+    "pupils_known_vwo",
+];
+
+const DUO_EXAM_METRICS = [
+    "exam_candidates_known_vmbo",
+    "pass_rate_known_vmbo",
+    "avg_ce_weighted_vmbo",
+    "avg_final_weighted_vmbo",
+    "exam_candidates_known_havo",
+    "pass_rate_known_havo",
+    "avg_ce_weighted_havo",
+    "avg_final_weighted_havo",
+    "exam_candidates_known_vwo",
+    "pass_rate_known_vwo",
+    "avg_ce_weighted_vwo",
+    "avg_final_weighted_vwo",
+];
+
+const DUO_METRIC_LABEL_KEYS: Record<string, string> = {
+    pupils_total_known: "school.facts.pupils_total",
+    pupils_known_brug: "school.facts.pupils_brug",
+    pupils_known_vmbo: "school.facts.pupils_vmbo",
+    pupils_known_havo: "school.facts.pupils_havo",
+    pupils_known_vwo: "school.facts.pupils_vwo",
+    exam_candidates_known_vmbo: "school.facts.exams_candidates_vmbo",
+    pass_rate_known_vmbo: "school.facts.exams_pass_vmbo",
+    avg_ce_weighted_vmbo: "school.facts.exams_ce_vmbo",
+    avg_final_weighted_vmbo: "school.facts.exams_final_vmbo",
+    exam_candidates_known_havo: "school.facts.exams_candidates_havo",
+    pass_rate_known_havo: "school.facts.exams_pass_havo",
+    avg_ce_weighted_havo: "school.facts.exams_ce_havo",
+    avg_final_weighted_havo: "school.facts.exams_final_havo",
+    exam_candidates_known_vwo: "school.facts.exams_candidates_vwo",
+    pass_rate_known_vwo: "school.facts.exams_pass_vwo",
+    avg_ce_weighted_vwo: "school.facts.exams_ce_vwo",
+    avg_final_weighted_vwo: "school.facts.exams_final_vwo",
+};
+
+function formatMetricValue(
+    metricName: string,
+    valueNumeric: number | null,
+    valueText: string | null,
+    unit: string | null,
+    locale: string
+) {
+    if (valueNumeric === null || Number.isNaN(valueNumeric)) {
+        return valueText ?? null;
+    }
+    if (metricName.startsWith("pass_rate")) {
+        const pct = valueNumeric * 100;
+        return `${pct.toFixed(pct % 1 === 0 ? 0 : 1)}%`;
+    }
+    if (unit === "students") {
+        return new Intl.NumberFormat(locale).format(Math.round(valueNumeric));
+    }
+    return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(valueNumeric);
 }
 
 function stripAnyUrlLabel(s: string | null) {
@@ -223,8 +298,6 @@ function ratingButtonClass(selected: boolean) {
     }`;
 }
 
-type BadgeClass = string;
-
 export default function SchoolDetailPage() {
     const params = useParams<{ id: string }>();
     const searchParams = useSearchParams();
@@ -251,6 +324,7 @@ export default function SchoolDetailPage() {
     const [route, setRoute] = useState<{ coordinates: Array<[number, number]> } | null>(null);
     const [routeLoading, setRouteLoading] = useState(false);
     const [hasSession, setHasSession] = useState(false);
+    const [duoMetrics, setDuoMetrics] = useState<SchoolMetricRow[]>([]);
 
     const [attended, setAttended] = useState(false);
     const [rating, setRating] = useState<number | null>(null);
@@ -275,6 +349,48 @@ export default function SchoolDetailPage() {
         [categoryRatings]
     );
 
+    const duoMetricsPeriod = useMemo(() => {
+        const periods = Array.from(new Set(duoMetrics.map((m) => m.period).filter(Boolean))) as string[];
+        if (!periods.length) return null;
+        return periods.sort().slice(-1)[0];
+    }, [duoMetrics]);
+
+    const duoMetricsByName = useMemo(() => {
+        const map = new Map<string, SchoolMetricRow>();
+        for (const metric of duoMetrics) {
+            const existing = map.get(metric.metric_name);
+            if (!existing) {
+                map.set(metric.metric_name, metric);
+                continue;
+            }
+            if (duoMetricsPeriod && metric.period === duoMetricsPeriod) {
+                map.set(metric.metric_name, metric);
+            }
+        }
+        return map;
+    }, [duoMetrics, duoMetricsPeriod]);
+
+    const buildMetricItems = (names: string[]) =>
+        names
+            .map((name) => {
+                const metric = duoMetricsByName.get(name);
+                if (!metric) return null;
+                const value = formatMetricValue(
+                    metric.metric_name,
+                    metric.value_numeric,
+                    metric.value_text,
+                    metric.unit,
+                    locale
+                );
+                if (!value) return null;
+                return {
+                    name,
+                    label: DUO_METRIC_LABEL_KEYS[name] ? t(language, DUO_METRIC_LABEL_KEYS[name]) : name,
+                    value,
+                };
+            })
+            .filter(Boolean) as Array<{ name: string; label: string; value: string }>;
+
     useEffect(() => {
         let mounted = true;
 
@@ -282,6 +398,7 @@ export default function SchoolDetailPage() {
             setLoading(true);
             setError("");
             setSavedMsg("");
+            setDuoMetrics([]);
 
             const { data: session } = await supabase.auth.getSession();
             const authed = Boolean(session.session);
@@ -356,6 +473,18 @@ export default function SchoolDetailPage() {
                 return;
             }
             setSchool(schoolRow);
+
+            const { data: metricRows, error: mErr } = await supabase
+                .from("school_metrics")
+                .select("metric_group,metric_name,period,value_numeric,value_text,unit,notes,source,public_use_ok")
+                .eq("school_id", schoolId);
+
+            if (!mounted) return;
+            if (mErr) {
+                setDuoMetrics([]);
+            } else {
+                setDuoMetrics((metricRows ?? []) as SchoolMetricRow[]);
+            }
 
             if (authed && workspaceRow) {
                 const { data: v, error: vErr } = await supabase
@@ -931,6 +1060,8 @@ export default function SchoolDetailPage() {
             ? `${workspace.home_postcode} ${workspace.home_house_number} Amsterdam`
             : null;
     const destinationAddress = school?.address ?? school?.name ?? "";
+    const pupilItems = buildMetricItems(DUO_PUPIL_METRICS);
+    const examItems = buildMetricItems(DUO_EXAM_METRICS);
 
     return (
         <main className="min-h-screen pb-24">
@@ -1030,6 +1161,58 @@ export default function SchoolDetailPage() {
                             {shortlistMsg && <div className="text-sm text-muted-foreground">{shortlistMsg}</div>}
                         </SchoolRow>
                     </div>
+                )}
+
+                {duoMetrics.length ? (
+                    <details className="rounded-3xl border bg-card p-4 shadow-sm">
+                        <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-foreground">
+                            <span>{t(language, "school.facts_title")}</span>
+                            {duoMetricsPeriod ? (
+                                <span className="text-xs font-normal text-muted-foreground">
+                                    {t(language, "school.facts_period").replace("{period}", duoMetricsPeriod)}
+                                </span>
+                            ) : null}
+                        </summary>
+                        <div className="mt-4 space-y-5">
+                            {pupilItems.length ? (
+                                <div className="space-y-2">
+                                    <div className="text-sm font-semibold text-foreground">
+                                        {t(language, "school.facts_pupils_title")}
+                                    </div>
+                                    <ul className="space-y-1 text-sm text-muted-foreground">
+                                        {pupilItems.map((item) => (
+                                            <li key={item.name} className="flex items-center justify-between gap-4">
+                                                <span>{item.label}</span>
+                                                <span className="font-medium text-foreground">{item.value}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
+
+                            {examItems.length ? (
+                                <div className="space-y-2">
+                                    <div className="text-sm font-semibold text-foreground">
+                                        {t(language, "school.facts_exams_title")}
+                                    </div>
+                                    <ul className="space-y-1 text-sm text-muted-foreground">
+                                        {examItems.map((item) => (
+                                            <li key={item.name} className="flex items-center justify-between gap-4">
+                                                <span>{item.label}</span>
+                                                <span className="font-medium text-foreground">{item.value}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
+
+                            <div className="text-xs text-muted-foreground">{t(language, "school.facts_attribution")}</div>
+                        </div>
+                    </details>
+                ) : (
+                    <InfoCard title={t(language, "school.facts_title")}>
+                        <p className="text-sm text-muted-foreground">{t(language, "school.facts_no_data")}</p>
+                    </InfoCard>
                 )}
 
                 <InfoCard title={t(language, "school.route_title")}>

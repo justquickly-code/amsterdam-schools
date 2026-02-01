@@ -324,6 +324,30 @@ Legend:
 - Key funnel events are tracked.
 - Basic admin visibility into adoption.
 
+## Phase 7 — Parent data enrichment (P2) ⏸ Paused
+
+### 7.1 DUO “School facts” section on school detail (Option A)
+**Work**
+- Add DUO identifiers to `schools` if missing (`duo_school_id`, `brin`, `vestiging_nr`).
+- Create `school_metrics` table for DUO metrics (long‑form).
+- Build one‑time importer from `amsterdam_vo_schools_seed.xlsx`:
+  - Map `Error: #VALUE!` → NULL.
+  - Normalize `has_*` flags to booleans.
+  - Filter by `include_in_main_db` and `public_use_ok`.
+  - Join by `duo_school_id` (fallback to name + postcode if needed).
+- Add a collapsible “School facts (DUO data)” section on `/schools/[id]`:
+  - Pupil counts by track (where available).
+  - Exam pass rates + average CE/final (where available).
+  - Period + attribution line (“DUO Open Onderwijsdata, CC‑BY 4.0”).
+
+**Status note**
+- DUO import matching currently low (8/82). Pause until improved auto‑matching or manual overrides.
+
+**Done when**
+- DUO metrics render on school detail for matched schools.
+- Empty states do not show misleading zeros.
+- Attribution is visible wherever DUO data is displayed.
+
 ## Suggested execution order (fastest risk reduction)
 1) Phase 0.1 commute scoping
 2) Phase 0.2 ICS service-role removal

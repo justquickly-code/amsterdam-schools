@@ -171,7 +171,13 @@ export default function ExploreHome() {
   const [shortlistMsg, setShortlistMsg] = useState<string>("");
   const [shortlistBusyId, setShortlistBusyId] = useState<string>("");
   const [homeCoords, setHomeCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, setShowMap] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = window.localStorage.getItem("explore_show_map");
+    if (stored === "true") return true;
+    if (stored === "false") return false;
+    return window.innerWidth >= 768;
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -183,19 +189,6 @@ export default function ExploreHome() {
     window.localStorage.setItem("prefill_advies", adviesKey);
   }, [adviesKey]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("explore_show_map");
-    if (stored === "true") {
-      setShowMap(true);
-      return;
-    }
-    if (stored === "false") {
-      setShowMap(false);
-      return;
-    }
-    setShowMap(window.innerWidth >= 768);
-  }, []);
   const setStoredSortMode = (next: SortMode) => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("schools_sort_mode", next);

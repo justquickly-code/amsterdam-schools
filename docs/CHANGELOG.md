@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Docs: document DUO “School facts” plan (Option A) and add Phase 7 to Release Plan.
+- Data: add DUO identifiers + school_metrics schema and import script (parent facts).
 - UI: unify hero headers across primary pages (shared background, height, and title placement).
 - UI: floating top menu uses a white wordmark pill for consistent contrast on hero images.
 - Map: add custom map pin graphics for home + schools.

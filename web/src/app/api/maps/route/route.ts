@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       duration: route.duration ?? null,
       distance: route.distance ?? null,
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
   }
 }

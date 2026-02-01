@@ -330,13 +330,6 @@ export default function Home() {
     return `${workspace.home_postcode} ${workspace.home_house_number}`;
   }, [workspace]);
 
-  const initials = useMemo(() => {
-    const name = (workspace?.child_name ?? "").trim();
-    if (!name) return "MS";
-    const parts = name.split(/\s+/).slice(0, 2);
-    return parts.map((p) => p[0]?.toUpperCase() ?? "").join("");
-  }, [workspace]);
-
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">

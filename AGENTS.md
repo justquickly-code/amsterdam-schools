@@ -65,6 +65,8 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - Hero headers are unified across main pages (same background image + height + title placement).
 - Top desktop menu uses floating pill navigation and a white wordmark pill on hero headers.
 - School address links open Google Maps locations (non-directional).
+- DUO “School facts” section added to school detail (collapsible) with attribution and empty states.
+- DUO schema additions + import script exist (schools identifiers + school_metrics).
 
 ## Design Refresh Branch
 - Redesign merged into `main` (no active redesign branch).
@@ -74,6 +76,9 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 ## Open Items
 - Confirm desktop top‑right menu and mobile bottom‑nav parity.
 - Known issue: language selection may revert to Dutch after magic-link login.
+- UI consistency audit pending review (hero headers + typography; see docs/UI_CONSISTENCY_AUDIT.md).
+- DUO school data enrichment proposal pending review (see docs/SCHOOL_DATA_ENRICHMENT_PROPOSAL.md).
+- DUO import is paused (matching 8/82); revisit improved matching or manual overrides.
 
 ## Suggested Session Prompt (Redesign Work)
 “Switch to `design/airbnb-refresh`. Read `docs/DESIGN.md` (Design Refresh Plan). Implement Phase 1 only (theme + shared components), no functional changes.”
@@ -96,6 +101,7 @@ Note: `next build` may fail in constrained environments due to Turbopack port bi
 - `supabase/migrations/20260117140000_add_workspace_child_name.sql` (child_name field)
 - `supabase/migrations/20260124190000_add_school_image_url.sql` (schools.image_url)
 - `supabase/migrations/20260124220000_public_read_schools.sql` (anon read for schools)
+- `supabase/migrations/20260201090000_add_duo_school_metrics.sql` (DUO identifiers + school_metrics)
 
 Apply locally with:
 ```

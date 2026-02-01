@@ -32,3 +32,7 @@ We store per event:
 - source_url (prefer the school’s own website link where available)
 - last_synced_at
 - change detection fields (optional): source_hash, last_seen_at, status
+
+## Proposed (parents-focused metrics)
+We have a DUO-based seed file with pupil + exam metrics ready for import.
+See `docs/SCHOOL_DATA_ENRICHMENT_PROPOSAL.md` for details and licensing notes.

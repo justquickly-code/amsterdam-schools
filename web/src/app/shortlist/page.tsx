@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchCurrentWorkspace } from "@/lib/workspace";
@@ -71,8 +70,6 @@ function statusLabel(item: ShortlistItem, language: Language) {
   if (item.has_open_days) return t(language, "shortlist.no_plan");
   return t(language, "shortlist.no_open_days");
 }
-
-type BadgeClass = string;
 
 export default function ShortlistPage() {
   const router = useRouter();
