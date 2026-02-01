@@ -1055,11 +1055,16 @@ export default function SchoolDetailPage() {
 
     const from = searchParams.get("from");
     const backHref = from === "shortlist" ? "/shortlist" : "/";
-    const homeAddress =
-        workspace?.home_postcode && workspace?.home_house_number
-            ? `${workspace.home_postcode} ${workspace.home_house_number} Amsterdam`
+    const homeOrigin =
+        typeof workspace?.home_lat === "number" && typeof workspace?.home_lng === "number"
+            ? `${workspace.home_lat},${workspace.home_lng}`
+            : workspace?.home_postcode && workspace?.home_house_number
+            ? `${workspace.home_postcode} ${workspace.home_house_number} Amsterdam, Netherlands`
             : null;
-    const destinationAddress = school?.address ?? school?.name ?? "";
+    const destinationAddress =
+        typeof school?.lat === "number" && typeof school?.lng === "number"
+            ? `${school.lat},${school.lng}`
+            : school?.address ?? school?.name ?? "";
     const pupilItems = buildMetricItems(DUO_PUPIL_METRICS);
     const examItems = buildMetricItems(DUO_EXAM_METRICS);
 
@@ -1253,7 +1258,7 @@ export default function SchoolDetailPage() {
                             {destinationAddress ? (
                                 <a
                                     className={buttonOutline}
-                                    href={googleMapsDirectionsUrl({ origin: homeAddress, destination: destinationAddress })}
+                                    href={googleMapsDirectionsUrl({ origin: homeOrigin, destination: destinationAddress })}
                                     target="_blank"
                                     rel="noreferrer"
                                 >
